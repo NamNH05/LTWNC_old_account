@@ -14,8 +14,9 @@
 4. [🏗️ Cấu trúc dự án](#-cấu-trúc-dự-án)
 5. [🗄️ Cấu trúc Database](#-cấu-trúc-database)
 6. [🚀 Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
-7. [� Tài khoản Test](#-tài-khoản-test-sẵn-sàng-sau-seed)
-8. [�🔧 Các lệnh hữu ích](#-các-lệnh-hữu-ích)
+7. [🔐 Tài khoản Test](#-tài-khoản-test-sẵn-sàng-sau-seed)
+8. [✅ Kiểm tra setup thành công](#-kiểm-tra-setup-thành-công)
+9. [🔧 Các lệnh hữu ích](#-các-lệnh-hữu-ích)
 
 ---
 

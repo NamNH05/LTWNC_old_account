@@ -1,53 +1,158 @@
-Các chức năng dự kiến:
+# 📱 DeComP - Website E-commerce Thời Trang
 
-Admin
-Quản lý sản phẩm: thêm/sửa/xóa, danh sách sản phẩm
-Quản lý người dùng: thêm/sửa/xóa, vai trò, trạng thái, tìm kiếm
-Quản lý đơn hàng: xem danh sách, cập nhật trạng thái, hủy/xóa
-Báo cáo doanh thu: tổng doanh thu, tổng đơn, giá trị trung bình, bảng doanh thu theo ngày
-Phân quyền route admin (chỉ tài khoản ADMIN truy cập)
+**Website bán thời trang** với đầy đủ tính năng quản lý sản phẩm, giỏ hàng, thanh toán và quản lý đơn hàng.
 
-User
-Trang chủ
-Danh sách sản phẩm theo danh mục (nam, nữ, giày, phụ kiện, tất cả)
-Tìm kiếm sản phẩm
-Chi tiết sản phẩm
-Giỏ hàng
-Thanh toán (3 bước: giao hàng -> chọn phương thức -> xác nhận)
-Quản lý đơn hàng cá nhân (lịch sử đơn) trong trang profile
-Quản lý thông tin cá nhân (sửa hồ sơ)
-Quản lý địa chỉ giao hàng
-Đăng nhập/đăng ký/đăng xuất
+---
 
-Các bước dự kiến để làm bài: 
+## ✨ Tính Năng Chính
 
-B1. Xác định kiến trúc MVC + DB + FE build
-Chốt kiến trúc backend theo MVC Monolith:
-Controller: nhận request, trả response.
-Service: xử lý nghiệp vụ.
-Repository: truy cập dữ liệu.
-Entity/Model: mô hình dữ liệu.
-DTO: request/response.
-Security: xác thực và phân quyền USER, ADMIN.
-Chốt module nghiệp vụ:
-Auth và User.
-Product và Category.
-Cart và Checkout.
-Order.
-Admin.
-Report doanh thu.
-Audit log.
-Chốt database:
-PostgreSQL là database chính.
-Quản lý schema bằng migration.
-Có seed dữ liệu ban đầu (admin, danh mục, sản phẩm mẫu).
-Chốt frontend:
-Dùng React + Vite để phát triển nhanh.
-Build frontend ra bản production trước khi test tổng.
+### 👨‍💼 Admin Dashboard
+- **Quản lý sản phẩm**: Thêm, sửa, xóa, tìm kiếm sản phẩm
+- **Quản lý danh mục**: Quản lý các danh mục (Nam, Nữ, Giày, Phụ kiện)
+- **Quản lý người dùng**: Xem danh sách user, quản lý vai trò, trạng thái
+- **Quản lý đơn hàng**: Xem danh sách đơn, cập nhật trạng thái (Pending → Processing → Shipped → Delivered)
+- **Báo cáo doanh thu**: Tổng doanh thu, tổng đơn hàng, giá trị trung bình, doanh thu theo ngày
+- **Quản lý thanh toán**: Xem lịch sử thanh toán, xác nhận giao dịch VNPAY
+- **Nhật ký hoạt động**: Audit log tất cả thay đổi trong hệ thống
 
-Kết quả cần đạt B1:
-Có tài liệu kiến trúc MVC.
-Có danh sách module và API MVP.
+### 👤 User Features
+- **Trang chủ**: Banner, danh sách sản phẩm nổi bật
+- **Duyệt sản phẩm**: 
+  - Danh sách sản phẩm theo danh mục
+  - Tìm kiếm sản phẩm
+  - Lọc theo giá, đánh giá
+  - Sắp xếp theo tên, giá, mới nhất
+- **Chi tiết sản phẩm**: Xem thông tin, ảnh, đánh giá, bình luận
+- **Giỏ hàng**: Thêm/xóa sản phẩm, cập nhật số lượng, xem tổng cộng
+- **Thanh toán (3 bước)**:
+  - Step 1: Chọn địa chỉ giao hàng
+  - Step 2: Chọn phương thức thanh toán (COD / VNPAY)
+  - Step 3: Xác nhận và tạo đơn hàng
+- **Đơn hàng của tôi**: Xem lịch sử đơn hàng, trạng thái, chi tiết
+- **Tài khoản cá nhân**:
+  - Sửa thông tin hồ sơ
+  - Quản lý địa chỉ giao hàng
+  - Đổi mật khẩu
+- **Xác thực**: Đăng ký, đăng nhập, đăng xuất, quên mật khẩu
+
+---
+
+## 🏗️ Kiến Trúc Dự Án
+
+### Backend (Node.js + Express + TypeScript)
+**Mô hình MVC Monolith:**
+- **Controller**: Nhận request, trả response
+- **Service**: Xử lý logic nghiệp vụ
+- **Repository**: Truy cập dữ liệu từ database
+- **DTO**: Định dạng request/response
+- **Model**: Mô hình dữ liệu với Prisma ORM
+
+### Frontend (React + Vite)
+- **Pages**: Home, Products, ProductDetail, Cart, Checkout, Orders, Profile
+- **Components**: Header, Footer, ProductCard, CartItem, OrderList, v.v.
+- **Context API**: Quản lý state (AuthContext, CartContext)
+- **Routing**: React Router v7
+
+### Database (PostgreSQL)
+**9 bảng chính:**
+- `users` - Người dùng
+- `addresses` - Địa chỉ giao hàng
+- `categories` - Danh mục sản phẩm
+- `products` - Sản phẩm
+- `carts` - Giỏ hàng
+- `orders` - Đơn hàng
+- `order_items` - Chi tiết đơn hàng
+- `payments` - Thanh toán
+- `audit_logs` - Nhật ký hoạt động
+
+---
+
+## 📋 Quy Trình Phát Triển
+
+### Phase 1: Setup & Migration ✅ (Hoàn tất)
+- [x] Khởi tạo cấu trúc dự án (MVC Backend + React Frontend)
+- [x] Cấu hình PostgreSQL với Docker
+- [x] Thiết kế database schema (9 bảng)
+- [x] Setup migrations & seed data
+- [x] Cập nhật quy ước Git & commit
+
+### Phase 2: Backend Development 🔄 (Đang làm)
+- [ ] Authentication & Authorization (JWT + Role-based)
+- [ ] User Management APIs
+- [ ] Product Management APIs
+- [ ] Cart & Checkout APIs
+- [ ] Order Management APIs
+- [ ] Payment Integration (VNPAY)
+- [ ] Error Handling & Validation
+- [ ] Logging & Monitoring
+
+### Phase 3: Frontend Development 🔄 (Đang làm)
+- [ ] Authentication Pages (Login, Register, Profile)
+- [ ] Product Listing & Search
+- [ ] Product Detail
+- [ ] Shopping Cart
+- [ ] Checkout Flow
+- [ ] Order Tracking
+- [ ] Admin Dashboard
+- [ ] Responsive Design
+
+### Phase 4: Testing & Deployment ⏳ (Chuẩn bị)
+- [ ] Unit Tests (Backend & Frontend)
+- [ ] Integration Tests
+- [ ] E2E Tests
+- [ ] Performance Testing
+- [ ] Security Testing
+- [ ] Deployment (Docker + Production)
+
+---
+
+## 🎯 API MVP (Minimum Viable Product)
+
+### Auth APIs
+```
+POST   /api/auth/register      - Đăng ký
+POST   /api/auth/login         - Đăng nhập
+POST   /api/auth/logout        - Đăng xuất
+POST   /api/auth/refresh       - Làm mới token
+```
+
+### Product APIs
+```
+GET    /api/products           - Danh sách sản phẩm
+GET    /api/products/:id       - Chi tiết sản phẩm
+GET    /api/categories         - Danh sách danh mục
+```
+
+### Cart APIs
+```
+GET    /api/carts              - Xem giỏ hàng
+POST   /api/carts              - Thêm vào giỏ
+PUT    /api/carts/:id          - Cập nhật số lượng
+DELETE /api/carts/:id          - Xóa khỏi giỏ
+```
+
+### Order APIs
+```
+POST   /api/orders             - Tạo đơn hàng
+GET    /api/orders             - Danh sách đơn hàng của user
+GET    /api/orders/:id         - Chi tiết đơn hàng
+PUT    /api/orders/:id         - Cập nhật trạng thái (Admin)
+```
+
+### Payment APIs
+```
+POST   /api/payments/vnpay     - Thanh toán VNPAY
+GET    /api/payments/vnpay-callback - Callback từ VNPAY
+```
+
+---
+
+## 📊 Metrics & Goals
+
+- **Code Coverage**: Backend 80%+, Frontend 70%+
+- **Performance**: API response < 200ms, Frontend load < 3s
+- **Security**: JWT + HTTPS, SQL injection prevention, XSS protection
+- **Scalability**: Ready for horizontal scaling, load balancing ready
 Có quyết định công nghệ backend, database, frontend.
 
 B2. Cài Docker và chạy PostgreSQL
