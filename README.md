@@ -14,7 +14,8 @@
 4. [🏗️ Cấu trúc dự án](#-cấu-trúc-dự-án)
 5. [🗄️ Cấu trúc Database](#-cấu-trúc-database)
 6. [🚀 Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
-7. [🔧 Các lệnh hữu ích](#-các-lệnh-hữu-ích)
+7. [� Tài khoản Test](#-tài-khoản-test-sẵn-sàng-sau-seed)
+8. [�🔧 Các lệnh hữu ích](#-các-lệnh-hữu-ích)
 
 ---
 
@@ -171,6 +172,17 @@ LTWNC/
 - **Docker** & **Docker Compose** ([Download](https://www.docker.com/products/docker-desktop))
 - **Git** ([Download](https://git-scm.com/))
 
+### 🔐 Tài khoản Test (sẵn sàng sau seed)
+
+Sau khi chạy seed data, có thể dùng các tài khoản này để test nhanh:
+
+| Vai trò | Email | Mật khẩu | Mục đích |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@ltwnc.tech` | `Admin@123` | Quản lý hệ thống, sản phẩm, đơn hàng |
+| **User** | `user@ltwnc.tech` | `User@123` | Mua sắm, kiểm tra luồng checkout |
+
+**Lưu ý:** Chỉ dùng cho development/testing. Không dùng cho production!
+
 ### 1️⃣ Clone repository
 
 ```bash
@@ -204,6 +216,9 @@ npm install
 
 # Chạy migrations
 npx prisma migrate deploy
+
+# Seed dữ liệu test (admin, user, categories, products)
+npm run seed
 
 # Khởi động server (dev mode)
 npm run dev
