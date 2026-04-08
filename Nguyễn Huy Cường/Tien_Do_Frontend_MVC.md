@@ -4,7 +4,7 @@
 
 Dự án được chia thành 8 giai đoạn chính với thời gian thực hiện dự kiến như sau:
 
-### Giai Đoạn 1: Thiết Lập Nền Tảng (3/4/2026)
+### Giai Đoạn 1: Thiết Lập Nền Tảng
 
 - Thiết lập cấu trúc project và môi trường phát triển
 - Xây dựng layout cơ bản (header, footer, navigation)
@@ -84,5 +84,8 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Thêm chức năng lọc theo danh mục
 - Xây dựng trang chi tiết sản phẩm
 - Thêm gallery ảnh, thông tin sản phẩm
-  ![Sản phẩm](image-3.png)
-  ![Chi tiết sản phẩm](image-4.png)
+#### Minh họa ngày 2
+- Ảnh 1: Giao diện trang sản phẩm
+- Ảnh 2: Giao diện trang chi tiết sản phẩm
+![Sản phẩm](image-3.png)
+![Chi tiết sản phẩm](image-4.png)
