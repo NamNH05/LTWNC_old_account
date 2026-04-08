@@ -367,7 +367,7 @@ async function main() {
   console.log('\n📊 Tóm tắt:');
   console.log(`  - 2 tài khoản (1 admin, 1 user)`);
   console.log(`  - 4 danh mục sản phẩm`);
-  console.log(`  - 11 sản phẩm`);
+  console.log(`  - 12 sản phẩm`);
   console.log(`  - 1 giỏ hàng với 2 mục`);
   console.log(`  - 1 đơn hàng với 2 mục`);
   console.log(`  - 1 audit log`);

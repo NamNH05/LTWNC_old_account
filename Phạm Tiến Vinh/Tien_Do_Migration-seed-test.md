@@ -8,7 +8,7 @@
 ## Ngày 08/04/2026
 | Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
 | :--- | :--- | :--- | :--- |
-| 08/04 | Them enum chuan hoa du lieu, dong bo seed status enum trong seed.ts
+| 08/04 | 1. Them enum chuan hoa du lieu 2. dong bo seed status enum trong seed.ts 3. script backup/restore thủ công 4. Review và test tất cả migrations 5. Ghi lại lịch sử migration 6. Test quy trình rollback ở mức dev 7. Tạo migration templates
 
 
 
@@ -22,11 +22,11 @@ TỔNG KẾT
 [ ] Thêm database triggers (nếu cần)
 
 2. Quản lý Migrations
-[ ] Review và test tất cả migrations
-[ ] Ghi lại lịch sử migration
-[ ] Thiết lập chiến lược backup tự động
-[ ] Test quy trình rollback
-[ ] Tạo migration templates
+[x] Review và test tất cả migrations
+[x] Ghi lại lịch sử migration
+[x] Thiết lập chiến lược backup tự động (hiện tại là thủ công)
+[x] Test quy trình rollback (ở mức dev chứ chưa test matrix all case)
+[x] Tạo migration templates
 
 3. Seed Data
 [ ] Tạo admin user seed
