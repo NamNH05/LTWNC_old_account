@@ -42,14 +42,20 @@
 - [ ] API response standardization
 - [ ] Request logging
 
-### 7. Performance & Security
+### 7. Infrastructure & API Gateway
+- [ ] API Gateway setup
 - [ ] Rate limiting
+- [ ] Request routing
+- [ ] Load balancing
+- [ ] Monitoring & logging
+
+### 8. Security
 - [ ] CORS configuration
 - [ ] SQL injection prevention
 - [ ] XSS protection
 - [ ] API optimization & caching
 
-### 8. Testing & Documentation
+### 9. Testing & Documentation
 - [ ] Unit tests (80%+ coverage)
 - [ ] Integration tests for API endpoints
 - [ ] API documentation (Swagger/OpenAPI)
