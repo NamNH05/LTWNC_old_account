@@ -317,7 +317,7 @@ async function main() {
   const order = await prisma.order.create({
     data: {
       userId: user.id,
-      status: 'confirmed',
+      status: 'CONFIRMED',
       totalPrice: products[0].price * 2 + products[1].price,
       shippingAddr: '123 Đường ABC, Phường 1, Quận 1, TP HCM',
       phoneNumber: '0987654321',
