@@ -6,6 +6,18 @@
 
 ---
 
+## 📑 Mục lục
+
+1. [📊 Dự án](#-dự-án)
+2. [🛠️ Công nghệ sử dụng](#-công-nghệ-sử-dụng)
+3. [📋 Nội dung chính](#-nội-dung-chính)
+4. [🏗️ Cấu trúc dự án](#-cấu-trúc-dự-án)
+5. [🗄️ Cấu trúc Database](#-cấu-trúc-database)
+6. [🚀 Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
+7. [🔧 Các lệnh hữu ích](#-các-lệnh-hữu-ích)
+
+---
+
 ## 📊 Dự án
 
 **Website e-commerce cho hãng thời trang**
