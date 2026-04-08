@@ -52,8 +52,9 @@
 - [ ] Accessibility improvements
 
 ### 8. Performance & Testing
-- [ ] Component testing
-- [ ] E2E testing
+- [ ] Component testing (70%+ coverage)
+- [ ] E2E testing (user flows)
+- [ ] Accessibility testing
 - [ ] Page optimization
 - [ ] Image optimization
-- [ ] Lighthouse audit fixes
+- [ ] See: [Testing Guidelines](Testing_Guidelines.md#-frontend-testing)

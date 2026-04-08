@@ -50,7 +50,8 @@
 - [ ] API optimization & caching
 
 ### 8. Testing & Documentation
-- [ ] Unit tests
-- [ ] API integration tests
+- [ ] Unit tests (80%+ coverage)
+- [ ] Integration tests for API endpoints
 - [ ] API documentation (Swagger/OpenAPI)
 - [ ] Error scenarios testing
+- [ ] See: [Testing Guidelines](Testing_Guidelines.md#-backend-testing)

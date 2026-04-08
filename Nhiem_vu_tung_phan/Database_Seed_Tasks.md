@@ -50,7 +50,8 @@
 - [ ] Validate seed data completeness
 - [ ] Check data relationships integrity
 - [ ] Performance testing
-- [ ] Load testing dengan lot data
+- [ ] Migration & seed validation tests
+- [ ] See: [Testing Guidelines](Testing_Guidelines.md#-database--seed-testing)
 
 ### 8. Documentation
 - [ ] Document schema design
