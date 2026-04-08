@@ -1,4 +1,4 @@
-# Báo Cáo Tiến Độ Dự Án Frontend LTWNC Shop
+# Báo Cáo Tiến Độ Dự Án Frontend 
 
 ## Kế Hoạch Triển Khai
 
