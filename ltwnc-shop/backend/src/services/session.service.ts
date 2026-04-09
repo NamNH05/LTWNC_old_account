@@ -9,12 +9,15 @@ type SessionRecord = {
   revokedAt?: Date;
 };
 
+// Session store in-memory: phù hợp dev/local, production nên dùng Redis hoặc DB.
 const sessions = new Map<string, SessionRecord>();
 
+// Lưu hash thay vì lưu thẳng refresh token để giảm rủi ro lộ token.
 const hashToken = (token: string) => {
   return crypto.createHash("sha256").update(token).digest("hex");
 };
 
+// Parse TTL dạng 15m/7d thành Date hết hạn; fallback mặc định 7 ngày nếu sai format.
 const parseExpiryToDate = (ttl: string) => {
   const now = Date.now();
   const match = ttl.match(/^(\d+)([smhd])$/);
@@ -45,6 +48,7 @@ const parseExpiryToDate = (ttl: string) => {
 };
 
 export const sessionService = {
+  // Tạo session mới mỗi lần issue refresh token.
   createSession: (userId: number, refreshToken: string, ttl: string) => {
     const sessionId = crypto.randomUUID();
     const record: SessionRecord = {
@@ -63,6 +67,7 @@ export const sessionService = {
     return sessions.get(sessionId);
   },
 
+  // Verify refresh token theo session id + hash + trạng thái revoke + hạn dùng.
   validateRefreshToken: (sessionId: string, refreshToken: string) => {
     const session = sessions.get(sessionId);
 
@@ -73,6 +78,7 @@ export const sessionService = {
     return session.tokenHash === hashToken(refreshToken);
   },
 
+  // Rotate refresh token để giảm nguy cơ replay token cũ.
   rotateRefreshToken: (sessionId: string, refreshToken: string, ttl: string) => {
     const session = sessions.get(sessionId);
     if (!session) return null;
