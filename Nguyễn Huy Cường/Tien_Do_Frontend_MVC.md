@@ -67,9 +67,9 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 
 #### Minh họa ngày 1
 
-- Ảnh 1: giao diện trang chủ và danh mục sản phẩm
-- Ảnh 2: form đăng nhập
-- Ảnh 3: form đăng ký
+- Ảnh 1: Giao diện trang chủ và danh mục sản phẩm
+- Ảnh 2: Form đăng nhập
+- Ảnh 3: Form đăng ký
 
 ![Trang chủ](image.png)
 ![Đăng nhập](image-1.png)
@@ -85,7 +85,7 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Xây dựng trang chi tiết sản phẩm
 - Thêm gallery ảnh, thông tin sản phẩm
 
-#### Minh họa ngày 1
+#### Minh họa ngày 2
 
 - Ảnh 1: Giao diện trang sản phẩm
 - Ảnh 2: Giao diện trang chi tiết sản phẩm
@@ -99,3 +99,8 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Tối ưu trải nghiệm responsive cho mobile và desktop
 - Chuẩn bị cấu trúc hiển thị danh sách sản phẩm tìm kiếm
 - Ghi nhận: hoàn thành phần front-end giao diện trang tìm kiếm, chuyển tiếp sang kết nối API và xử lý kết quả tìm kiếm
+
+#### Minh họa ngày 3
+
+- Giao diện trang tìm kiếm
+  ![Tìm kiếm](image-5.png)
