@@ -1,41 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Spin } from 'antd';
+import { mockAdminOrders } from '../../../../data/adminMockData';
 import './OrderManagement.css';
-
-const SAMPLE_ORDERS = [
-  {
-    id: 101,
-    customerId: 55,
-    total: 1299000,
-    status: 'PENDING',
-    address: '123 Nguyễn Trãi, Quận 1, TP.HCM',
-    createdAt: '2026-04-05T10:15:00Z'
-  },
-  {
-    id: 102,
-    customerId: 56,
-    total: 890000,
-    status: 'PAID',
-    address: '78 Lê Lợi, Quận 3, TP.HCM',
-    createdAt: '2026-04-06T14:30:00Z'
-  },
-  {
-    id: 103,
-    customerId: 57,
-    total: 450000,
-    status: 'SHIPPED',
-    address: '12 Trần Hưng Đạo, Quận 5, TP.HCM',
-    createdAt: '2026-04-07T09:20:00Z'
-  },
-  {
-    id: 104,
-    customerId: 58,
-    total: 1590000,
-    status: 'DELIVERED',
-    address: '45 Phạm Ngũ Lão, Quận 1, TP.HCM',
-    createdAt: '2026-04-08T16:50:00Z'
-  }
-];
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -44,7 +10,8 @@ const OrderManagement = () => {
   const [editingOrder, setEditingOrder] = useState(null);
   const [form] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
-  const isMountedRef = useRef(false);
+
+  const isMountedRef = React.useRef(false);
 
   useEffect(() => {
     if (!isMountedRef.current) {
@@ -57,9 +24,9 @@ const OrderManagement = () => {
     };
   }, []);
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
     setLoading(true);
-    setOrders(SAMPLE_ORDERS);
+    setOrders(mockAdminOrders);
     setLoading(false);
   };
 
@@ -69,24 +36,23 @@ const OrderManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteOrder = (id) => {
-    setOrders((prev) => prev.filter((order) => order.id !== id));
-    message.success('Xóa đơn hàng thành công');
+  const handleDeleteOrder = async (id) => {
+    setOrders((prev) => prev.filter((item) => item.id !== id));
+    message.success('Đã xóa đơn hàng (giao diện demo)');
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     if (!editingOrder) {
-      message.error('Không thể thêm đơn hàng mới từ admin dashboard');
+      message.error('Trang demo không hỗ trợ tạo mới đơn hàng.');
       return;
     }
 
-    const updatedOrder = {
-      ...editingOrder,
-      status: values.status
-    };
-
-    setOrders((prev) => prev.map((item) => (item.id === editingOrder.id ? updatedOrder : item)));
-    message.success('Cập nhật đơn hàng thành công');
+    setOrders((prev) =>
+      prev.map((item) =>
+        item.id === editingOrder.id ? { ...item, status: values.status } : item
+      )
+    );
+    message.success('Đã cập nhật trạng thái đơn hàng (giao diện demo)');
     setIsModalOpen(false);
   };
 
@@ -96,17 +62,47 @@ const OrderManagement = () => {
       dataIndex: 'id',
       key: 'id',
       render: (id) => `#${id}`,
+      width: 100,
     },
     {
       title: 'ID Khách hàng',
       dataIndex: 'customerId',
       key: 'customerId',
+      width: 100,
+    },
+    {
+      title: 'Sản phẩm',
+      dataIndex: 'itemDetails',
+      key: 'itemDetails',
+      render: (itemDetails) => {
+        try {
+          if (!itemDetails) return '-';
+          const items = typeof itemDetails === 'string' ? JSON.parse(itemDetails) : itemDetails;
+          if (Array.isArray(items) && items.length > 0) {
+            const summary = items.map((item) => `${item.name} (x${item.quantity})`).join(', ');
+            return `${summary.substring(0, 50)}${summary.length > 50 ? '...' : ''}`;
+          }
+          return '-';
+        } catch (error) {
+          console.warn('Error parsing items:', error);
+          return '-';
+        }
+      },
+      width: 150,
     },
     {
       title: 'Số tiền',
       dataIndex: 'total',
       key: 'total',
       render: (total) => `${Number(total).toLocaleString('vi-VN')} ₫`,
+      width: 120,
+    },
+    {
+      title: 'Phí vận chuyển',
+      dataIndex: 'shippingFee',
+      key: 'shippingFee',
+      render: (shippingFee) => shippingFee ? `${Number(shippingFee).toLocaleString('vi-VN')} ₫` : 'Miễn phí',
+      width: 120,
     },
     {
       title: 'Trạng thái',
@@ -118,14 +114,14 @@ const OrderManagement = () => {
           PAID: '#1890ff',
           SHIPPED: '#52c41a',
           DELIVERED: '#13c2c2',
-          CANCELLED: '#ff4d4f'
+          CANCELLED: '#ff4d4f',
         };
         const statusLabel = {
           PENDING: 'Chờ xử lý',
           PAID: 'Đã thanh toán',
           SHIPPED: 'Đã gửi',
           DELIVERED: 'Đã giao',
-          CANCELLED: 'Đã hủy'
+          CANCELLED: 'Đã hủy',
         };
         return (
           <span
@@ -134,30 +130,33 @@ const OrderManagement = () => {
               backgroundColor: statusColor[status] || '#999',
               padding: '4px 8px',
               borderRadius: '4px',
-              fontSize: '12px'
+              fontSize: '12px',
             }}
           >
             {statusLabel[status] || status}
           </span>
         );
-      }
+      },
+      width: 100,
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       key: 'address',
       render: (address) => address || 'Chưa xác định',
+      width: 150,
     },
     {
       title: 'Ngày đặt',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (createdAt) => (createdAt ? new Date(createdAt).toLocaleDateString('vi-VN') : '-'),
+      render: (createdAt) => createdAt ? new Date(createdAt).toLocaleDateString('vi-VN') : '-',
+      width: 100,
     },
     {
       title: 'Hành động',
       key: 'action',
-      width: 150,
+      width: 100,
       render: (_, record) => (
         <Space size="small">
           <Button type="primary" size="small" onClick={() => handleEditOrder(record)}>
@@ -170,24 +169,20 @@ const OrderManagement = () => {
             okText="Có"
             cancelText="Không"
           >
-            <Button danger size="small">
-              Xóa
-            </Button>
+            <Button danger size="small">Xóa</Button>
           </Popconfirm>
         </Space>
       ),
-    }
+    },
   ];
 
   const filteredOrders = orders.filter((order) => {
     const search = searchTerm.toLowerCase();
-    return (
-      !search ||
-      `#${order.id}`.toLowerCase().includes(search) ||
-      `${order.customerId}`.toLowerCase().includes(search) ||
-      order.address?.toLowerCase().includes(search) ||
-      order.status?.toLowerCase().includes(search)
-    );
+    return !search
+      || `#${order.id}`.toLowerCase().includes(search)
+      || `${order.customerId}`.toLowerCase().includes(search)
+      || order.address?.toLowerCase().includes(search)
+      || order.status?.toLowerCase().includes(search);
   });
 
   return (
@@ -223,26 +218,35 @@ const OrderManagement = () => {
           onOk={() => form.submit()}
           onCancel={() => setIsModalOpen(false)}
         >
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+          >
             {editingOrder && (
               <>
                 <Form.Item label="Mã đơn hàng">
                   <Input value={`#${editingOrder.id}`} disabled />
                 </Form.Item>
+
                 <Form.Item label="ID Khách hàng">
                   <Input value={editingOrder.customerId} disabled />
                 </Form.Item>
+
                 <Form.Item label="Số tiền">
                   <Input value={`${Number(editingOrder.total).toLocaleString('vi-VN')} ₫`} disabled />
                 </Form.Item>
+
                 <Form.Item label="Địa chỉ">
                   <Input value={editingOrder.address || 'Chưa xác định'} disabled />
                 </Form.Item>
+
                 <Form.Item label="Ngày đặt">
                   <Input value={editingOrder.createdAt ? new Date(editingOrder.createdAt).toLocaleDateString('vi-VN') : '-'} disabled />
                 </Form.Item>
               </>
             )}
+
             <Form.Item
               label="Trạng thái"
               name="status"
@@ -254,7 +258,7 @@ const OrderManagement = () => {
                   { value: 'PAID', label: 'Đã thanh toán' },
                   { value: 'SHIPPED', label: 'Đã gửi' },
                   { value: 'DELIVERED', label: 'Đã giao' },
-                  { value: 'CANCELLED', label: 'Đã hủy' }
+                  { value: 'CANCELLED', label: 'Đã hủy' },
                 ]}
               />
             </Form.Item>
