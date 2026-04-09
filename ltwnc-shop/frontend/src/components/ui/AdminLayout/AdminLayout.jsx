@@ -1,39 +1,34 @@
-import React, { useState, useEffect } from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, Menu, message } from 'antd';
-import { DashboardOutlined, ShoppingOutlined, UserOutlined, FileTextOutlined, BarChartOutlined, AuditOutlined, LogoutOutlined, HomeOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import { useAuth } from '../../../context/AuthContext';
+import { Layout, Menu } from 'antd';
+import { DashboardOutlined, ShoppingOutlined, UserOutlined, FileTextOutlined, BarChartOutlined, AuditOutlined, LogoutOutlined } from '@ant-design/icons';
 import Header from '../Header/Header';
 import Footer from '../Footer/Footer';
 import './AdminLayout.css';
 
 const { Sider, Content } = Layout;
 
-const AdminLayout = ({ children, activePage = 'orders' }) => {
+const AdminLayout = ({ children, activePage = 'products' }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  useEffect(() => {
-    if (!user || (user.role && !user.role.toUpperCase().includes('ADMIN'))) {
-      message.error('Bạn không có quyền truy cập trang này');
-      navigate('/');
-      return;
-    }
-  }, [user, navigate]);
 
   const handleMenuClick = ({ key }) => {
     switch (key) {
+      case 'products':
+        navigate('/admin');
+        break;
+      case 'users':
+        navigate('/admin/users');
+        break;
       case 'orders':
         navigate('/admin/orders');
         break;
-      case 'profile':
-        navigate('/profile');
+      case 'revenue':
+        navigate('/admin/revenue');
         break;
-      case 'address':
-        navigate('/address');
+      case 'audit':
+        navigate('/audit-logs');
         break;
       case 'logout':
-        logout();
         navigate('/login');
         break;
       default:
@@ -42,29 +37,13 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
   };
 
   const menuItems = [
-    {
-      key: 'orders',
-      icon: <FileTextOutlined />,
-      label: 'Quản lý đơn hàng',
-    },
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'Thông tin tài khoản',
-    },
-    {
-      key: 'address',
-      icon: <EnvironmentOutlined />,
-      label: 'Địa chỉ giao hàng',
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Đăng xuất',
-    },
+    { key: 'products', icon: <ShoppingOutlined />, label: 'Quản lý sản phẩm' },
+    { key: 'users', icon: <UserOutlined />, label: 'Quản lý người dùng' },
+    { key: 'orders', icon: <FileTextOutlined />, label: 'Quản lý đơn hàng' },
+    { key: 'revenue', icon: <BarChartOutlined />, label: 'Báo cáo doanh thu' },
+    { key: 'audit', icon: <AuditOutlined />, label: 'Audit Logs' },
+    { type: 'divider' },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất' },
   ];
 
   return (
