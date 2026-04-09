@@ -10,25 +10,25 @@
 - [x] Quản lý phiên đăng nhập
 
 ### 2. Quản lý người dùng
-- [ ] Tạo API hồ sơ người dùng
-- [ ] Cập nhật thông tin người dùng
-- [ ] Xóa tài khoản người dùng
-- [ ] Quản lý danh sách người dùng (admin)
-- [ ] Theo dõi hoạt động người dùng
+- [x] Tạo API hồ sơ người dùng (GET /api/users/profile)
+- [x] Cập nhật thông tin người dùng (PUT /api/users/profile)
+- [x] Xóa tài khoản người dùng (soft delete)
+- [x] Quản lý danh sách người dùng (admin) (GET /api/users)
+- [x] Theo dõi hoạt động người dùng (AuditLog repository)
 
 ### 3. Quản lý sản phẩm
-- [ ] CRUD sản phẩm
-- [ ] Tìm kiếm và lọc sản phẩm
-- [ ] Quản lý danh mục sản phẩm
-- [ ] Xử lý hình ảnh sản phẩm
-- [ ] Theo dõi tồn kho sản phẩm
+- [x] CRUD sản phẩm (POST/GET/PUT/DELETE /api/products)
+- [x] Tìm kiếm và lọc sản phẩm (search, filter by category, sort)
+- [x] Quản lý danh mục sản phẩm (GET /api/products/categories)
+- [ ] Xử lý hình ảnh sản phẩm (field có, chưa upload)
+- [x] Theo dõi tồn kho sản phẩm (stock field, validation)
 
 ### 4. Giỏ hàng và xử lý đơn hàng
-- [ ] Chức năng giỏ hàng
-- [ ] Thêm/xóa sản phẩm khỏi giỏ
-- [ ] Quy trình checkout giỏ hàng
-- [ ] Tạo và quản lý đơn hàng
-- [ ] Theo dõi trạng thái đơn hàng
+- [x] Chức năng giỏ hàng (GET/POST/PUT/DELETE /api/cart)
+- [x] Thêm/xóa sản phẩm khỏi giỏ (auto-create cart, auto-increase qty)
+- [ ] Quy trình checkout giỏ hàng (chưa làm)
+- [ ] Tạo và quản lý đơn hàng (chưa làm)
+- [ ] Theo dõi trạng thái đơn hàng (chưa làm)
 
 ### 5. Tích hợp thanh toán
 - [ ] Tích hợp cổng thanh toán VNPAY
@@ -37,10 +37,10 @@
 - [ ] Xử lý hoàn tiền
 
 ### 6. Xử lý lỗi và kiểm tra dữ liệu
-- [ ] Middleware kiểm tra dữ liệu đầu vào
-- [x] Xử lý lỗi tập trung
-- [ ] Chuẩn hóa response API
-- [ ] Ghi log request
+- [x] Middleware kiểm tra dữ liệu đầu vào (validation in controllers)
+- [x] Xử lý lỗi tập trung (error middleware)
+- [x] Chuẩn hóa response API (buildErrorResponse)
+- [ ] Ghi log request (chưa làm)
 
 ### 7. Hạ tầng và API Gateway
 - [ ] Thiết lập API Gateway
@@ -51,9 +51,9 @@
 
 ### 8. Bảo mật
 - [x] Cấu hình CORS
-- [ ] Chống SQL injection
-- [ ] Bảo vệ XSS
-- [ ] Tối ưu API và caching
+- [x] Chống SQL injection (Prisma parameterized queries)
+- [ ] Bảo vệ XSS (frontend concern)
+- [ ] Tối ưu API và caching (chưa làm)
 
 ### 9. Kiểm thử và tài liệu
 - [ ] Unit test (độ phủ 80%+)
