@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { useCart } from '../../../context/CartContext';
 import './Header.css';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const { getCartCount } = useCart();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -38,8 +40,12 @@ const Header = () => {
             <div className="nav-actions">
               <button className="icon-btn" onClick={() => navigate('/')}>
                 <span className="material-icons">search</span>
-              </button>
-              {user ? (
+              </button>              <Link to="/cart" className="icon-btn cart-btn" title="Giỏ hàng">
+                <span className="material-icons">shopping_cart</span>
+                {getCartCount() > 0 && (
+                  <span className="cart-badge">{getCartCount()}</span>
+                )}
+              </Link>              {user ? (
                 <div className="user-menu">
                   {user.role && user.role.toUpperCase().includes('ADMIN') && (
                     <Link to="/admin" className="icon-btn admin-btn" title="Admin Dashboard">
