@@ -12,6 +12,16 @@ import bcrypt from 'bcrypt';
 // For Prisma v7, we need to create a custom client
 const prisma = new PrismaClient();
 
+function requireItem<T>(items: readonly T[], index: number, label: string): T {
+  const item = items[index];
+
+  if (!item) {
+    throw new Error(`${label} at index ${index} was not found during seed generation.`);
+  }
+
+  return item;
+}
+
 async function main() {
   console.log('🌱 Bắt đầu seed dữ liệu...');
 
@@ -46,25 +56,59 @@ async function main() {
     },
   });
 
-  const user = await prisma.user.create({
-    data: {
+  const testUsers = [
+    {
       email: 'user@ltwnc.tech',
       password: userPassword,
-      fullName: 'Test User',
+      fullName: 'Test User 1',
       phone: '0987654321',
-      role: 'USER',
-      isActive: true,
     },
-  });
+    {
+      email: 'user2@ltwnc.tech',
+      password: userPassword,
+      fullName: 'Test User 2',
+      phone: '0987654322',
+    },
+    {
+      email: 'user3@ltwnc.tech',
+      password: userPassword,
+      fullName: 'Test User 3',
+      phone: '0987654323',
+    },
+    {
+      email: 'user4@ltwnc.tech',
+      password: userPassword,
+      fullName: 'Test User 4',
+      phone: '0987654324',
+    },
+    {
+      email: 'user5@ltwnc.tech',
+      password: userPassword,
+      fullName: 'Test User 5',
+      phone: '0987654325',
+    },
+  ];
 
-  console.log(`✓ Tạo 2 tài khoản: ${admin.email}, ${user.email}`);
+  const seededUsers = await Promise.all(
+    testUsers.map((testUser) =>
+      prisma.user.create({
+        data: {
+          ...testUser,
+          role: 'USER',
+          isActive: true,
+        },
+      })
+    )
+  );
+
+  console.log(`✓ Tạo ${1 + seededUsers.length} tài khoản: ${admin.email}, ${seededUsers.map((item) => item.email).join(', ')}`);
 
   // 2. Create Addresses
   console.log('📍 Tạo địa chỉ...');
 
-  await prisma.address.create({
-    data: {
-      userId: user.id,
+  const addressSeeds = [
+    {
+      userId: requireItem(seededUsers, 0, 'seeded user').id,
       street: '123 Đường ABC',
       ward: 'Phường 1',
       district: 'Quận 1',
@@ -72,9 +116,47 @@ async function main() {
       zipCode: '70000',
       isDefault: true,
     },
-  });
+    {
+      userId: requireItem(seededUsers, 1, 'seeded user').id,
+      street: '45 Nguyễn Trãi',
+      ward: 'Phường 2',
+      district: 'Quận 5',
+      city: 'TP Hồ Chí Minh',
+      zipCode: '70001',
+      isDefault: true,
+    },
+    {
+      userId: requireItem(seededUsers, 2, 'seeded user').id,
+      street: '88 Trần Hưng Đạo',
+      ward: 'Phường 3',
+      district: 'Quận 1',
+      city: 'TP Hồ Chí Minh',
+      zipCode: '70002',
+      isDefault: true,
+    },
+    {
+      userId: requireItem(seededUsers, 3, 'seeded user').id,
+      street: '12 Lê Lợi',
+      ward: 'Phường 4',
+      district: 'Quận 3',
+      city: 'TP Hồ Chí Minh',
+      zipCode: '70003',
+      isDefault: true,
+    },
+    {
+      userId: requireItem(seededUsers, 4, 'seeded user').id,
+      street: '256 Điện Biên Phủ',
+      ward: 'Phường 5',
+      district: 'Quận Bình Thạnh',
+      city: 'TP Hồ Chí Minh',
+      zipCode: '70004',
+      isDefault: true,
+    },
+  ];
 
-  console.log('✓ Tạo địa chỉ cho user');
+  await Promise.all(addressSeeds.map((address) => prisma.address.create({ data: address })));
+
+  console.log(`✓ Tạo ${addressSeeds.length} địa chỉ mẫu cho nhiều user`);
 
   // 3. Create Categories
   console.log('📦 Tạo danh mục sản phẩm...');
@@ -114,181 +196,239 @@ async function main() {
 
   // 4. Create Products
   console.log('🛍️ Tạo sản phẩm mẫu...');
+  const productSeeds = [
+    {
+      categoryIndex: 0,
+      name: 'Áo thun nam cơ bản',
+      slug: 'ao-thun-nam-co-ban-1',
+      desc: 'Áo thun 100% cotton, thoải mái và bền',
+      price: 199000,
+      originPrice: 299000,
+      stock: 50,
+      image: 'https://via.placeholder.com/300x400?text=Ao+Thun+Nam',
+    },
+    {
+      categoryIndex: 0,
+      name: 'Áo sơ mi nam trắng',
+      slug: 'ao-so-mi-nam-trang-1',
+      desc: 'Áo sơ mi linen phù hợp cho mùa hè',
+      price: 349000,
+      originPrice: 499000,
+      stock: 30,
+      image: 'https://via.placeholder.com/300x400?text=Ao+So+Mi+Nam',
+    },
+    {
+      categoryIndex: 0,
+      name: 'Quần jeans nam vệt',
+      slug: 'quan-jeans-nam-vet-1',
+      desc: 'Quần jeans phong cách với thiết kế vệt hiện đại',
+      price: 549000,
+      originPrice: 799000,
+      stock: 25,
+      image: 'https://via.placeholder.com/300x400?text=Quan+Jeans+Nam',
+    },
+    {
+      categoryIndex: 0,
+      name: 'Áo khoác bomber nam',
+      slug: 'ao-khoac-bomber-nam-1',
+      desc: 'Áo khoác bomber trẻ trung, dễ phối đồ',
+      price: 459000,
+      originPrice: 629000,
+      stock: 18,
+      image: 'https://via.placeholder.com/300x400?text=Ao+Khoac+Bomber',
+    },
+    {
+      categoryIndex: 0,
+      name: 'Quần short nam thể thao',
+      slug: 'quan-short-nam-the-thao-1',
+      desc: 'Quần short nhẹ, thoáng, phù hợp vận động',
+      price: 219000,
+      originPrice: 299000,
+      stock: 40,
+      image: 'https://via.placeholder.com/300x400?text=Quan+Short+Nam',
+    },
+    {
+      categoryIndex: 1,
+      name: 'Áo thun nữ cơ bản',
+      slug: 'ao-thun-nu-co-ban-1',
+      desc: 'Áo thun nữ mềm mại, ôm dáng',
+      price: 189000,
+      originPrice: 289000,
+      stock: 45,
+      image: 'https://via.placeholder.com/300x400?text=Ao+Thun+Nu',
+    },
+    {
+      categoryIndex: 1,
+      name: 'Váy nữ xếp li',
+      slug: 'vay-nu-xep-li-1',
+      desc: 'Váy xếp li thanh lịch, phù hợp dạo phố',
+      price: 399000,
+      originPrice: 599000,
+      stock: 20,
+      image: 'https://via.placeholder.com/300x400?text=Vay+Nu+Xep+Li',
+    },
+    {
+      categoryIndex: 1,
+      name: 'Quần legging nữ',
+      slug: 'quan-legging-nu-1',
+      desc: 'Quần legging thoải mái cho tập luyện',
+      price: 249000,
+      originPrice: 399000,
+      stock: 40,
+      image: 'https://via.placeholder.com/300x400?text=Quan+Legging+Nu',
+    },
+    {
+      categoryIndex: 1,
+      name: 'Áo kiểu nữ tay phồng',
+      slug: 'ao-kieu-nu-tay-phong-1',
+      desc: 'Áo kiểu thanh lịch, dễ phối chân váy hoặc quần jeans',
+      price: 279000,
+      originPrice: 349000,
+      stock: 22,
+      image: 'https://via.placeholder.com/300x400?text=Ao+Kieu+Nu',
+    },
+    {
+      categoryIndex: 1,
+      name: 'Chân váy chữ A',
+      slug: 'chan-vay-chu-a-1',
+      desc: 'Chân váy chữ A basic, hợp nhiều hoàn cảnh',
+      price: 329000,
+      originPrice: 449000,
+      stock: 28,
+      image: 'https://via.placeholder.com/300x400?text=Chan+Vay+Chu+A',
+    },
+    {
+      categoryIndex: 2,
+      name: 'Giày sneaker trắng',
+      slug: 'giay-sneaker-trang-1',
+      desc: 'Giày sneaker cổ điển, phù hợp mặc hàng ngày',
+      price: 699000,
+      originPrice: 999000,
+      stock: 35,
+      image: 'https://via.placeholder.com/300x400?text=Giay+Sneaker',
+    },
+    {
+      categoryIndex: 2,
+      name: 'Giày boot da đen',
+      slug: 'giay-boot-da-den-1',
+      desc: 'Giày boot da cao cấp, sang trọng',
+      price: 1299000,
+      originPrice: 1799000,
+      stock: 15,
+      image: 'https://via.placeholder.com/300x400?text=Giay+Boot+Da',
+    },
+    {
+      categoryIndex: 2,
+      name: 'Dép sandal mùa hè',
+      slug: 'dep-sandal-mua-he-1',
+      desc: 'Dép sandal thoáng khí, nhẹ nhàng',
+      price: 149000,
+      originPrice: 249000,
+      stock: 60,
+      image: 'https://via.placeholder.com/300x400?text=Dep+Sandal',
+    },
+    {
+      categoryIndex: 2,
+      name: 'Giày loafer da nâu',
+      slug: 'giay-loafer-da-nau-1',
+      desc: 'Giày loafer lịch lãm, phù hợp đi làm',
+      price: 899000,
+      originPrice: 1199000,
+      stock: 12,
+      image: 'https://via.placeholder.com/300x400?text=Giay+Loafer',
+    },
+    {
+      categoryIndex: 2,
+      name: 'Giày thể thao chạy bộ',
+      slug: 'giay-the-thao-chay-bo-1',
+      desc: 'Giày chạy bộ nhẹ, hỗ trợ vận động',
+      price: 799000,
+      originPrice: 1099000,
+      stock: 19,
+      image: 'https://via.placeholder.com/300x400?text=Giay+Chay+Bo',
+    },
+    {
+      categoryIndex: 3,
+      name: 'Mũ thời trang',
+      slug: 'mu-thoi-trang-1',
+      desc: 'Mũ baseball phong cách, chắn nắng',
+      price: 99000,
+      originPrice: 179000,
+      stock: 70,
+      image: 'https://via.placeholder.com/300x400?text=Mu+Thoi+Trang',
+    },
+    {
+      categoryIndex: 3,
+      name: 'Túi xách nữ',
+      slug: 'tui-xach-nu-1',
+      desc: 'Túi xách da cao cấp, tiện lợi',
+      price: 899000,
+      originPrice: 1299000,
+      stock: 20,
+      image: 'https://via.placeholder.com/300x400?text=Tui+Xach+Nu',
+    },
+    {
+      categoryIndex: 3,
+      name: 'Khăn choàng lụa',
+      slug: 'khan-choang-lua-1',
+      desc: 'Khăn choàng lụa mềm mại, dễ kết hợp',
+      price: 149000,
+      originPrice: 249000,
+      stock: 50,
+      image: 'https://via.placeholder.com/300x400?text=Khan+Choang+Lua',
+    },
+    {
+      categoryIndex: 3,
+      name: 'Thắt lưng da',
+      slug: 'that-lung-da-1',
+      desc: 'Thắt lưng da thật, phù hợp nhiều trang phục',
+      price: 259000,
+      originPrice: 349000,
+      stock: 33,
+      image: 'https://via.placeholder.com/300x400?text=That+Lung+Da',
+    },
+    {
+      categoryIndex: 3,
+      name: 'Ví cầm tay',
+      slug: 'vi-cam-tay-1',
+      desc: 'Ví cầm tay nhỏ gọn, tiện mang theo',
+      price: 189000,
+      originPrice: 259000,
+      stock: 41,
+      image: 'https://via.placeholder.com/300x400?text=Vi+Cam+Tay',
+    },
+  ];
 
-  const products = await Promise.all([
-    // Nam category products
-    prisma.product.create({
-      data: {
-        categoryId: categories[0].id,
-        name: 'Áo thun nam cơ bản',
-        slug: 'ao-thun-nam-co-ban-1',
-        desc: 'Áo thun 100% cotton, thoải mái và bền',
-        price: 199000,
-        originPrice: 299000,
-        stock: 50,
-        image: 'https://via.placeholder.com/300x400?text=Ao+Thun+Nam',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[0].id,
-        name: 'Áo sơ mi nam trắng',
-        slug: 'ao-so-mi-nam-trang-1',
-        desc: 'Áo sơ mi linen idéal cho mùa hè',
-        price: 349000,
-        originPrice: 499000,
-        stock: 30,
-        image: 'https://via.placeholder.com/300x400?text=Ao+So+Mi+Nam',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[0].id,
-        name: 'Quần jeans nam vệt',
-        slug: 'quan-jeans-nam-vet-1',
-        desc: 'Quần jeans bạo lực với thiết kế vệt hiện đại',
-        price: 549000,
-        originPrice: 799000,
-        stock: 25,
-        image: 'https://via.placeholder.com/300x400?text=Quan+Jeans+Nam',
-        isActive: true,
-      },
-    }),
-
-    // Nữ category products
-    prisma.product.create({
-      data: {
-        categoryId: categories[1].id,
-        name: 'Áo thun nữ cơ bản',
-        slug: 'ao-thun-nu-co-ban-1',
-        desc: 'Áo thun phụ nữ ôm dáng, mềm mại',
-        price: 189000,
-        originPrice: 289000,
-        stock: 45,
-        image: 'https://via.placeholder.com/300x400?text=Ao+Thun+Nu',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[1].id,
-        name: 'Váy nữ xếp li',
-        slug: 'vay-nu-xep-li-1',
-        desc: 'Váy xếp li thanh lịch, phù hợp dạo phố',
-        price: 399000,
-        originPrice: 599000,
-        stock: 20,
-        image: 'https://via.placeholder.com/300x400?text=Vay+Nu+Xep+Li',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[1].id,
-        name: 'Quần legging nữ',
-        slug: 'quan-legging-nu-1',
-        desc: 'Quần legging thoải mái cho tập luyện',
-        price: 249000,
-        originPrice: 399000,
-        stock: 40,
-        image: 'https://via.placeholder.com/300x400?text=Quan+Legging+Nu',
-        isActive: true,
-      },
-    }),
-
-    // Giày category products
-    prisma.product.create({
-      data: {
-        categoryId: categories[2].id,
-        name: 'Giày sneaker trắng',
-        slug: 'giay-sneaker-trang-1',
-        desc: 'Giày sneaker cổ điển, phù hợp mặc hàng ngày',
-        price: 699000,
-        originPrice: 999000,
-        stock: 35,
-        image: 'https://via.placeholder.com/300x400?text=Giay+Sneaker',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[2].id,
-        name: 'Giày boot da đen',
-        slug: 'giay-boot-da-den-1',
-        desc: 'Giày boot da cao cấp, sang trọng',
-        price: 1299000,
-        originPrice: 1799000,
-        stock: 15,
-        image: 'https://via.placeholder.com/300x400?text=Giay+Boot+Da',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[2].id,
-        name: 'Dép sandal mùa hè',
-        slug: 'dep-sandal-mua-he-1',
-        desc: 'Dép sandal thoáng khí, nhẹ nhàng',
-        price: 149000,
-        originPrice: 249000,
-        stock: 60,
-        image: 'https://via.placeholder.com/300x400?text=Dep+Sandal',
-        isActive: true,
-      },
-    }),
-
-    // Phụ kiện category products
-    prisma.product.create({
-      data: {
-        categoryId: categories[3].id,
-        name: 'Mũ thời trang',
-        slug: 'mu-thoi-trang-1',
-        desc: 'Mũ baseball phong cách, chắn nắng',
-        price: 99000,
-        originPrice: 179000,
-        stock: 70,
-        image: 'https://via.placeholder.com/300x400?text=Mu+Thoi+Trang',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[3].id,
-        name: 'Túi xách nữ',
-        slug: 'tui-xach-nu-1',
-        desc: 'Túi xách da cao cấp, tiện lợi',
-        price: 899000,
-        originPrice: 1299000,
-        stock: 20,
-        image: 'https://via.placeholder.com/300x400?text=Tui+Xach+Nu',
-        isActive: true,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        categoryId: categories[3].id,
-        name: 'Khăn choàng lụa',
-        slug: 'khan-choang-lua-1',
-        desc: 'Khăn choàng lụa mềm mại, dễ kết hợp',
-        price: 149000,
-        originPrice: 249000,
-        stock: 50,
-        image: 'https://via.placeholder.com/300x400?text=Khan+Choang+Lua',
-        isActive: true,
-      },
-    }),
-  ]);
+  const products = await Promise.all(
+    productSeeds.map((productSeed) =>
+      prisma.product.create({
+        data: {
+          categoryId: requireItem(categories, productSeed.categoryIndex, 'category').id,
+          name: productSeed.name,
+          slug: productSeed.slug,
+          desc: productSeed.desc,
+          price: productSeed.price,
+          originPrice: productSeed.originPrice,
+          stock: productSeed.stock,
+          image: productSeed.image,
+          isActive: true,
+        },
+      })
+    )
+  );
 
   console.log(`✓ Tạo ${products.length} sản phẩm`);
+
+  const firstProduct = requireItem(products, 0, 'product');
+  const secondProduct = requireItem(products, 1, 'product');
+  const fourthProduct = requireItem(products, 3, 'product');
 
   // 5. Create Cart for user
   console.log('🛒 Tạo giỏ hàng...');
 
   const cart = await prisma.cart.create({
     data: {
-      userId: user.id,
+      userId: requireItem(seededUsers, 0, 'seeded user').id,
     },
   });
 
@@ -296,7 +436,7 @@ async function main() {
   await prisma.cartItem.create({
     data: {
       cartId: cart.id,
-      productId: products[0].id,
+      productId: firstProduct.id,
       quantity: 2,
     },
   });
@@ -304,7 +444,7 @@ async function main() {
   await prisma.cartItem.create({
     data: {
       cartId: cart.id,
-      productId: products[3].id,
+      productId: fourthProduct.id,
       quantity: 1,
     },
   });
@@ -316,9 +456,9 @@ async function main() {
 
   const order = await prisma.order.create({
     data: {
-      userId: user.id,
+      userId: requireItem(seededUsers, 0, 'seeded user').id,
       status: 'CONFIRMED',
-      totalPrice: products[0].price * 2 + products[1].price,
+      totalPrice: firstProduct.price * 2 + secondProduct.price,
       shippingAddr: '123 Đường ABC, Phường 1, Quận 1, TP HCM',
       phoneNumber: '0987654321',
       note: 'Giao hàng nhanh nếu được',
@@ -328,18 +468,18 @@ async function main() {
   await prisma.orderItem.create({
     data: {
       orderId: order.id,
-      productId: products[0].id,
+      productId: firstProduct.id,
       quantity: 2,
-      price: products[0].price,
+      price: firstProduct.price,
     },
   });
 
   await prisma.orderItem.create({
     data: {
       orderId: order.id,
-      productId: products[1].id,
+      productId: secondProduct.id,
       quantity: 1,
-      price: products[1].price,
+      price: secondProduct.price,
     },
   });
 
@@ -353,10 +493,10 @@ async function main() {
       userId: admin.id,
       action: 'created',
       entity: 'user',
-      entityId: user.id,
+      entityId: requireItem(seededUsers, 0, 'seeded user').id,
       newValues: JSON.stringify({
-        email: user.email,
-        fullName: user.fullName,
+        email: requireItem(seededUsers, 0, 'seeded user').email,
+        fullName: requireItem(seededUsers, 0, 'seeded user').fullName,
       }),
     },
   });
@@ -365,15 +505,19 @@ async function main() {
 
   console.log('\n✨ Seed dữ liệu hoàn tất!');
   console.log('\n📊 Tóm tắt:');
-  console.log(`  - 2 tài khoản (1 admin, 1 user)`);
+  console.log(`  - ${1 + seededUsers.length} tài khoản (1 admin, ${seededUsers.length} user)`);
   console.log(`  - 4 danh mục sản phẩm`);
-  console.log(`  - 12 sản phẩm`);
+  console.log(`  - ${products.length} sản phẩm`);
   console.log(`  - 1 giỏ hàng với 2 mục`);
   console.log(`  - 1 đơn hàng với 2 mục`);
   console.log(`  - 1 audit log`);
   console.log('\n🔑 Tài khoản test:');
   console.log(`  Admin: admin@ltwnc.tech / Admin@123`);
-  console.log(`  User: user@ltwnc.tech / User@123`);
+  console.log(`  User 1: user@ltwnc.tech / User@123`);
+  console.log(`  User 2: user2@ltwnc.tech / User@123`);
+  console.log(`  User 3: user3@ltwnc.tech / User@123`);
+  console.log(`  User 4: user4@ltwnc.tech / User@123`);
+  console.log(`  User 5: user5@ltwnc.tech / User@123`);
 }
 
 main()
