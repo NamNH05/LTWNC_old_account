@@ -1,10 +1,10 @@
-# Báo Cáo Tiến Độ Dự Án Frontend 
+# Báo Cáo Tiến Độ Dự Án Frontend LTWNC Shop
 
 ## Kế Hoạch Triển Khai
 
 Dự án được chia thành 8 giai đoạn chính với thời gian thực hiện dự kiến như sau:
 
-### Giai Đoạn 1: Thiết Lập Nền Tảng
+### Giai Đoạn 1: Thiết Lập Nền Tảng (3/4/2026)
 
 - Thiết lập cấu trúc project và môi trường phát triển
 - Xây dựng layout cơ bản (header, footer, navigation)
@@ -84,8 +84,13 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Thêm chức năng lọc theo danh mục
 - Xây dựng trang chi tiết sản phẩm
 - Thêm gallery ảnh, thông tin sản phẩm
-#### Minh họa ngày 2
-- Ảnh 1: Giao diện trang sản phẩm
-- Ảnh 2: Giao diện trang chi tiết sản phẩm
-![Sản phẩm](image-3.png)
-![Chi tiết sản phẩm](image-4.png)
+  ![Sản phẩm](image-3.png)
+  ![Chi tiết sản phẩm](image-4.png)
+
+### Ngày 3 (9/4/2026)
+
+- Thiết kế giao diện trang tìm kiếm
+- Xây dựng layout trang tìm kiếm bao gồm thanh search, bộ lọc và vùng hiển thị kết quả
+- Tối ưu trải nghiệm responsive cho mobile và desktop
+- Chuẩn bị cấu trúc hiển thị danh sách sản phẩm tìm kiếm
+- Ghi nhận: hoàn thành phần front-end giao diện trang tìm kiếm, chuyển tiếp sang kết nối API và xử lý kết quả tìm kiếm
