@@ -1,4 +1,4 @@
-# Báo Cáo Tiến Độ Dự Án Frontend LTWNC Shop
+# Báo Cáo Tiến Độ Dự Án Frontend
 
 ## Kế Hoạch Triển Khai
 
@@ -116,7 +116,6 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 
 - Hiển thị form thông tin cá nhân với chức năng chỉnh sửa local UI
 - Thêm các tab hiển thị Đơn hàng và Địa chỉ chỉ phục vụ mục đích giao diện, không gọi API
-
 - Triển khai bảng đơn hàng, tìm kiếm, nút Sửa/Xóa và modal cập nhật trạng thái
 - Loại bỏ hoàn toàn các API backend, dùng dữ liệu mẫu cục bộ để giữ nguyên giao diện
 - Cập nhật file tiến độ bản Web thế hệ mới theo đúng yêu cầu

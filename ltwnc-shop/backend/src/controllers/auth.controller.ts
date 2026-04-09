@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { HttpError } from "../utils/http-error";
 
+// Controller chỉ làm 3 việc: validate input tối thiểu, gọi service, trả HTTP response.
 export const authController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -92,6 +93,7 @@ export const authController = {
   },
 
   me: (req: Request, res: Response) => {
+    // req.user được gắn từ middleware requireAuth.
     return res.status(200).json({ user: req.user });
   },
 

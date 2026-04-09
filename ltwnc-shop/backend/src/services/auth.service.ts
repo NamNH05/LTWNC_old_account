@@ -38,10 +38,13 @@ type PasswordResetRecord = {
   expiresAt: Date;
 };
 
+// Lưu token reset tạm thời trong RAM (phù hợp môi trường dev/demo).
 const resetTokens = new Map<string, PasswordResetRecord>();
 
+// Chuẩn hóa email để tránh trùng do khác hoa/thường hoặc khoảng trắng.
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
+// Rule mật khẩu cơ bản: >=8 ký tự, có hoa, thường và số.
 const validatePasswordStrength = (password: string) => {
   const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
   if (!strongPassword.test(password)) {
@@ -52,6 +55,7 @@ const validatePasswordStrength = (password: string) => {
   }
 };
 
+// Cấp cặp token mới và tạo session refresh token tương ứng.
 const issueTokenPair = (user: { id: number; email: string; role: UserRole }): TokenResponse => {
   const sessionId = crypto.randomUUID();
   const refreshToken = signRefreshToken({ sub: String(user.id), sid: sessionId });
@@ -67,6 +71,7 @@ const issueTokenPair = (user: { id: number; email: string; role: UserRole }): To
 };
 
 export const authService = {
+  // Đăng ký: kiểm tra trùng email, hash mật khẩu, tạo user, ghi audit, trả token.
   register: async (input: RegisterInput) => {
     const email = normalizeEmail(input.email);
     validatePasswordStrength(input.password);
@@ -104,6 +109,7 @@ export const authService = {
     };
   },
 
+  // Đăng nhập: xác thực email/password, ghi audit, cấp token mới.
   login: async (input: LoginInput) => {
     const email = normalizeEmail(input.email);
     const user = await userRepository.findByEmail(email);
@@ -137,6 +143,7 @@ export const authService = {
     };
   },
 
+  // Refresh: kiểm tra refresh token + session hiện hữu, xoay vòng token, cấp access token mới.
   refreshToken: async (refreshToken: string) => {
     let payload: RefreshTokenPayload;
 
@@ -176,6 +183,7 @@ export const authService = {
     };
   },
 
+  // Logout một phiên: revoke session theo sid trong refresh token.
   logout: (refreshToken: string) => {
     try {
       const payload = verifyToken<RefreshTokenPayload>(refreshToken);
@@ -189,15 +197,18 @@ export const authService = {
     return { message: "Logged out successfully" };
   },
 
+  // Liệt kê các session còn hiệu lực của user hiện tại.
   listSessions: (userId: number) => {
     return sessionService.listActiveByUserId(userId);
   },
 
+  // Logout tất cả thiết bị của user.
   logoutAllSessions: (userId: number) => {
     sessionService.revokeAllByUserId(userId);
     return { message: "All sessions revoked" };
   },
 
+  // Quên mật khẩu: tạo reset token và lưu hash token để đối chiếu khi reset.
   forgotPassword: async (emailInput: string) => {
     const email = normalizeEmail(emailInput);
     const user = await userRepository.findByEmail(email);
@@ -229,6 +240,7 @@ export const authService = {
     };
   },
 
+  // Đặt lại mật khẩu: verify token, kiểm tra hạn, đổi mật khẩu và revoke toàn bộ session cũ.
   resetPassword: async (token: string, newPassword: string) => {
     validatePasswordStrength(newPassword);
 

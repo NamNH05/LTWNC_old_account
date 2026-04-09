@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AccessTokenPayload, verifyToken } from "../utils/jwt";
 import { HttpError } from "../utils/http-error";
 
+// Xác thực Bearer token và gắn thông tin user vào req để dùng ở các bước sau.
 export const requireAuth = (req: Request, _res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
