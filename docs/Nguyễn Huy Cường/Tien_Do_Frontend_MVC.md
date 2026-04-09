@@ -1,4 +1,4 @@
-# Báo Cáo Tiến Độ Dự Án Frontend LTWNC Shop
+# Báo Cáo Tiến Độ Dự Án Frontend 
 
 ## Kế Hoạch Triển Khai
 
@@ -114,19 +114,6 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Giao diện Trang đặt hàng
   ![Đặt hàng](image-7.png)
 
-### Ngày 4 (9/4/2026)
-
-- Tham khảo dự án `web-client` để xây dựng trang quản lý thông tin tài khoản cho LTWNC
-- Tạo route `/profile` và giao diện quản lý tài khoản thuần frontend
 - Hiển thị form thông tin cá nhân với chức năng chỉnh sửa local UI
 - Thêm các tab hiển thị Đơn hàng và Địa chỉ chỉ phục vụ mục đích giao diện, không gọi API
-- Giữ nguyên thiết kế giống `web-client`, chỉ triển khai phần hiển thị thuần
 
-#### Minh họa ngày 4
-
-- Giao diện trang quản lý thông tin tài khoản
-  ![Profile](image-8.png)
-- Tab Đơn hàng
-  ![Orders](image-9.png)
-- Tab Địa chỉ giao hàng
-  ![Addresses](image-10.png)
