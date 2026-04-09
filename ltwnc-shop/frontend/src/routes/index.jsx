@@ -4,6 +4,7 @@ import Home from "../pages/Home/Home";
 import RegisterPage from "../pages/Register/Register";
 import CategoryPage from "../pages/CategoryPage/CategoryPage";
 import ProductDetailPage from "../pages/ProductDetail/ProductDetail";
+import SearchPage from "../pages/Search/Search";
 
 function AppRoutes() {
   return (
@@ -15,6 +16,7 @@ function AppRoutes() {
         <Route path="/nu" element={<CategoryPage />} />
         <Route path="/giay" element={<CategoryPage />} />
         <Route path="/phu-kien" element={<CategoryPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
