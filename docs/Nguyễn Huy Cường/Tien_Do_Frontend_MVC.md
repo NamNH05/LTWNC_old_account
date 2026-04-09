@@ -98,8 +98,23 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Xây dựng layout trang tìm kiếm bao gồm thanh search, bộ lọc và vùng hiển thị kết quả
 - Tối ưu trải nghiệm responsive cho mobile và desktop
 - Chuẩn bị cấu trúc hiển thị danh sách sản phẩm tìm kiếm
+- Phát triển trang giỏ hàng (Cart) với đầy đủ chức năng
+- Hiển thị danh sách sản phẩm trong giỏ với hình ảnh, tên, giá, số lượng
+- Tích hợp chức năng tăng/giảm số lượng, xóa sản phẩm
+- Tính tổng tiền và hiển thị tóm tắt đơn hàng
+- Thêm nút chuyển đến trang thanh toán
+- Cập nhật trang đặt hàng (OrderCheckout) để giống y hệt web-client
+- Loại bỏ phần giỏ hàng khỏi step 1, chỉ giữ thông tin giao hàng
+- Tách riêng step 2 chỉ cho phương thức thanh toán
+- Cập nhật validation cho từng step
+- Đảm bảo flow 3 bước: Giao Hàng → Thanh Toán → Xác Nhận
 - Ghi nhận: hoàn thành phần front-end giao diện trang tìm kiếm, chuyển tiếp sang kết nối API và xử lý kết quả tìm kiếm
+
 #### Minh họa ngày 3
+
 - Giao diện trang tìm kiếm
   ![Tìm kiếm](image-5.png)
-
+- Giao diện giỏ hàng
+  ![Giỏ hàng](image-6.png)
+- Giao diện Trang đặt hàng
+  ![Đặt hàng](image-7.png)

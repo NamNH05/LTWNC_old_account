@@ -1,58 +1,96 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import { useCart } from '../../../../context/CartContext';
 import './OrderCheckout.css';
 
+const sampleAddresses = [
+  {
+    id: 1,
+    recipientName: 'Nguyễn Văn A',
+    phone: '0912 345 678',
+    addressLine: '123 Đường Trần Hưng Đạo',
+    ward: 'Phường 1',
+    district: 'Quận 5',
+    province: 'TP.HCM',
+    postalCode: '700000',
+    notes: 'Gọi trước 30 phút',
+    isDefault: true,
+  },
+  {
+    id: 2,
+    recipientName: 'Lê Thị B',
+    phone: '0987 654 321',
+    addressLine: '456 Đường Lê Lợi',
+    ward: 'Phường Bến Thành',
+    district: 'Quận 1',
+    province: 'TP.HCM',
+    postalCode: '700000',
+    notes: 'Giao trong giờ hành chính',
+    isDefault: false,
+  },
+];
+
 const OrderCheckout = () => {
+  const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [userAddresses] = useState(sampleAddresses);
+  const [selectedAddressId, setSelectedAddressId] = useState(sampleAddresses[0]?.id || null);
   const [showAddNewAddress, setShowAddNewAddress] = useState(false);
-  
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
   const [formData, setFormData] = useState({
-    // Shipping Info
-    fullName: '',
+    fullName: sampleAddresses[0]?.recipientName || '',
     email: '',
-    phone: '',
-    address: '',
-    ward: '',
-    district: '',
-    city: '',
-    postalCode: '',
-    recipientName: '',
-    notes: '',
-    
-    // Payment Info
+    phone: sampleAddresses[0]?.phone || '',
+    address: sampleAddresses[0]?.addressLine || '',
+    ward: sampleAddresses[0]?.ward || '',
+    district: sampleAddresses[0]?.district || '',
+    city: sampleAddresses[0]?.province || '',
+    postalCode: sampleAddresses[0]?.postalCode || '',
+    recipientName: sampleAddresses[0]?.recipientName || '',
+    notes: sampleAddresses[0]?.notes || '',
     cardName: '',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
   });
 
-  // Sample cart data (replace with actual context data)
-  const cartItems = [
-    {
-      id: 1,
-      name: 'Áo phông nam',
-      price: 250000,
-      quantity: 2,
-      size: 'M',
-      color: 'Đen',
-      imageUrl: '📦',
-    },
-    {
-      id: 2,
-      name: 'Quần jean nữ',
-      price: 450000,
-      quantity: 1,
-      size: '28',
-      color: 'Xanh',
-      imageUrl: '📦',
-    },
-  ];
+  useEffect(() => {
+    if (userAddresses.length > 0 && selectedAddressId === null) {
+      setSelectedAddressId(userAddresses[0].id);
+    }
+  }, [userAddresses, selectedAddressId]);
+
+  useEffect(() => {
+    if (!showAddNewAddress && selectedAddressId !== null) {
+      const selectedAddress = userAddresses.find((address) => address.id === selectedAddressId);
+      if (selectedAddress) {
+        fillFormWithAddress(selectedAddress);
+      }
+    }
+  }, [selectedAddressId, showAddNewAddress, userAddresses]);
+
+  const fillFormWithAddress = (address) => {
+    setFormData((prev) => ({
+      ...prev,
+      fullName: address.recipientName || prev.fullName,
+      recipientName: address.recipientName || prev.recipientName,
+      phone: address.phone || prev.phone,
+      address: address.addressLine || prev.address,
+      ward: address.ward || prev.ward,
+      district: address.district || prev.district,
+      city: address.province || prev.city,
+      postalCode: address.postalCode || prev.postalCode,
+      notes: address.notes || prev.notes,
+    }));
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -60,9 +98,9 @@ const OrderCheckout = () => {
     let value = e.target.value.replace(/\s+/g, '');
     if (value.length > 16) value = value.slice(0, 16);
     const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      cardNumber: formatted
+      cardNumber: formatted,
     }));
   };
 
@@ -71,79 +109,83 @@ const OrderCheckout = () => {
     if (value.length >= 2) {
       value = value.slice(0, 2) + '/' + value.slice(2, 4);
     }
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      expiryDate: value
+      expiryDate: value,
     }));
   };
 
   const handleCVVChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 3) value = value.slice(0, 3);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      cvv: value
+      cvv: value,
     }));
   };
 
+  const getShippingFee = () => {
+    const subtotal = getCartTotal();
+    return subtotal > 500000 ? 0 : 30000;
+  };
+
   const validateStep1 = () => {
-    const { fullName, email, phone, address, district, city, recipientName } = formData;
-    if (!fullName.trim() || !email.trim() || !phone.trim() || !address.trim() || !district.trim() || !city.trim() || !recipientName.trim()) {
-      alert('Vui lòng điền đầy đủ thông tin giao hàng');
+    const { recipientName, phone, address, ward, district, city } = formData;
+    if (!recipientName.trim() || !phone.trim() || !address.trim() || !ward.trim() || !district.trim() || !city.trim()) {
+      setErrorMessage('Vui lòng điền đầy đủ thông tin giao hàng');
       return false;
     }
+    setErrorMessage('');
     return true;
   };
 
   const validateStep2 = () => {
     const { cardName, cardNumber, expiryDate, cvv } = formData;
+    if (!paymentMethod) {
+      setErrorMessage('Vui lòng chọn phương thức thanh toán');
+      return false;
+    }
     if (paymentMethod === 'card') {
       if (!cardName.trim() || !cardNumber.trim() || !expiryDate.trim() || !cvv.trim()) {
-        alert('Vui lòng điền đầy đủ thông tin thẻ');
+        setErrorMessage('Vui lòng điền đầy đủ thông tin thẻ');
         return false;
       }
       if (cardNumber.replace(/\s/g, '').length !== 16) {
-        alert('Số thẻ phải có 16 chữ số');
+        setErrorMessage('Số thẻ phải có 16 chữ số');
         return false;
       }
     }
+    setErrorMessage('');
     return true;
   };
 
   const handleNextStep = () => {
     if (step === 1 && !validateStep1()) return;
     if (step === 2 && !validateStep2()) return;
-    setStep(step + 1);
+    setStep((prev) => prev + 1);
   };
 
   const handlePreviousStep = () => {
-    if (step > 1) setStep(step - 1);
+    setErrorMessage('');
+    setSuccessMessage('');
+    if (step > 1) {
+      setStep((prev) => prev - 1);
+    }
   };
 
   const handleConfirmOrder = () => {
-    alert('Đặt hàng thành công!');
-    // Reset form
-    setStep(1);
-    setFormData({
-      fullName: '',
-      email: '',
-      phone: '',
-      address: '',
-      ward: '',
-      district: '',
-      city: '',
-      postalCode: '',
-      recipientName: '',
-      notes: '',
-      cardName: '',
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
-    });
+    if (cartItems.length === 0) {
+      setErrorMessage('Giỏ hàng của bạn đang trống.');
+      return;
+    }
+
+    setSuccessMessage('Đơn hàng đã được đặt thành công!');
+    setErrorMessage('');
+    clearCart();
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 30000;
+  const subtotal = getCartTotal();
+  const shipping = getShippingFee();
   const discount = 0;
   const total = subtotal + shipping - discount;
 
@@ -158,7 +200,6 @@ const OrderCheckout = () => {
   return (
     <div className="payment-container">
       <div className="payment-wrapper">
-        {/* Progress Bar */}
         <div className="progress-bar">
           <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>
             <div className="step-number">1</div>
@@ -177,122 +218,179 @@ const OrderCheckout = () => {
         </div>
 
         <div className="payment-content">
-          {/* Left - Form */}
           <div className="payment-form">
-            {/* Step 1: Shipping */}
             {step === 1 && (
               <div className="form-section">
                 <h2>Thông Tin Giao Hàng</h2>
 
-                <div className="new-address-form">
-                  <h3>Nhập Thông Tin Giao Hàng</h3>
-                  
-                  <div className="form-group">
-                    <label>Tên Người Nhận *</label>
-                    <input
-                      type="text"
-                      name="recipientName"
-                      value={formData.recipientName}
-                      onChange={handleInputChange}
-                      placeholder="Nhập tên người nhận"
-                    />
-                  </div>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                {successMessage && <div className="success-message">{successMessage}</div>}
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="example@email.com"
-                      />
+                {/* Select existing address */}
+                {!showAddNewAddress && userAddresses.length > 0 && (
+                  <div className="address-selection">
+                    <h3>Chọn Địa Chỉ Có Sẵn</h3>
+                    <div className="address-list">
+                      {userAddresses.map((address) => (
+                        <label key={address.id} className="address-option">
+                          <input
+                            type="radio"
+                            name="addressSelection"
+                            value={address.id}
+                            checked={selectedAddressId === address.id}
+                            onChange={() => {
+                              setSelectedAddressId(address.id);
+                              fillFormWithAddress(address);
+                            }}
+                          />
+                          <div className="address-info">
+                            <p className="recipient-name">{address.recipientName} ({address.phone})</p>
+                            <p className="address-text">{address.addressLine}, {address.ward}, {address.district}, {address.province}</p>
+                            {address.isDefault && <span className="badge-default">Mặc định</span>}
+                          </div>
+                        </label>
+                      ))}
                     </div>
-                    <div className="form-group">
-                      <label>Số Điện Thoại *</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="0912 345 678"
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      className="btn-add-new"
+                      onClick={() => {
+                        setShowAddNewAddress(true);
+                        setFormData((prev) => ({
+                          ...prev,
+                          recipientName: '',
+                          phone: '',
+                          address: '',
+                          ward: '',
+                          district: '',
+                          city: '',
+                          postalCode: '',
+                          notes: '',
+                        }));
+                      }}
+                    >
+                      + Thêm Địa Chỉ Mới
+                    </button>
                   </div>
+                )}
 
-                  <div className="form-group">
-                    <label>Địa Chỉ Chi Tiết *</label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      placeholder="Nhập địa chỉ cụ thể (Số nhà, đường phố)"
-                    />
-                  </div>
-
-                  <div className="form-row">
+                {/* Add new address form */}
+                {showAddNewAddress && (
+                  <div className="new-address-form">
+                    <h3>Thêm Địa Chỉ Mới</h3>
                     <div className="form-group">
-                      <label>Phường/Xã *</label>
+                      <label>Tên Người Nhận *</label>
                       <input
                         type="text"
-                        name="ward"
-                        value={formData.ward}
+                        name="recipientName"
+                        value={formData.recipientName}
                         onChange={handleInputChange}
-                        placeholder="Nhập phường/xã"
+                        placeholder="Nhập tên người nhận"
                       />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Email</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="example@email.com"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Số Điện Thoại *</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="0912 345 678"
+                        />
+                      </div>
                     </div>
                     <div className="form-group">
-                      <label>Quận/Huyện *</label>
+                      <label>Địa Chỉ Chi Tiết *</label>
                       <input
                         type="text"
-                        name="district"
-                        value={formData.district}
+                        name="address"
+                        value={formData.address}
                         onChange={handleInputChange}
-                        placeholder="Nhập quận/huyện"
+                        placeholder="Nhập địa chỉ cụ thể (Số nhà, đường phố)"
                       />
                     </div>
-                  </div>
-
-                  <div className="form-row">
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Phường/Xã *</label>
+                        <input
+                          type="text"
+                          name="ward"
+                          value={formData.ward}
+                          onChange={handleInputChange}
+                          placeholder="Nhập phường/xã"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Quận/Huyện *</label>
+                        <input
+                          type="text"
+                          name="district"
+                          value={formData.district}
+                          onChange={handleInputChange}
+                          placeholder="Nhập quận/huyện"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Tỉnh/Thành Phố *</label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          placeholder="Nhập tỉnh/thành phố"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Mã Bưu Chính</label>
+                        <input
+                          type="text"
+                          name="postalCode"
+                          value={formData.postalCode}
+                          onChange={handleInputChange}
+                          placeholder="Mã bưu chính"
+                        />
+                      </div>
+                    </div>
                     <div className="form-group">
-                      <label>Tỉnh/Thành Phố *</label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
+                      <label>Ghi Chú</label>
+                      <textarea
+                        name="notes"
+                        value={formData.notes}
                         onChange={handleInputChange}
-                        placeholder="Nhập tỉnh/thành phố"
+                        placeholder="VD: Cách nhà trước tòa nhà màu xanh"
+                        rows="3"
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Mã Bưu Chính</label>
-                      <input
-                        type="text"
-                        name="postalCode"
-                        value={formData.postalCode}
-                        onChange={handleInputChange}
-                        placeholder="Mã bưu chính"
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      className="btn-cancel-new"
+                      onClick={() => {
+                        setShowAddNewAddress(false);
+                        const defaultAddress = userAddresses.find((addr) => addr.isDefault) || userAddresses[0];
+                        setSelectedAddressId(defaultAddress.id);
+                        fillFormWithAddress(defaultAddress);
+                      }}
+                    >
+                      ← Quay Lại Danh Sách Địa Chỉ
+                    </button>
                   </div>
-
-                  <div className="form-group">
-                    <label>Ghi Chú</label>
-                    <textarea
-                      name="notes"
-                      value={formData.notes}
-                      onChange={handleInputChange}
-                      placeholder="VD: Cách nhà trước tòa nhà màu xanh"
-                      rows="3"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
-            {/* Step 2: Payment */}
             {step === 2 && (
               <div className="form-section">
                 <h2>Phương Thức Thanh Toán</h2>
@@ -342,7 +440,6 @@ const OrderCheckout = () => {
                         placeholder="Nhập tên trên thẻ"
                       />
                     </div>
-
                     <div className="form-group">
                       <label>Số Thẻ</label>
                       <input
@@ -354,7 +451,6 @@ const OrderCheckout = () => {
                         maxLength="19"
                       />
                     </div>
-
                     <div className="form-row">
                       <div className="form-group">
                         <label>Hạn Sử Dụng</label>
@@ -379,7 +475,6 @@ const OrderCheckout = () => {
                         />
                       </div>
                     </div>
-
                     <div className="security-info">
                       🔒 Thông tin thẻ của bạn được mã hóa và bảo mật
                     </div>
@@ -401,20 +496,18 @@ const OrderCheckout = () => {
                   <div className="wallet-info">
                     <p>Chọn ví điện tử để thanh toán</p>
                     <div className="wallet-options">
-                      <button className="wallet-btn">Momo</button>
-                      <button className="wallet-btn">ZaloPay</button>
-                      <button className="wallet-btn">ViettelPay</button>
+                      <button type="button" className="wallet-btn">Momo</button>
+                      <button type="button" className="wallet-btn">ZaloPay</button>
+                      <button type="button" className="wallet-btn">ViettelPay</button>
                     </div>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Step 3: Confirmation */}
             {step === 3 && (
               <div className="form-section">
-                <h2>Xác Nhận Đơn Hàng</h2>
-                
+                <h2>Xác Nhận</h2>
                 <div className="confirmation-section">
                   <div className="confirmation-block">
                     <h3>Địa Chỉ Giao Hàng</h3>
@@ -423,7 +516,6 @@ const OrderCheckout = () => {
                     <p>ĐT: {formData.phone}</p>
                     {formData.notes && <p>Ghi chú: {formData.notes}</p>}
                   </div>
-
                   <div className="confirmation-block">
                     <h3>Phương Thức Thanh Toán</h3>
                     <p>
@@ -436,7 +528,6 @@ const OrderCheckout = () => {
               </div>
             )}
 
-            {/* Buttons */}
             <div className="form-actions">
               {step > 1 && (
                 <button className="btn btn-secondary" onClick={handlePreviousStep}>
@@ -456,15 +547,13 @@ const OrderCheckout = () => {
             </div>
           </div>
 
-          {/* Right - Order Summary */}
           <div className="order-summary">
             <h3>Tóm Tắt Đơn Hàng</h3>
-
-            {cartItems && cartItems.length > 0 ? (
+            {cartItems.length > 0 ? (
               <>
                 <div className="cart-items">
                   {cartItems.map((item) => (
-                    <div key={`${item.id}-${item.size}-${item.color}`} className="cart-item">
+                    <div key={`${item.id}-${item.size}-${item.color}`} className="cart-item-summary">
                       <div className="item-image">
                         {item.imageUrl ? <img src={item.imageUrl} alt={item.name} /> : '📦'}
                       </div>
@@ -482,32 +571,31 @@ const OrderCheckout = () => {
                 </div>
 
                 <div className="summary-divider"></div>
-
                 <div className="summary-row">
                   <span>Tạm Tính:</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="summary-row">
                   <span>Phí Vận Chuyển:</span>
-                  <span>{formatCurrency(shipping)}</span>
+                  <span>{shipping === 0 ? 'Miễn phí' : formatCurrency(shipping)}</span>
                 </div>
+                {shipping === 0 && (
+                  <p className="free-shipping-note">🎉 Miễn phí vận chuyển cho đơn hàng từ 500.000 ₫</p>
+                )}
                 {discount > 0 && (
                   <div className="summary-row discount">
                     <span>Giảm Giá:</span>
                     <span>-{formatCurrency(discount)}</span>
                   </div>
                 )}
-
                 <div className="summary-divider"></div>
-
                 <div className="summary-total">
                   <span>Tổng Tiền:</span>
                   <span>{formatCurrency(total)}</span>
                 </div>
-
                 <div className="payment-info">
+                  <p>✓ Miễn phí vận chuyển cho đơn hàng trên 500.000đ</p>
                   <p>✓ Hỗ trợ 24/7</p>
-                  <p>✓ Giao hàng nhanh chóng</p>
                   <p>✓ Hoàn tiền 100% nếu không hài lòng</p>
                 </div>
               </>
