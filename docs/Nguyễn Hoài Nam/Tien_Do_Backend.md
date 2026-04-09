@@ -13,7 +13,7 @@
 ## Ngày 09/04/2026
 | Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
 | :--- | :--- | :--- | :--- |
-| 09/04 | 1) Hoàn thiện khung backend Express + TypeScript (app.ts, index.ts, error middleware)<br>2) Tổ chức kiến trúc backend theo MVC/Service/Repository cho module Auth<br>3) Triển khai đầy đủ Authentication & Authorization (register, login, refresh, logout, forgot/reset password, me, sessions, logout-all)<br>4) Áp dụng JWT access/refresh token, middleware xác thực và RBAC ADMIN/USER<br>5) Chuẩn hóa biến môi trường auth/session và kiểm tra TypeScript compile pass | Hoàn thành | Đã hoàn tất phần 1 Backend Tasks và tích hợp chạy được trên API /api/auth |
+| 09/04 | 1) Hoàn thiện khung backend Express + TypeScript (app.ts, index.ts, error middleware)<br>2) Tổ chức kiến trúc backend theo MVC/Service/Repository cho module Auth<br>3) Triển khai đầy đủ Authentication & Authorization (register, login, refresh, logout, forgot/reset password, me, sessions, logout-all)<br>4) Áp dụng JWT access/refresh token, middleware xác thực và RBAC ADMIN/USER<br>5) Nâng cấp middleware xử lý lỗi: chuẩn hóa response, thêm 404, bắt lỗi JSON sai và lỗi Prisma<br>6) Chuẩn hóa biến môi trường auth/session và kiểm tra TypeScript compile pass | Hoàn thành | Đã hoàn tất phần 1 Backend Tasks, tích hợp chạy được trên API /api/auth và dễ test lỗi hơn |
 
 ---
 
@@ -55,6 +55,10 @@
   - JWT access token để xác thực request
   - JWT refresh token để quản lý session
   - RBAC middleware phân quyền ADMIN/USER cho route bảo vệ
+- Xử lý lỗi và kiểm thử
+  - Chuẩn hóa response lỗi theo status/code/message/details
+  - Bắt lỗi route không tồn tại (404)
+  - Bắt lỗi JSON sai định dạng và một số lỗi Prisma phổ biến
 - Tổ chức code theo kiến trúc backend
   - Controller: nhận request và trả response
   - Service: xử lý nghiệp vụ auth/session
