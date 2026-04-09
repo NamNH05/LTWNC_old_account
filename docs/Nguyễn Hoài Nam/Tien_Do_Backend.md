@@ -15,11 +15,16 @@
 | :--- | :--- | :--- | :--- |
 | 09/04 | 1) Hoàn thiện khung backend Express + TypeScript (app.ts, index.ts, error middleware)<br>2) Tổ chức kiến trúc backend theo MVC/Service/Repository cho module Auth<br>3) Triển khai đầy đủ Authentication & Authorization (register, login, refresh, logout, forgot/reset password, me, sessions, logout-all)<br>4) Áp dụng JWT access/refresh token, middleware xác thực và RBAC ADMIN/USER<br>5) Nâng cấp middleware xử lý lỗi: chuẩn hóa response, thêm 404, bắt lỗi JSON sai và lỗi Prisma<br>6) Chuẩn hóa biến môi trường auth/session và kiểm tra TypeScript compile pass | Hoàn thành | Đã hoàn tất phần 1 Backend Tasks, tích hợp chạy được trên API /api/auth và dễ test lỗi hơn |
 
+## Ngày 10/04/2026
+| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| 10/04 | 1) Xây dựng User Management Module: API get/update profile, list users (admin), grant/revoke admin role, soft delete user<br>2) Xây dựng Product Management Module: API CRUD products, search/filter/sort, list categories, auto-generate slug<br>3) Xây dựng Cart Management Module: API get/add/update/remove cart items, auto-create cart, validate stock<br>4) Setup routes cho user/product/cart APIs và mount vào app.ts<br>5) Fix TypeScript strict mode errors: cast params, handle undefined/null Prisma fields<br>6) Validate tất cả code compile pass, tất cả 7 files type-safe (controllers, services, routes) | Hoàn thành | Hoàn tất phần 2 Backend (User/Product/Cart Management), sẵn sàng cho E2E testing và frontend integration |
+
 ---
 
 ## TỔNG KẾT
 
-### ✅ Hoàn thành
+### ✅ Hoàn thành (cập nhật 10/04)
 - Khởi tạo dự án từ 0
   - Cấu hình kết nối PostgreSQL qua Docker
   - Thiết kế cấu trúc thư mục theo mô hình MVC
@@ -64,3 +69,42 @@
   - Service: xử lý nghiệp vụ auth/session
   - Repository: thao tác dữ liệu user/audit log qua Prisma
   - Middleware: auth, rbac, error handler
+
+### ✅ Phần 2 Backend (10/04) - User/Product/Cart Management
+- Triển khai User Management Module
+  - API lấy/cập nhật thông tin profile (fullName, phone)
+  - API liệt kê người dùng (admin, hỗ trợ pagination/filter role)
+  - API xóa user (soft delete), cấp/thu hồi quyền admin
+  - Xử lý lỗi: validation, ownership, authorization
+
+- Triển khai Product Management Module
+  - API CRUD (Create/Read/Update/Delete) sản phẩm toàn bộ
+  - API tìm kiếm sản phẩm: search by name/desc, filter by category, sort (latest, price, popular)
+  - API lấy danh sách danh mục với count số sản phẩm
+  - Auto-generate slug từ product name
+  - Kiểm tra danh mục tồn tại trước khi tạo/update product
+
+- Triển khai Cart Management Module
+  - API lấy giỏ hàng (auto-create nếu chưa có)
+  - API thêm sản phẩm vào giỏ (auto-increase quantity nếu đã tồn tại)
+  - API cập nhật số lượng và xóa item khỏi giỏ
+  - API xóa tất cả items (clear cart)
+  - Kiểm tra stock sản phẩm, validation ownership of cart
+  - Tính tổng giá trị giỏ hàng
+
+- TypeScript & Type Safety
+  - Xử lý type cast cho req.params (Express type incompatibility)
+  - Xử lý undefined vs null Prisma fields (exactOptionalPropertyTypes)
+  - Tất cả 7 files (3 controllers, 3 services, 3 routes) compile pass strict mode
+  - Zero TypeScript errors
+
+### 📊 API Status (ngày 10/04)
+**Part 1 (Auth) - COMPLETED ✅**
+- 9 endpoints: register, login, refresh, logout, logoutAll, forgotPassword, resetPassword, me, sessions
+- Full JWT token lifecycle + session management
+
+**Part 2 (User/Product/Cart) - COMPLETED ✅**
+- 14 endpoints mới: User (6), Product (6), Cart (5)
+- Full CRUD + business logic: pagination, search, filter, stock validation
+
+**Total:** 23 backend API endpoints implemented and type-safe
