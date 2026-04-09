@@ -84,6 +84,11 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Thêm chức năng lọc theo danh mục
 - Xây dựng trang chi tiết sản phẩm
 - Thêm gallery ảnh, thông tin sản phẩm
+
+#### Minh họa ngày 1
+
+- Ảnh 1: Giao diện trang sản phẩm
+- Ảnh 2: Giao diện trang chi tiết sản phẩm
   ![Sản phẩm](image-3.png)
   ![Chi tiết sản phẩm](image-4.png)
 
