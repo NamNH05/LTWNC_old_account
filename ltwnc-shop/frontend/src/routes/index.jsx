@@ -8,6 +8,7 @@ import SearchPage from "../pages/Search/Search";
 import CartPage from "../pages/Cart/Cart";
 import OrderManagement from "../pages/OrderManagement/OrderManagement";
 import ProfilePage from "../pages/Profile/Profile";
+import OrderManagementPage from "../pages/AdminDashboard/OrderManagementPage";
 
 function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<OrderManagement />} />
+        <Route path="/admin/orders" element={<OrderManagementPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
