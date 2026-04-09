@@ -3,11 +3,11 @@
 ## Danh sách công việc cần hoàn tất cho Backend
 
 ### 1. Authentication & Authorization
-- [ ] Xây dựng API login/register
-- [ ] Implement JWT token validation
-- [ ] Setup role-based access control (RBAC)
-- [ ] Password reset functionality
-- [ ] Session management
+- [x] Xây dựng API login/register
+- [x] Implement JWT token validation
+- [x] Setup role-based access control (RBAC)
+- [x] Password reset functionality
+- [x] Session management
 
 ### 2. User Management
 - [ ] Create user profile API
@@ -38,7 +38,7 @@
 
 ### 6. Error Handling & Validation
 - [ ] Input validation middleware
-- [ ] Centralized error handling
+- [x] Centralized error handling
 - [ ] API response standardization
 - [ ] Request logging
 
@@ -50,7 +50,7 @@
 - [ ] Monitoring & logging
 
 ### 8. Security
-- [ ] CORS configuration
+- [x] CORS configuration
 - [ ] SQL injection prevention
 - [ ] XSS protection
 - [ ] API optimization & caching

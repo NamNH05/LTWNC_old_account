@@ -49,6 +49,7 @@
 
 - [Nguyễn Hoài Nam - Tiến độ Backend](docs/Nguyễn%20Hoài%20Nam/Tien_Do_Backend.md)
 - [Nguyễn Huy Cường - Tiến độ Frontend](docs/Nguyễn%20Huy%20Cường/Tien_Do_Frontend_MVC.md)
+- [Phạm Tiến Vinh - Tiến độ Migration/Seed/Test](docs/Phạm%20Tiến%20Vinh/Tien_Do_Migration-seed-test.md)
 
 ### 📏 Quy tắc chung
 
@@ -61,6 +62,7 @@
 
 - [Report 03/04/2026](docs/reports/REPORT_20260403.md)
 - [Report 08/04/2026](docs/reports/REPORT_20260408.md)
+- [Report 09/04/2026](docs/reports/REPORT_20260409.md)
 
 ---
 
