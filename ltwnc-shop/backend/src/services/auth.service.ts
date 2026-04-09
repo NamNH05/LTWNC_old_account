@@ -71,7 +71,7 @@ export const authService = {
     const email = normalizeEmail(input.email);
     validatePasswordStrength(input.password);
 
-    const existingUser = await userRepository.findByEmail(email);
+    const existingUser = await userRepository.findByEmailIncludingDeleted(email);
     if (existingUser) {
       throw new HttpError(409, "Email already exists");
     }
