@@ -22,6 +22,9 @@ export const auditRepository = {
 
     return prisma.auditLog.create({
       data,
+      select: {
+        id: true,
+      },
     });
   },
 };
