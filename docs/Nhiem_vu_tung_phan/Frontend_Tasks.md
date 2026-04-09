@@ -1,60 +1,60 @@
-# 🎨 Frontend Tasks
+# 🎨 Nhiệm vụ Frontend
 
 ## Danh sách công việc cần hoàn tất cho Frontend
 
-### 1. Authentication Pages
-- [ ] Login page implementation
-- [ ] Register page implementation
-- [ ] Password reset page
-- [ ] Protected routes setup
-- [ ] Session handling
+### 1. Trang xác thực
+- [ ] Triển khai trang đăng nhập
+- [ ] Triển khai trang đăng ký
+- [ ] Trang đặt lại mật khẩu
+- [ ] Thiết lập route được bảo vệ
+- [ ] Xử lý phiên đăng nhập
 
-### 2. Product Display
-- [ ] Product listing page
-- [ ] Product detail page
-- [ ] Product search functionality
-- [ ] Category filtering
-- [ ] Product sorting
+### 2. Hiển thị sản phẩm
+- [ ] Trang danh sách sản phẩm
+- [ ] Trang chi tiết sản phẩm
+- [ ] Chức năng tìm kiếm sản phẩm
+- [ ] Lọc theo danh mục
+- [ ] Sắp xếp sản phẩm
 
-### 3. Shopping Cart
-- [ ] Cart page implementation
-- [ ] Add/remove items from cart
-- [ ] Update item quantity
-- [ ] Cart total calculation
-- [ ] Persistent cart storage
+### 3. Giỏ hàng
+- [ ] Triển khai trang giỏ hàng
+- [ ] Thêm/xóa sản phẩm khỏi giỏ
+- [ ] Cập nhật số lượng sản phẩm
+- [ ] Tính tổng tiền giỏ hàng
+- [ ] Lưu trữ giỏ hàng bền vững
 
-### 4. Checkout & Payment
-- [ ] Checkout page design
-- [ ] Address selection/creation
-- [ ] Payment method selection
-- [ ] VNPAY payment integration
-- [ ] Order confirmation page
+### 4. Thanh toán và đặt hàng
+- [ ] Thiết kế trang checkout
+- [ ] Chọn/tạo địa chỉ giao hàng
+- [ ] Chọn phương thức thanh toán
+- [ ] Tích hợp thanh toán VNPAY
+- [ ] Trang xác nhận đơn hàng
 
-### 5. User Dashboard
-- [ ] User profile page
-- [ ] Order history display
-- [ ] Address management
-- [ ] Account settings
-- [ ] Wishlist/favorites
+### 5. Trang quản lý người dùng
+- [ ] Trang hồ sơ người dùng
+- [ ] Hiển thị lịch sử đơn hàng
+- [ ] Quản lý địa chỉ
+- [ ] Cài đặt tài khoản
+- [ ] Danh sách yêu thích
 
-### 6. Navigation & Layout
-- [ ] Header/Navbar component
-- [ ] Footer component
-- [ ] Sidebar navigation
-- [ ] Breadcrumb implementation
-- [ ] Mobile responsiveness
+### 6. Điều hướng và bố cục
+- [ ] Component Header/Navbar
+- [ ] Component Footer
+- [ ] Điều hướng Sidebar
+- [ ] Triển khai Breadcrumb
+- [ ] Responsive cho mobile
 
-### 7. UI/UX Improvements
-- [ ] Loading states
-- [ ] Error messages display
-- [ ] Success notifications
-- [ ] Form validation UI
-- [ ] Accessibility improvements
+### 7. Cải thiện UI/UX
+- [ ] Trạng thái loading
+- [ ] Hiển thị thông báo lỗi
+- [ ] Thông báo thành công
+- [ ] Giao diện kiểm tra form
+- [ ] Cải thiện khả năng truy cập
 
-### 8. Performance & Testing
-- [ ] Component testing (70%+ coverage)
-- [ ] E2E testing (user flows)
-- [ ] Accessibility testing
-- [ ] Page optimization
-- [ ] Image optimization
-- [ ] See: [Testing Guidelines](Testing_Guidelines.md#-frontend-testing)
+### 8. Hiệu năng và kiểm thử
+- [ ] Kiểm thử component (độ phủ 70%+)
+- [ ] Kiểm thử E2E (luồng người dùng)
+- [ ] Kiểm thử khả năng truy cập
+- [ ] Tối ưu trang
+- [ ] Tối ưu hình ảnh
+- [ ] Xem: [Testing Guidelines](Testing_Guidelines.md#-frontend-testing)
