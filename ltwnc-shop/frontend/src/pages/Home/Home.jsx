@@ -16,27 +16,13 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // TODO: Connect to API when backend is ready
-    // loadProducts();
-    
-    // Placeholder: set empty products for now
-    setProducts([]);
+    // UI only - load mock products for demonstration
+    setProducts(products.slice(0, 6)); // Show first 6 products
   }, []);
 
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      // TODO: Connect to API when backend is ready
-      // loadProducts();
-      
-      // Placeholder: set empty products for now
-      setProducts(products.slice(0, 6)); // Show first 6 products
-    } catch (error) {
-      logger.error('Failed to load products:', error);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
+  const loadProducts = () => {
+    // UI only - no API calls needed
+    setProducts(products.slice(0, 6));
   };
   return (
     <div className="home">

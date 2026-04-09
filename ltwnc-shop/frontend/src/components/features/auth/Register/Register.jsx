@@ -48,17 +48,15 @@ const Register = () => {
     if (validateForm()) {
       setLoading(true);
       try {
-        // TODO: Replace with actual API call when backend is ready
-        console.log('Register attempted with:', {
+        // UI only - no API calls
+        console.log('Register form submitted with:', {
           username: formData.username,
           email: formData.email,
           fullName: formData.fullName,
           phone: formData.phone
         });
         
-        // Simulate registration delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+        // Show success message for UI demonstration
         setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập.');
         
         // Reset form

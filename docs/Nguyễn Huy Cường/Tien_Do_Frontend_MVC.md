@@ -104,11 +104,9 @@ Dự án được chia thành 8 giai đoạn chính với thời gian thực hi�
 - Tính tổng tiền và hiển thị tóm tắt đơn hàng
 - Thêm nút chuyển đến trang thanh toán
 - Cập nhật trang đặt hàng (OrderCheckout) để giống y hệt web-client
-- Loại bỏ phần giỏ hàng khỏi step 1, chỉ giữ thông tin giao hàng
-- Tách riêng step 2 chỉ cho phương thức thanh toán
 - Cập nhật validation cho từng step
 - Đảm bảo flow 3 bước: Giao Hàng → Thanh Toán → Xác Nhận
-- Ghi nhận: hoàn thành phần front-end giao diện trang tìm kiếm, chuyển tiếp sang kết nối API và xử lý kết quả tìm kiếm
+- Chuyển đổi Login, Register, Home thành giao diện thuần túy
 
 #### Minh họa ngày 3
 

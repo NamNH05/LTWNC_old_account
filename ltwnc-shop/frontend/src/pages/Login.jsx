@@ -30,13 +30,10 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API call when backend is ready
-      console.log("Login attempted with:", { username, password });
+      // UI only - no API calls
+      console.log("Login form submitted with:", { username, password });
       
-      // Simulate login delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show placeholder message
+      // Show success message for UI demonstration
       message.success(`Đăng nhập thành công! Xin chào ${username}`);
       
       // Redirect after delay
