@@ -317,7 +317,7 @@ async function main() {
   const order = await prisma.order.create({
     data: {
       userId: user.id,
-      status: 'confirmed',
+      status: 'CONFIRMED',
       totalPrice: products[0].price * 2 + products[1].price,
       shippingAddr: '123 Đường ABC, Phường 1, Quận 1, TP HCM',
       phoneNumber: '0987654321',
@@ -367,7 +367,7 @@ async function main() {
   console.log('\n📊 Tóm tắt:');
   console.log(`  - 2 tài khoản (1 admin, 1 user)`);
   console.log(`  - 4 danh mục sản phẩm`);
-  console.log(`  - 11 sản phẩm`);
+  console.log(`  - 12 sản phẩm`);
   console.log(`  - 1 giỏ hàng với 2 mục`);
   console.log(`  - 1 đơn hàng với 2 mục`);
   console.log(`  - 1 audit log`);

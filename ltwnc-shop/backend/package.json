@@ -9,6 +9,9 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "seed": "npx tsx prisma/seed.ts"
   },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
