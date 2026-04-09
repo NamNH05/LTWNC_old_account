@@ -10,11 +10,6 @@
 | :--- | :--- | :--- | :--- |
 | 08/04 | 1. Them enum chuan hoa du lieu 2. dong bo seed status enum trong seed.ts 3. script backup/restore thủ công 4. Review và test tất cả migrations 5. Ghi lại lịch sử migration 6. Test quy trình rollback ở mức dev 7. Tạo migration templates
 
-## Ngày 09/04/2026
-| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
-| :--- | :--- | :--- | :--- |
-| 09/04 | 1. Xây dựng API register/login cho auth module 2. Implement JWT access/refresh token validation 3. Setup RBAC với middleware phân quyền ADMIN/USER 4. Hoàn thiện luồng quên mật khẩu/đặt lại mật khẩu 5. Quản lý session qua refresh token rotation và revoke | Hoàn thành | Hoàn tất phần 1 Backend Tasks, endpoint đã chạy được qua Express + Prisma |
-
 
 
 TỔNG KẾT
