@@ -88,7 +88,7 @@ Dự án được triển khai thành công trong 5 ngày với các giai đoạ
 - Giao diện trang thanh toán
   ![Thanh toán](image-7.png)
 
-### Ngày 5 (10/4/2026)
+### Ngày 4+5 (10/4/2026)
 
 - Triển khai trang OrderManagement (Quản Lý Đơn Hàng)
   - Bảng hiển thị danh sách đơn hàng với các thông tin: ID, ngày đặt, trạng thái, tổng tiền
