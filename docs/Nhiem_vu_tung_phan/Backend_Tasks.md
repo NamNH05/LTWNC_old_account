@@ -26,9 +26,9 @@
 ### 4. Giỏ hàng và xử lý đơn hàng
 - [x] Chức năng giỏ hàng (GET/POST/PUT/DELETE /api/cart)
 - [x] Thêm/xóa sản phẩm khỏi giỏ (auto-create cart, auto-increase qty)
-- [ ] Quy trình checkout giỏ hàng (chưa làm)
-- [ ] Tạo và quản lý đơn hàng (chưa làm)
-- [ ] Theo dõi trạng thái đơn hàng (chưa làm)
+- [x] Quy trình checkout giỏ hàng (POST /api/orders/checkout)
+- [x] Tạo và quản lý đơn hàng (GET /api/orders/my, GET /api/orders/:orderId, GET /api/orders)
+- [x] Theo dõi trạng thái đơn hàng (PATCH /api/orders/:orderId/status, PATCH /api/orders/:orderId/cancel)
 
 ### 5. Tích hợp thanh toán
 - [ ] Tích hợp cổng thanh toán VNPAY
@@ -40,14 +40,14 @@
 - [x] Middleware kiểm tra dữ liệu đầu vào (validation in controllers)
 - [x] Xử lý lỗi tập trung (error middleware)
 - [x] Chuẩn hóa response API (buildErrorResponse)
-- [ ] Ghi log request (chưa làm)
+- [x] Ghi log request
 
 ### 7. Hạ tầng và API Gateway
-- [ ] Thiết lập API Gateway
-- [ ] Giới hạn tần suất truy cập (rate limit)
-- [ ] Điều hướng request
-- [ ] Cân bằng tải
-- [ ] Giám sát và ghi log
+- [x] Thiết lập API Gateway
+- [x] Giới hạn tần suất truy cập (rate limit)
+- [x] Điều hướng request
+- [x] Cân bằng tải
+- [x] Giám sát và ghi log
 
 ### 8. Bảo mật
 - [x] Cấu hình CORS
