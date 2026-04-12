@@ -63,6 +63,8 @@
 - [Report 03/04/2026](docs/reports/REPORT_20260403.md)
 - [Report 08/04/2026](docs/reports/REPORT_20260408.md)
 - [Report 09/04/2026](docs/reports/REPORT_20260409.md)
+- [Report 10/04/2026](docs/reports/REPORT_20260410.md)
+- [Report 12/04/2026](docs/reports/REPORT_20260412.md)
 
 ---
 
@@ -272,6 +274,24 @@ npx prisma studio
 # Tạo migration
 npx prisma migrate dev --name <migration-name>
 ```
+
+### API Gateway (Backend)
+
+```bash
+# Health của API Gateway
+curl http://localhost:8080/api/gateway/health
+
+# Metrics runtime của API Gateway
+curl http://localhost:8080/api/gateway/metrics
+```
+
+Biến môi trường hỗ trợ:
+
+- `RATE_LIMIT_WINDOW_MS` (mặc định: `60000`)
+- `RATE_LIMIT_MAX` (mặc định: `120`)
+- `TRUST_PROXY` (mặc định: `0`)
+- `ENABLE_CLUSTER_MODE` (`true` để bật)
+- `CLUSTER_WORKERS` (số worker khi bật cluster mode)
 
 ### Frontend
 

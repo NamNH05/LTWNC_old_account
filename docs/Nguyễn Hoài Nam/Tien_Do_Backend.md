@@ -18,13 +18,18 @@
 ## Ngày 10/04/2026
 | Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
 | :--- | :--- | :--- | :--- |
-| 10/04 | 1) Xây dựng User Management Module: API get/update profile, list users (admin), grant/revoke admin role, soft delete user<br>2) Xây dựng Product Management Module: API CRUD products, search/filter/sort, list categories, auto-generate slug<br>3) Xây dựng Cart Management Module: API get/add/update/remove cart items, auto-create cart, validate stock<br>4) Setup routes cho user/product/cart APIs và mount vào app.ts<br>5) Fix TypeScript strict mode errors: cast params, handle undefined/null Prisma fields<br>6) Validate tất cả code compile pass, tất cả 7 files type-safe (controllers, services, routes) | Hoàn thành | Hoàn tất phần 2 Backend (User/Product/Cart Management), sẵn sàng cho E2E testing và frontend integration |
+| 10/04 | 1) Xây dựng User Management Module: API get/update profile, list users (admin), grant/revoke admin role, soft delete user<br>2) Xây dựng Product Management Module: API CRUD products, search/filter/sort, list categories, auto-generate slug<br>3) Xây dựng Cart Management Module: API get/add/update/remove cart items, auto-create cart, validate stock<br>4) Setup routes cho user/product/cart APIs và mount vào app.ts<br>5) Fix TypeScript strict mode errors: cast params, handle undefined/null Prisma fields<br>6) Validate tất cả code compile pass, tất cả 7 files type-safe (controllers, services, routes)<br>7) Hoàn thành phần 4 Backend: xây dựng Order Management Module (checkout, danh sách đơn, chi tiết đơn, hủy đơn, admin cập nhật trạng thái) và mount route /api/orders<br>8) Bổ sung transaction checkout + trừ/hoàn tồn kho + ghi audit log cho đơn hàng | Hoàn thành | Hoàn tất phần 2 và phần 4 Backend, API đơn hàng sẵn sàng tích hợp frontend |
+
+## Ngày 12/04/2026
+| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| 12/04 | 1) Triển khai lớp API Gateway nội bộ tại prefix /api và gom route điều hướng tập trung (auth/users/products/cart/orders)<br>2) Bổ sung middleware request context + request logger dạng JSON (kèm requestId, latency, ip)<br>3) Bổ sung endpoint giám sát /api/gateway/health và /api/gateway/metrics<br>4) Triển khai rate limiter in-memory với header X-RateLimit-* cho toàn bộ API<br>5) Bổ sung cơ chế cân bằng tải bằng cluster mode (tự fork worker và tự khởi động lại worker khi crash)<br>6) Chuẩn hóa biến môi trường mới cho gateway/rate-limit/cluster và xác nhận TypeScript compile pass | Hoàn thành | Hoàn tất phần 7 Backend Tasks, sẵn sàng cho bước tích hợp API Gateway ở tầng infra/reverse proxy |
 
 ---
 
 ## TỔNG KẾT
 
-### ✅ Hoàn thành (cập nhật 10/04)
+### ✅ Hoàn thành (cập nhật 12/04)
 - Khởi tạo dự án từ 0
   - Cấu hình kết nối PostgreSQL qua Docker
   - Thiết kế cấu trúc thư mục theo mô hình MVC
@@ -46,6 +51,12 @@
   - Tạo file tiến độ backend cá nhân
 - Commit History
   - 4 commits với message rõ ràng theo quy ước tiếng Việt
+
+- Hoàn thành Part 7 Backend (Hạ tầng & API Gateway)
+  - Thiết lập lớp API Gateway và điều hướng request tập trung
+  - Thêm request logging, gateway metrics/health
+  - Thêm rate limit toàn cục cho API
+  - Bật chế độ cluster để cân bằng tải theo worker
 
 ### ✅ Backend đã làm (chi tiết)
 - Thiết lập nền tảng backend
@@ -98,7 +109,7 @@
   - Tất cả 7 files (3 controllers, 3 services, 3 routes) compile pass strict mode
   - Zero TypeScript errors
 
-### 📊 API Status (ngày 10/04)
+### 📊 API Status (ngày 12/04)
 **Part 1 (Auth) - COMPLETED ✅**
 - 9 endpoints: register, login, refresh, logout, logoutAll, forgotPassword, resetPassword, me, sessions
 - Full JWT token lifecycle + session management
@@ -107,4 +118,15 @@
 - 14 endpoints mới: User (6), Product (6), Cart (5)
 - Full CRUD + business logic: pagination, search, filter, stock validation
 
-**Total:** 23 backend API endpoints implemented and type-safe
+**Part 4 (Order/Checkout) - COMPLETED ✅**
+- 6 endpoints mới: checkout, my orders, order detail, cancel order, admin orders list, admin status update
+- Có transaction nghiệp vụ checkout, quản lý vòng đời trạng thái và hoàn tồn kho khi hủy
+
+**Part 7 (Infrastructure/API Gateway) - COMPLETED ✅**
+- API Gateway prefix `/api` điều hướng tập trung cho toàn bộ module backend
+- 2 endpoints giám sát gateway: `/api/gateway/health`, `/api/gateway/metrics`
+- Giới hạn tần suất truy cập với in-memory rate limiter + response headers
+- Request logging theo JSON và theo dõi số liệu traffic/latency
+- Cân bằng tải bằng Node.js cluster mode (multi-worker)
+
+**Total:** 31 backend API endpoints implemented and type-safe
