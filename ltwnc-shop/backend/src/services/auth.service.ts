@@ -51,6 +51,8 @@ const validatePasswordStrength = (password: string) => {
     throw new HttpError(
       400,
       "Password must be at least 8 characters, include uppercase, lowercase and number"
+      ,
+      "VALIDATION_ERROR"
     );
   }
 };
@@ -78,7 +80,7 @@ export const authService = {
 
     const existingUser = await userRepository.findByEmailIncludingDeleted(email);
     if (existingUser) {
-      throw new HttpError(409, "Email already exists");
+      throw new HttpError(409, "Email already exists", "CONFLICT");
     }
 
     const password = await hashPassword(input.password);
@@ -115,12 +117,12 @@ export const authService = {
     const user = await userRepository.findByEmail(email);
 
     if (!user) {
-      throw new HttpError(401, "Invalid credentials");
+      throw new HttpError(401, "Invalid credentials", "UNAUTHORIZED");
     }
 
     const isPasswordValid = await comparePassword(input.password, user.password);
     if (!isPasswordValid) {
-      throw new HttpError(401, "Invalid credentials");
+      throw new HttpError(401, "Invalid credentials", "UNAUTHORIZED");
     }
 
     await auditRepository.create({
@@ -150,21 +152,21 @@ export const authService = {
     try {
       payload = verifyToken<RefreshTokenPayload>(refreshToken);
     } catch {
-      throw new HttpError(401, "Invalid refresh token");
+      throw new HttpError(401, "Invalid refresh token", "TOKEN_INVALID");
     }
 
     if (payload.type !== "refresh") {
-      throw new HttpError(401, "Invalid refresh token type");
+      throw new HttpError(401, "Invalid refresh token type", "TOKEN_INVALID");
     }
 
     const valid = sessionService.validateRefreshToken(payload.sid, refreshToken);
     if (!valid) {
-      throw new HttpError(401, "Refresh token revoked or expired");
+      throw new HttpError(401, "Refresh token revoked or expired", "TOKEN_EXPIRED");
     }
 
     const user = await userRepository.findById(Number(payload.sub));
     if (!user) {
-      throw new HttpError(404, "User not found");
+      throw new HttpError(404, "User not found", "NOT_FOUND");
     }
 
     const newRefreshToken = signRefreshToken({ sub: String(user.id), sid: payload.sid });
@@ -249,18 +251,18 @@ export const authService = {
     try {
       payload = verifyToken<ResetTokenPayload>(token);
     } catch {
-      throw new HttpError(401, "Invalid reset token");
+      throw new HttpError(401, "Invalid reset token", "TOKEN_INVALID");
     }
 
     if (payload.type !== "reset-password") {
-      throw new HttpError(401, "Invalid reset token type");
+      throw new HttpError(401, "Invalid reset token type", "TOKEN_INVALID");
     }
 
     const record = resetTokens.get(payload.jti);
     const incomingHash = crypto.createHash("sha256").update(token).digest("hex");
 
     if (!record || record.tokenHash !== incomingHash || record.expiresAt.getTime() < Date.now()) {
-      throw new HttpError(401, "Reset token expired or invalid");
+      throw new HttpError(401, "Reset token expired or invalid", "TOKEN_EXPIRED");
     }
 
     const hashedPassword = await hashPassword(newPassword);

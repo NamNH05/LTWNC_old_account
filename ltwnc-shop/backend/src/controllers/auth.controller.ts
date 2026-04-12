@@ -9,7 +9,7 @@ export const authController = {
       const { email, password, fullName } = req.body;
 
       if (!email || !password || !fullName) {
-        throw new HttpError(400, "email, password and fullName are required");
+        throw new HttpError(400, "email, password and fullName are required", "VALIDATION_ERROR");
       }
 
       const result = await authService.register({ email, password, fullName });
@@ -24,7 +24,7 @@ export const authController = {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        throw new HttpError(400, "email and password are required");
+        throw new HttpError(400, "email and password are required", "VALIDATION_ERROR");
       }
 
       const result = await authService.login({ email, password });
@@ -38,7 +38,7 @@ export const authController = {
     try {
       const { refreshToken } = req.body;
       if (!refreshToken) {
-        throw new HttpError(400, "refreshToken is required");
+        throw new HttpError(400, "refreshToken is required", "VALIDATION_ERROR");
       }
 
       const result = await authService.refreshToken(refreshToken);
@@ -53,7 +53,7 @@ export const authController = {
       const { refreshToken } = req.body;
 
       if (!refreshToken) {
-        throw new HttpError(400, "refreshToken is required");
+        throw new HttpError(400, "refreshToken is required", "VALIDATION_ERROR");
       }
 
       const result = authService.logout(refreshToken);
@@ -67,7 +67,7 @@ export const authController = {
     try {
       const { email } = req.body;
       if (!email) {
-        throw new HttpError(400, "email is required");
+        throw new HttpError(400, "email is required", "VALIDATION_ERROR");
       }
 
       const result = await authService.forgotPassword(email);
@@ -82,7 +82,7 @@ export const authController = {
       const { token, newPassword } = req.body;
 
       if (!token || !newPassword) {
-        throw new HttpError(400, "token and newPassword are required");
+        throw new HttpError(400, "token and newPassword are required", "VALIDATION_ERROR");
       }
 
       const result = await authService.resetPassword(token, newPassword);
