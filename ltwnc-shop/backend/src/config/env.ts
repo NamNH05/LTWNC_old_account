@@ -2,6 +2,19 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const parseNumber = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const parseBoolean = (value: string | undefined, fallback = false) => {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  return ["1", "true", "yes", "on"].includes(value.trim().toLowerCase());
+};
+
 const requiredEnv = ["JWT_SECRET", "DATABASE_URL"] as const;
 
 for (const key of requiredEnv) {
@@ -11,10 +24,15 @@ for (const key of requiredEnv) {
 }
 
 export const env = {
-  port: Number(process.env.PORT ?? 3000),
+  port: parseNumber(process.env.PORT, 3000),
   nodeEnv: process.env.NODE_ENV ?? "development",
   jwtSecret: process.env.JWT_SECRET as string,
   accessTokenTtl: process.env.ACCESS_TOKEN_TTL ?? "15m",
   refreshTokenTtl: process.env.REFRESH_TOKEN_TTL ?? "7d",
   resetTokenTtl: process.env.RESET_TOKEN_TTL ?? "15m",
+  trustProxy: parseNumber(process.env.TRUST_PROXY, 0),
+  rateLimitWindowMs: parseNumber(process.env.RATE_LIMIT_WINDOW_MS, 60_000),
+  rateLimitMax: parseNumber(process.env.RATE_LIMIT_MAX, 120),
+  enableClusterMode: parseBoolean(process.env.ENABLE_CLUSTER_MODE, false),
+  clusterWorkers: parseNumber(process.env.CLUSTER_WORKERS, 1),
 };
