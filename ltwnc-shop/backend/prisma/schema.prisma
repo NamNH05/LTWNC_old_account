@@ -149,6 +149,7 @@ model Order {
   shippingAddr String      @map("shipping_addr")
   phoneNumber  String      @map("phone_number")
   note         String?
+  deletedAt    DateTime?   @map("deleted_at")
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
@@ -159,6 +160,7 @@ model Order {
   @@index([userId])
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([deletedAt])
   @@map("orders")
 }
 
