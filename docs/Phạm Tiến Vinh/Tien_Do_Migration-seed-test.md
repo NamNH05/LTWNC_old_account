@@ -20,6 +20,11 @@
 | :--- | :--- | :--- | :--- |
 | 10/04 | 1) Giao diện phần doanh thu, audit logs 
 
+# Ngày 16/04/2026
+| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| 16/04 | 1) Tối ưu JOIN queries - tạo 6 database views (order_fulfillment_status, product_inventory_status, user_orders_summary, product_popularity, category_performance, user_spending_report) 2) Thiết lập query caching service với cascade invalidation rules 3) Slow query monitoring service + reporting 4) Query performance middleware auto-tracking 5) Migration 20260416_step5_query_optimization (6 views, 2 logging tables, performance indexes) 
+
 TỔNG KẾT
 
 1. Tinh chỉnh Database Schema
@@ -42,7 +47,7 @@ TỔNG KẾT
 [x] Seed products mẫu (20–30 sản phẩm)
 [x] Seed users test (5–10 tài khoản)
 [x] Seed dữ liệu addresses mẫu
-[ ] Seed payment methods
+[x] Seed payment methods
 
 4. Data Integrity
 [x] Thiết lập foreign key constraints
@@ -51,13 +56,13 @@ TỔNG KẾT
 [x] Thêm default values
 [x] Implement soft deletes (nếu cần)
 
-5. Tối ưu Performance
+5. **Tối ưu Performance** ⭐ STEP 5 COMPLETED
 [x] Thêm database indexes
 [x] Tối ưu include/select trong Prisma
-[ ] Tối ưu JOIN queries
-[ ] Thiết lập chiến lược query caching
-[ ] Theo dõi slow queries
-[ ] Tạo view cho các query phức tạp
+[x] Tối ưu JOIN queries (6 database views created)
+[x] Thiết lập chiến lược query caching (cascade invalidation)
+[x] Theo dõi slow queries (monitoring + reporting)
+[x] Tạo view cho các query phức tạp (order_fulfillment, product_inventory, etc)
 
 6. Audit & Logging
 [ ] Thiết lập bảng audit logs

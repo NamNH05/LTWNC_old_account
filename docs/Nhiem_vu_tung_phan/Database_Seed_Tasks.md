@@ -3,40 +3,40 @@
 ## Danh sách công việc cần hoàn tất cho Database và Seed
 
 ### 1. Tinh chỉnh schema cơ sở dữ liệu
-- [ ] Thêm index còn thiếu để tối ưu truy vấn
-- [ ] Thiết lập ràng buộc và kiểm tra dữ liệu phù hợp
-- [ ] Thêm trường tính toán (nếu cần)
-- [ ] Tối ưu quan hệ giữa các bảng
+- [x] Thêm index còn thiếu để tối ưu truy vấn
+- [x] Thiết lập ràng buộc và kiểm tra dữ liệu phù hợp
+- [x] Thêm trường tính toán (nếu cần)
+- [x] Tối ưu quan hệ giữa các bảng
 - [ ] Thêm database trigger (nếu cần)
 
 ### 2. Quản lý migration
-- [ ] Review và test toàn bộ migration
-- [ ] Ghi tài liệu lịch sử migration
-- [ ] Thiết lập chiến lược backup tự động
-- [ ] Kiểm thử quy trình rollback
-- [ ] Tạo mẫu migration
+- [x] Review và test toàn bộ migration
+- [x] Ghi tài liệu lịch sử migration
+- [x] Thiết lập chiến lược backup tự động
+- [x] Kiểm thử quy trình rollback
+- [x] Tạo mẫu migration
 
 ### 3. Seed Data
-- [ ] Tạo seed cho tài khoản admin
-- [ ] Seed danh mục mẫu
-- [ ] Seed sản phẩm mẫu (20-30 sản phẩm)
-- [ ] Seed tài khoản test (5-10 tài khoản)
-- [ ] Seed dữ liệu địa chỉ mẫu
-- [ ] Seed phương thức thanh toán
+- [x] Tạo seed cho tài khoản admin
+- [x] Seed danh mục mẫu
+- [x] Seed sản phẩm mẫu (20-30 sản phẩm)
+- [x] Seed tài khoản test (5-10 tài khoản)
+- [x] Seed dữ liệu địa chỉ mẫu
+- [x] Seed phương thức thanh toán
 
 ### 4. Toàn vẹn dữ liệu
-- [ ] Thiết lập ràng buộc khóa ngoại
-- [ ] Thêm quy tắc cascade delete
-- [ ] Thiết lập ràng buộc unique
-- [ ] Thêm giá trị mặc định
-- [ ] Triển khai soft delete (nếu cần)
+- [x] Thiết lập ràng buộc khóa ngoại
+- [x] Thêm quy tắc cascade delete
+- [x] Thiết lập ràng buộc unique
+- [x] Thêm giá trị mặc định
+- [x] Triển khai soft delete (nếu cần)
 
 ### 5. Tối ưu hiệu năng
-- [ ] Thêm index cơ sở dữ liệu
-- [ ] Tối ưu truy vấn JOIN
-- [ ] Thiết lập chiến lược cache truy vấn
-- [ ] Theo dõi truy vấn chậm
-- [ ] Tạo view cho truy vấn phức tạp
+- [x] Thêm index cơ sở dữ liệu
+- [x] Tối ưu truy vấn JOIN
+- [x] Thiết lập chiến lược cache truy vấn
+- [x] Theo dõi truy vấn chậm
+- [x] Tạo view cho truy vấn phức tạp
 
 ### 6. Audit và ghi log
 - [ ] Thiết lập bảng audit log
