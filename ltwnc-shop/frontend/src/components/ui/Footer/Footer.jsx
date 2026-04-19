@@ -19,10 +19,10 @@ const Footer = () => {
           <div className="footer-links">
             <h3>Mua Sắm</h3>
             <ul>
-              <li><Link to="#">Thời trang Nam</Link></li>
-              <li><Link to="#">Thời trang Nữ</Link></li>
-              <li><Link to="#">Phụ Kiện</Link></li>
-              <li><Link to="#">Sale Off</Link></li>
+              <li><Link to="/nam">Thời trang Nam</Link></li>
+              <li><Link to="/nu">Thời trang Nữ</Link></li>
+              <li><Link to="/phu-kien">Phụ Kiện</Link></li>
+              <li><Link to="/san-pham">Sale Off</Link></li>
             </ul>
           </div>
           <div className="footer-links">

@@ -26,11 +26,14 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
       case 'orders':
         navigate('/admin/orders');
         break;
-      case 'profile':
-        navigate('/profile');
+      case 'revenue':
+        navigate('/admin/revenue');
         break;
-      case 'address':
-        navigate('/address');
+      case 'users':
+        navigate('/admin/users');
+        break;
+      case 'audit':
+        navigate('/admin/audit-logs');
         break;
       case 'logout':
         logout();
@@ -48,14 +51,22 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
       label: 'Quản lý đơn hàng',
     },
     {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'Thông tin tài khoản',
+      key: 'revenue',
+      icon: <BarChartOutlined />,
+      label: 'Báo cáo doanh thu',
     },
     {
-      key: 'address',
-      icon: <EnvironmentOutlined />,
-      label: 'Địa chỉ giao hàng',
+      key: 'users',
+      icon: <UserOutlined />,
+      label: 'Quản lý người dùng',
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'audit',
+      icon: <AuditOutlined />,
+      label: 'Audit Logs',
     },
     {
       type: 'divider',

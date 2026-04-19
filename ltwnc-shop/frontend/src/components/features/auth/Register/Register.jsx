@@ -48,15 +48,27 @@ const Register = () => {
     if (validateForm()) {
       setLoading(true);
       try {
-        // UI only - no API calls
-        console.log('Register form submitted with:', {
-          username: formData.username,
-          email: formData.email,
-          fullName: formData.fullName,
-          phone: formData.phone
+        // Call backend API
+        const response = await fetch('http://localhost:8080/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            fullName: formData.fullName,
+          }),
         });
-        
-        // Show success message for UI demonstration
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setErrors({ submit: data.message || 'Đăng ký thất bại' });
+          return;
+        }
+
+        // Show success message
         setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập.');
         
         // Reset form
@@ -75,8 +87,8 @@ const Register = () => {
         }, 2000);
 
       } catch (error) {
-        console.error('Register error:', error);
-        setErrors({ submit: 'Đăng ký thất bại, vui lòng thử lại' });
+        logger.error('Register error:', error);
+        setErrors({ submit: 'Có lỗi xảy ra, vui lòng thử lại' });
       } finally {
         setLoading(false);
       }

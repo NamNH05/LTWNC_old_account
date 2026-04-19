@@ -4,13 +4,17 @@ import { message, Spin } from 'antd';
 import logger from '../../../../utils/logger';
 import Header from '../../../ui/Header/Header';
 import Footer from '../../../ui/Footer/Footer';
-import { products } from '../../../../data/products';
+import { productService } from '../../../../services/productService';
 import { formatCurrency } from '../../../../utils/format';
+import { useAuth } from '../../../../context/AuthContext';
+import { useCart } from '../../../../context/CartContext';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -25,11 +29,10 @@ const ProductDetail = () => {
   const loadProductDetail = async () => {
     try {
       setLoading(true);
-      const foundProduct = products.find((item) => item.id === id);
-      if (foundProduct) {
-        setProduct(foundProduct);
-        // Set default selections
-        if (foundProduct.images && foundProduct.images.length > 0) {
+      const data = await productService.getProductDetail(id);
+      if (data) {
+        setProduct(data);
+        if (data.image) {
           setSelectedImage(0);
         }
       } else {
@@ -77,8 +80,8 @@ const ProductDetail = () => {
     );
   }
 
-  const isOutOfStock = product.quantum <= 0;
-  const availableQuantity = product.quantum;
+  const isOutOfStock = (product.stock || 0) <= 0;
+  const availableQuantity = product.stock || 0;
 
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
@@ -89,15 +92,51 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    // TODO: Implement cart functionality
-    alert('Sản phẩm đã được thêm vào giỏ hàng (giao diện mẫu).');
+    if (!user?.id) {
+      message.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.image,
+        quantity: quantity,
+        size: 'M',
+        color: '#000',
+      });
+      message.success('Sản phẩm đã được thêm vào giỏ hàng');
+    } catch (error) {
+      message.error('Lỗi khi thêm vào giỏ hàng');
+    }
   };
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    // TODO: Implement checkout
-    alert('Chuyển tiếp thanh toán (giao diện mẫu).');
-    navigate('/san-pham');
+    if (!user?.id) {
+      message.error('Vui lòng đăng nhập để mua hàng');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.image,
+        quantity: quantity,
+        size: 'M',
+        color: '#000',
+      });
+      message.success('Sản phẩm đã được thêm vào giỏ. Đi tới thanh toán...');
+      navigate('/cart');
+    } catch (error) {
+      message.error('Lỗi khi mua sản phẩm');
+    }
   };
 
   const formatPrice = (price) => {
@@ -155,7 +194,7 @@ const ProductDetail = () => {
               <div className="product-meta">
                 <div className="meta-item">
                   <span className="meta-label">Danh mục:</span>
-                  <span className="meta-value">{product.category}</span>
+                  <span className="meta-value">{typeof product.category === 'string' ? product.category : product.category?.name}</span>
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">Tình trạng:</span>

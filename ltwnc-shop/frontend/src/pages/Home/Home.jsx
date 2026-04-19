@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/ui/Header/Header';
 import Footer from '../../components/ui/Footer/Footer';
 import ProductCard from '../../components/ui/ProductCard/ProductCard';
-import { products } from '../../data/products';
+import { productService } from '../../services/productService';
 import { formatCurrency } from '../../utils/format';
 import './Home.css';
 
@@ -16,13 +16,20 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // UI only - load mock products for demonstration
-    setProducts(products.slice(0, 6)); // Show first 6 products
+    loadProducts();
   }, []);
 
-  const loadProducts = () => {
-    // UI only - no API calls needed
-    setProducts(products.slice(0, 6));
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const apiProducts = await productService.listProducts(1, 6);
+      setProducts(apiProducts || []);
+    } catch (error) {
+      logger.error('Failed to load products:', error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="home">
@@ -142,12 +149,12 @@ const Home = () => {
                 <ProductCard
                   key={product.id}
                   image={product.imageUrl || product.image || 'https://via.placeholder.com/300'}
-                  fallbackImages={product.images}
+                  fallbackImages={product.images || []}
                   alt={product.name}
-                  category={product.category || product.type}
+                  category={product.category?.name || product.category || product.type}
                   name={product.name}
                   currentPrice={formatCurrency(product.price)}
-                  oldPrice={product.oldPrice ? formatCurrency(product.oldPrice) : undefined}
+                  oldPrice={product.originPrice ? formatCurrency(product.originPrice) : undefined}
                   link={`/product/${product.id}`}
                 />
               ))

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Spin, Statistic, Row, Col, Card, Table } from 'antd';
-import { mockRevenueSummary, mockDailyRevenue } from '../../../../data/adminMockData';
+import { Spin, Statistic, Row, Col, Card, Table, message } from 'antd';
+import { useAuth } from '../../../../context/AuthContext';
 import './RevenueDashboard.css';
 
+const API_BASE_URL = 'http://localhost:8080/api';
+
 const RevenueDashboard = () => {
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // State cho dữ liệu từ API
@@ -20,10 +23,33 @@ const RevenueDashboard = () => {
   }, []);
 
   const loadRevenueData = async () => {
-    setLoading(true);
-    setSummary(mockRevenueSummary);
-    setRevenueData(mockDailyRevenue);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/admin/revenue`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load revenue data');
+      }
+
+      const data = await response.json();
+      setSummary(data.data?.summary || {
+        totalRevenue: 0,
+        totalOrders: 0,
+        averageOrderValue: 0
+      });
+      setRevenueData(data.data?.dailyRevenue || []);
+    } catch (error) {
+      console.error('Error loading revenue data:', error);
+      message.error('Lỗi khi tải dữ liệu doanh thu');
+      setSummary({ totalRevenue: 0, totalOrders: 0, averageOrderValue: 0 });
+      setRevenueData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalRevenue = summary.totalRevenue || 0;
@@ -48,19 +74,21 @@ const RevenueDashboard = () => {
     },
     {
       title: 'Doanh Thu',
-      dataIndex: 'amount',
-      key: 'amount',
+      dataIndex: 'revenue',
+      key: 'revenue',
       render: (text) => formatCurrency(text),
     },
     {
       title: 'Số Đơn Hàng',
       dataIndex: 'orders',
       key: 'orders',
+      render: () => '-',
     },
     {
       title: 'Sản Phẩm Bán Ra',
       dataIndex: 'products',
       key: 'products',
+      render: () => '-',
     },
     {
       title: 'Trạng Thái',

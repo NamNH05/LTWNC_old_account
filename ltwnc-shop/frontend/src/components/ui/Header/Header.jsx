@@ -31,14 +31,14 @@ const Header = () => {
               <Link to="/">Sixedi</Link>
             </div>
             <div className="nav-links">
-              <Link to="/">Sản phẩm</Link>
-              <Link to="/">Nam</Link>
-              <Link to="/">Nữ</Link>
-              <Link to="/">Giày</Link>
-              <Link to="/">Phụ kiện</Link>
+              <Link to="/san-pham">Sản phẩm</Link>
+              <Link to="/nam">Nam</Link>
+              <Link to="/nu">Nữ</Link>
+              <Link to="/giay">Giày</Link>
+              <Link to="/phu-kien">Phụ kiện</Link>
             </div>
             <div className="nav-actions">
-              <button className="icon-btn" onClick={() => navigate('/')}>
+              <button className="icon-btn" onClick={() => navigate('/search')}>
                 <span className="material-icons">search</span>
               </button>              <Link to="/cart" className="icon-btn cart-btn" title="Giỏ hàng">
                 <span className="material-icons">shopping_cart</span>
@@ -48,7 +48,7 @@ const Header = () => {
               </Link>              {user ? (
                 <div className="user-menu">
                   {user.role && user.role.toUpperCase().includes('ADMIN') && (
-                    <Link to="/admin" className="icon-btn admin-btn" title="Admin Dashboard">
+                    <Link to="/admin/orders" className="icon-btn admin-btn" title="Admin Dashboard">
                       <span className="material-icons">admin_panel_settings</span>
                     </Link>
                   )}

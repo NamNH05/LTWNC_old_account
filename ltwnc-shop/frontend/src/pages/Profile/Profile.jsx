@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import { message, Spin } from 'antd';
 import Header from '../../components/ui/Header/Header';
 import Footer from '../../components/ui/Footer/Footer';
 import { useAuth } from '../../context/AuthContext';
 import './Profile.css';
+
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const DEFAULT_FORM = {
   fullName: '',
@@ -38,13 +40,26 @@ const validateProfileForm = (formData) => {
 };
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState(DEFAULT_FORM);
   const [originalData, setOriginalData] = useState(DEFAULT_FORM);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({});
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    street: '',
+    ward: '',
+    district: '',
+    city: '',
+    phoneNumber: ''
+  });
+  const [addressFormErrors, setAddressFormErrors] = useState({});
 
   useEffect(() => {
     if (!user) {
@@ -60,6 +75,131 @@ const ProfilePage = () => {
     setFormData(userData);
     setOriginalData(userData);
   }, [user, navigate]);
+
+  // Load orders when orders tab is active
+  useEffect(() => {
+    if (activeTab === 'orders' && token && orders.length === 0) {
+      loadOrders();
+    }
+  }, [activeTab, token]);
+
+  // Load addresses when addresses tab is active
+  useEffect(() => {
+    if (activeTab === 'addresses' && token && addresses.length === 0) {
+      loadAddresses();
+    }
+  }, [activeTab, token]);
+
+  const loadOrders = async () => {
+    try {
+      setOrdersLoading(true);
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load orders');
+      }
+
+      const data = await response.json();
+      setOrders(data.data || []);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      message.error('Lỗi khi tải đơn hàng');
+      setOrders([]);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const loadAddresses = async () => {
+    try {
+      setAddressesLoading(true);
+      const response = await fetch(`${API_BASE_URL}/addresses`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        // If API doesn't exist yet, just set empty
+        setAddresses([]);
+        return;
+      }
+
+      const data = await response.json();
+      setAddresses(data.data || []);
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+      setAddresses([]);
+    } finally {
+      setAddressesLoading(false);
+    }
+  };
+
+  const handleAddAddressSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!addressForm.street.trim() || !addressForm.district.trim() || !addressForm.city.trim()) {
+      setAddressFormErrors({ submit: 'Vui lòng điền đầy đủ thông tin' });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/addresses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          street: addressForm.street,
+          ward: addressForm.ward,
+          district: addressForm.district,
+          city: addressForm.city,
+          phoneNumber: addressForm.phoneNumber
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add address');
+      }
+
+      message.success('Thêm địa chỉ thành công');
+      setAddressForm({ street: '', ward: '', district: '', city: '', phoneNumber: '' });
+      setShowAddressForm(false);
+      loadAddresses();
+    } catch (error) {
+      console.error('Error adding address:', error);
+      message.error('Lỗi khi thêm địa chỉ');
+    }
+  };
+
+  const handleDeleteAddress = async (addressId) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/addresses/${addressId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete address');
+        }
+
+        message.success('Xóa địa chỉ thành công');
+        setAddresses(addresses.filter(addr => addr.id !== addressId));
+      } catch (error) {
+        console.error('Error deleting address:', error);
+        message.error('Lỗi khi xóa địa chỉ');
+      }
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -77,9 +217,36 @@ const ProfilePage = () => {
       return;
     }
 
-    setOriginalData(formData);
-    setIsEditing(false);
-    message.success('Thông tin tài khoản đã được lưu');
+    saveProfileChanges();
+  };
+
+  const saveProfileChanges = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const data = await response.json();
+      setOriginalData(formData);
+      setIsEditing(false);
+      message.success('Thông tin tài khoản đã được lưu');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      message.error('Lỗi khi lưu thông tin tài khoản');
+    }
   };
 
   const handleCancel = () => {
@@ -178,10 +345,62 @@ const ProfilePage = () => {
               <p>Lịch sử mua hàng và trạng thái đơn hàng</p>
             </div>
 
-            <div className="empty-state">
-              <p>Bạn chưa có đơn hàng nào.</p>
-              <span>Đây là giao diện hiển thị đơn hàng thuần ui, chưa kết nối API.</span>
-            </div>
+            {ordersLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <Spin size="large" description="Đang tải đơn hàng..." />
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="empty-state">
+                <p>Bạn chưa có đơn hàng nào.</p>
+              </div>
+            ) : (
+              <div className="orders-list">
+                {orders.map((order) => (
+                  <div key={order.id} className="order-card">
+                    <div className="order-header">
+                      <div className="order-info">
+                        <h4>Đơn hàng #{order.id}</h4>
+                        <p className="order-date">
+                          {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
+                      <div className={`order-status status-${order.status.toLowerCase()}`}>
+                        {order.status === 'PENDING' ? '⏳ Đang xử lý' :
+                         order.status === 'COMPLETED' ? '✅ Hoàn thành' :
+                         order.status === 'CANCELLED' ? '❌ Đã hủy' :
+                         order.status}
+                      </div>
+                    </div>
+
+                    <div className="order-items">
+                      {order.items && order.items.map((item) => (
+                        <div key={item.id} className="order-item">
+                          <span className="item-name">
+                            {item.product?.name || `Product #${item.productId}`}
+                          </span>
+                          <span className="item-qty">x{item.quantity}</span>
+                          <span className="item-price">
+                            {(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="order-footer">
+                      <div className="order-total">
+                        <strong>Tổng tiền:</strong>
+                        <strong className="total-price">
+                          {order.totalPrice.toLocaleString('vi-VN')}đ
+                        </strong>
+                      </div>
+                      <p className="order-address">
+                        📍 {order.shippingAddr}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -191,20 +410,118 @@ const ProfilePage = () => {
             <div className="content-header">
               <h2>Địa chỉ giao hàng</h2>
               <p>Quản lý địa chỉ giao hàng của bạn</p>
+              <button 
+                className="add-address-btn"
+                onClick={() => setShowAddressForm(!showAddressForm)}
+              >
+                ➕ {showAddressForm ? 'Hủy' : 'Thêm địa chỉ'}
+              </button>
             </div>
 
-            <div className="address-list">
-              <div className="address-card">
-                <h4>Địa chỉ mặc định</h4>
-                <p>123 Đường ABC, Phường XYZ, Quận 1, TP.HCM</p>
-                <p>Điện thoại: 0909 123 456</p>
+            {showAddressForm && (
+              <div className="address-form-container">
+                <form onSubmit={handleAddAddressSubmit} className="address-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Địa chỉ *</label>
+                      <input
+                        type="text"
+                        placeholder="Số nhà, tên đường"
+                        value={addressForm.street}
+                        onChange={(e) => setAddressForm({...addressForm, street: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Phường/Xã</label>
+                      <input
+                        type="text"
+                        placeholder="Phường/Xã"
+                        value={addressForm.ward}
+                        onChange={(e) => setAddressForm({...addressForm, ward: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Quận/Huyện *</label>
+                      <input
+                        type="text"
+                        placeholder="Quận/Huyện"
+                        value={addressForm.district}
+                        onChange={(e) => setAddressForm({...addressForm, district: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Thành phố *</label>
+                      <input
+                        type="text"
+                        placeholder="Thành phố"
+                        value={addressForm.city}
+                        onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Số điện thoại</label>
+                    <input
+                      type="tel"
+                      placeholder="Số điện thoại"
+                      value={addressForm.phoneNumber}
+                      onChange={(e) => setAddressForm({...addressForm, phoneNumber: e.target.value})}
+                    />
+                  </div>
+
+                  {addressFormErrors.submit && (
+                    <span className="error-message">{addressFormErrors.submit}</span>
+                  )}
+
+                  <div className="form-actions">
+                    <button type="submit" className="save-btn">
+                      💾 Thêm địa chỉ
+                    </button>
+                    <button 
+                      type="button" 
+                      className="cancel-btn"
+                      onClick={() => setShowAddressForm(false)}
+                    >
+                      ✕ Hủy
+                    </button>
+                  </div>
+                </form>
               </div>
-              <div className="address-card">
-                <h4>Địa chỉ khác</h4>
-                <p>456 Phố DEF, Phường UVW, Quận 3, TP.HCM</p>
-                <p>Điện thoại: 0919 987 654</p>
+            )}
+
+            {addressesLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <Spin size="large" description="Đang tải địa chỉ..." />
               </div>
-            </div>
+            ) : addresses.length === 0 ? (
+              <div className="empty-state">
+                <p>Bạn chưa thêm địa chỉ nào.</p>
+                <p style={{fontSize: '13px', color: '#999'}}>Thêm địa chỉ giao hàng để đặt hàng nhanh hơn</p>
+              </div>
+            ) : (
+              <div className="address-list">
+                {addresses.map((address) => (
+                  <div key={address.id} className="address-card">
+                    <div className="address-header">
+                      <h4>{address.street}</h4>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteAddress(address.id)}
+                        title="Xóa"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                    <p>{address.ward && address.ward + ', '}{address.district}, {address.city}</p>
+                    {address.phoneNumber && <p>📞 {address.phoneNumber}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Spin } from 'antd';
-import { mockAdminUsers } from '../../../../data/adminMockData';
+import { useAuth } from '../../../../context/AuthContext';
 import './UserManagement.css';
 
+const API_BASE_URL = 'http://localhost:8080/api';
+
 const UserManagement = () => {
+  const { token } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,9 +19,27 @@ const UserManagement = () => {
   }, []);
 
   const loadUsers = async () => {
-    setLoading(true);
-    setUsers(mockAdminUsers);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load users');
+      }
+
+      const data = await response.json();
+      setUsers(data.data.users || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      message.error('Lỗi khi tải danh sách người dùng');
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddUser = () => {
@@ -34,24 +55,71 @@ const UserManagement = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    setUsers((prev) => prev.filter((item) => item.id !== id));
-    message.success('Đã xóa người dùng (giao diện demo)');
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+
+      setUsers((prev) => prev.filter((item) => item.id !== id));
+      message.success('Đã xóa người dùng thành công');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      message.error('Lỗi khi xóa người dùng');
+    }
   };
 
   const handleSubmit = async (values) => {
-    if (editingUser) {
-      setUsers((prev) =>
-        prev.map((item) =>
-          item.id === editingUser.id ? { ...item, ...values } : item
-        )
-      );
-      message.success('Đã cập nhật người dùng (giao diện demo)');
-    } else {
-      const nextId = users.length ? Math.max(...users.map((item) => item.id)) + 1 : 1;
-      setUsers((prev) => [{ id: nextId, ...values }, ...prev]);
-      message.success('Đã thêm người dùng (giao diện demo)');
+    try {
+      if (editingUser) {
+        const response = await fetch(`${API_BASE_URL}/admin/users/${editingUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update user');
+        }
+
+        setUsers((prev) =>
+          prev.map((item) =>
+            item.id === editingUser.id ? { ...item, ...values } : item
+          )
+        );
+        message.success('Đã cập nhật người dùng thành công');
+      } else {
+        const response = await fetch(`${API_BASE_URL}/admin/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create user');
+        }
+
+        const data = await response.json();
+        setUsers((prev) => [data.data, ...prev]);
+        message.success('Đã thêm người dùng thành công');
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      message.error('Lỗi khi lưu thông tin người dùng');
     }
-    setIsModalOpen(false);
   };
 
   const columns = [

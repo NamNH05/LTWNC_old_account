@@ -4,6 +4,10 @@ import { authRouter } from "./routes/auth.routes";
 import userRouter from "./routes/user.routes";
 import productRouter from "./routes/product.routes";
 import cartRouter from "./routes/cart.routes";
+import addressRouter from "./routes/address.routes";
+import orderRouter from "./routes/order.routes";
+import paymentRouter from "./routes/payment.routes";
+import { adminRouter } from "./routes/admin.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
 export const app = express();
@@ -31,6 +35,18 @@ app.use("/api/products", productRouter);
 
 // Mount route cart dưới prefix /api/cart - quản lý giỏ hàng.
 app.use("/api/cart", cartRouter);
+
+// Mount route address dưới prefix /api/addresses - quản lý địa chỉ giao hàng.
+app.use("/api/addresses", addressRouter);
+
+// Mount route order dưới prefix /api/orders - quản lý đơn hàng.
+app.use("/api/orders", orderRouter);
+
+// Mount route payment dưới prefix /api/payments - quản lý thanh toán.
+app.use("/api/payments", paymentRouter);
+
+// Mount route admin dưới prefix /api/admin - admin panel endpoints.
+app.use("/api/admin", adminRouter);
 
 // Bất kỳ route nào không match sẽ trả 404 để test dễ hơn.
 app.use(notFoundHandler);

@@ -22,10 +22,15 @@ const Cart = () => {
     return getCartTotal() + getShippingFee();
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user?.id) {
       message.error('Vui lòng đăng nhập');
       navigate('/login');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      message.warning('Giỏ hàng của bạn đang trống');
       return;
     }
 
@@ -38,24 +43,8 @@ const Cart = () => {
       }
     }
 
-    try {
-      setLoading(true);
-      
-      // Simulate order creation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      message.success('Đặt hàng thành công!');
-      
-      // Navigate to payment
-      setTimeout(() => {
-        navigate('/payment');
-      }, 1000);
-    } catch (error) {
-      console.error('Lỗi đặt hàng:', error);
-      message.error('Không thể đặt hàng. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
+    // Navigate to checkout page
+    navigate('/checkout');
   };
 
   if (cartItems.length === 0) {

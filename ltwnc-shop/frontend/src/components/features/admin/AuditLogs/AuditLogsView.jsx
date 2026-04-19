@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, Select, Space, Spin, Pagination, Row, Col } from 'antd';
+import { Table, Button, Input, Select, Space, Spin, Pagination, Row, Col, message } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
-import { mockAuditLogs } from '../../../../data/adminMockData';
+import { useAuth } from '../../../../context/AuthContext';
 import './AuditLogsView.css';
 
+const API_BASE_URL = 'http://localhost:8080/api';
+
 const AuditLogsView = () => {
+    const { token } = useAuth();
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
@@ -19,22 +22,39 @@ const AuditLogsView = () => {
     }, []);
 
     const fetchLogs = async (pageNum = 0, user = filterUser, actionType = filterType, entity = filterEntity) => {
-        setLoading(true);
+        try {
+            setLoading(true);
+            
+            const params = new URLSearchParams({
+                page: pageNum,
+                size: size,
+                ...(user && { userId: user }),
+                ...(actionType && { actionType }),
+                ...(entity && { entityName: entity })
+            });
 
-        const filtered = mockAuditLogs.filter((log) => {
-            const matchesUser = !user || `${log.userId}`.includes(`${user}`);
-            const matchesType = !actionType || log.actionType === actionType;
-            const matchesEntity = !entity || log.entityName === entity;
-            return matchesUser && matchesType && matchesEntity;
-        });
+            const response = await fetch(`${API_BASE_URL}/admin/audit-logs?${params}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-        const start = pageNum * size;
-        const pageItems = filtered.slice(start, start + size);
+            if (!response.ok) {
+                throw new Error('Failed to load audit logs');
+            }
 
-        setLogs(pageItems);
-        setTotal(filtered.length);
-        setPage(pageNum);
-        setLoading(false);
+            const data = await response.json();
+            setLogs(data.data?.content || []);
+            setTotal(data.data?.totalElements || 0);
+            setPage(pageNum);
+        } catch (error) {
+            console.error('Error fetching logs:', error);
+            message.error('Lỗi khi tải audit logs');
+            setLogs([]);
+            setTotal(0);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSearch = () => {
@@ -54,13 +74,14 @@ const AuditLogsView = () => {
 
     const getActionColor = (actionType) => {
         const colors = {
-            'CREATE': '#52c41a',
-            'UPDATE': '#1890ff',
-            'DELETE': '#f5222d',
-            'LOGIN': '#faad14',
-            'LOGOUT': '#722ed1'
+            'create': '#52c41a',
+            'update': '#1890ff',
+            'delete': '#f5222d',
+            'login': '#faad14',
+            'logout': '#722ed1',
+            'register': '#13c2c2'
         };
-        return colors[actionType] || '#1890ff';
+        return colors[actionType?.toLowerCase()] || '#1890ff';
     };
 
     const columns = [
@@ -72,7 +93,7 @@ const AuditLogsView = () => {
         },
         {
             title: 'Hành động',
-            dataIndex: 'actionType',
+            dataIndex: 'action',
             width: 100,
             render: (text) => (
                 <span style={{
@@ -89,7 +110,7 @@ const AuditLogsView = () => {
         },
         {
             title: 'Entity',
-            dataIndex: 'entityName',
+            dataIndex: 'entity',
             width: 100,
         },
         {

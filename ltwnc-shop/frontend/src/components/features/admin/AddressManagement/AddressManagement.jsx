@@ -1,35 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Spin } from 'antd';
+import { useAuth } from '../../../../context/AuthContext';
 import './AddressManagement.css';
 
-const SAMPLE_ADDRESSES = [
-  {
-    id: 1,
-    fullName: 'Nguyễn Văn A',
-    phone: '0901234567',
-    address: '123 Đường ABC, Phường XYZ, Quận 1, TP.HCM',
-    type: 'home',
-    isDefault: true
-  },
-  {
-    id: 2,
-    fullName: 'Nguyễn Văn A',
-    phone: '0901234567',
-    address: '456 Đường DEF, Phường UVW, Quận 2, TP.HCM',
-    type: 'work',
-    isDefault: false
-  },
-  {
-    id: 3,
-    fullName: 'Trần Thị B',
-    phone: '0912345678',
-    address: '789 Đường GHI, Phường RST, Quận 3, TP.HCM',
-    type: 'home',
-    isDefault: false
-  }
-];
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const AddressManagement = () => {
+  const { token } = useAuth();
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,10 +25,28 @@ const AddressManagement = () => {
     };
   }, []);
 
-  const loadAddresses = () => {
-    setLoading(true);
-    setAddresses(SAMPLE_ADDRESSES);
-    setLoading(false);
+  const loadAddresses = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/admin/addresses`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load addresses');
+      }
+
+      const data = await response.json();
+      setAddresses(data.data.addresses || []);
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+      message.error('Lỗi khi tải danh sách địa chỉ');
+      setAddresses([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddAddress = () => {
@@ -66,36 +61,98 @@ const AddressManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteAddress = (id) => {
-    setAddresses((prev) => prev.filter((address) => address.id !== id));
-    message.success('Xóa địa chỉ thành công');
-  };
+  const handleDeleteAddress = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/addresses/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-  const handleSetDefault = (id) => {
-    setAddresses((prev) =>
-      prev.map((address) => ({
-        ...address,
-        isDefault: address.id === id
-      }))
-    );
-    message.success('Đặt địa chỉ mặc định thành công');
-  };
+      if (!response.ok) {
+        throw new Error('Failed to delete address');
+      }
 
-  const handleSubmit = (values) => {
-    if (editingAddress) {
-      const updatedAddress = { ...editingAddress, ...values };
-      setAddresses((prev) => prev.map((item) => (item.id === editingAddress.id ? updatedAddress : item)));
-      message.success('Cập nhật địa chỉ thành công');
-    } else {
-      const newAddress = {
-        ...values,
-        id: Math.max(...addresses.map(a => a.id)) + 1,
-        isDefault: addresses.length === 0 // Đặt làm mặc định nếu là địa chỉ đầu tiên
-      };
-      setAddresses((prev) => [...prev, newAddress]);
-      message.success('Thêm địa chỉ thành công');
+      setAddresses((prev) => prev.filter((address) => address.id !== id));
+      message.success('Xóa địa chỉ thành công');
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      message.error('Lỗi khi xóa địa chỉ');
     }
-    setIsModalOpen(false);
+  };
+
+  const handleSetDefault = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/addresses/${id}/set-default`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to set default address');
+      }
+
+      setAddresses((prev) =>
+        prev.map((address) => ({
+          ...address,
+          isDefault: address.id === id
+        }))
+      );
+      message.success('Đặt địa chỉ mặc định thành công');
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      message.error('Lỗi khi đặt địa chỉ mặc định');
+    }
+  };
+
+  const handleSubmit = async (values) => {
+    try {
+      if (editingAddress) {
+        const response = await fetch(`${API_BASE_URL}/admin/addresses/${editingAddress.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update address');
+        }
+
+        const updatedAddress = { ...editingAddress, ...values };
+        setAddresses((prev) => prev.map((item) => (item.id === editingAddress.id ? updatedAddress : item)));
+        message.success('Cập nhật địa chỉ thành công');
+      } else {
+        const response = await fetch(`${API_BASE_URL}/admin/addresses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ...values,
+            isDefault: addresses.length === 0
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create address');
+        }
+
+        const data = await response.json();
+        setAddresses((prev) => [...prev, data.data]);
+        message.success('Thêm địa chỉ thành công');
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving address:', error);
+      message.error('Lỗi khi lưu địa chỉ');
+    }
   };
 
   const columns = [
