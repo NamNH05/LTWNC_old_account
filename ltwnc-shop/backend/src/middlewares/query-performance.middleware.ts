@@ -58,7 +58,8 @@ export const queryPerformanceMiddleware = (
  */
 function extractEntityType(req: Request): string {
   const path = req.path.split('/').filter(p => p);
-  return path.length > 0 ? path[path.length - 1] : 'unknown';
+  const lastSegment = path[path.length - 1];
+  return lastSegment ?? 'unknown';
 }
 
 /**

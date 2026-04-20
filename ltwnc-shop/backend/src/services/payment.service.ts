@@ -3,25 +3,14 @@ import { env } from "../config/env";
 import { prisma } from "../models/prisma";
 import { HttpError } from "../utils/http-error";
 
-type PaymentRow = {
-  id: number;
-  order_id: number;
-  amount: number | string;
-  payment_method: string | null;
-  payment_status: string | null;
-  transaction_id: string | null;
-  notes: string | null;
-  created_at: Date | string;
-  updated_at: Date | string;
-  user_id?: number;
-};
+type PaymentStatus = "PENDING" | "PAID" | "FAILED";
 
 type VnpayCallbackResult = {
   success: boolean;
   code: string;
   message: string;
   orderId?: number;
-  paymentStatus?: string;
+  paymentStatus?: PaymentStatus;
   transactionId?: string;
 };
 
@@ -53,29 +42,40 @@ const signVnpayData = (data: string) => {
     .digest("hex");
 };
 
-const normalizePayment = (row: PaymentRow) => ({
-  id: row.id,
-  orderId: row.order_id,
-  amount: Number(row.amount),
-  method: row.payment_method,
-  status: row.payment_status,
-  transactionId: row.transaction_id,
-  notes: row.notes,
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
-  ...(typeof row.user_id === "number" ? { userId: row.user_id } : {}),
-});
-
-const normalizeCount = (rows: Array<{ count: bigint | number | string }>) => {
-  const value = rows[0]?.count;
-  if (typeof value === "bigint") {
-    return Number(value);
-  }
-  if (typeof value === "number") {
-    return value;
-  }
-  return Number(value ?? 0);
+const normalizePaymentStatus = (status: string | null | undefined): PaymentStatus => {
+  const normalized = (status ?? "PENDING").toUpperCase();
+  if (normalized === "PAID") return "PAID";
+  if (normalized === "FAILED") return "FAILED";
+  return "PENDING";
 };
+
+const normalizePayment = (payment: {
+  id: number;
+  orderId: number;
+  amount: number;
+  paymentMethod: string | null;
+  paymentStatus: string;
+  transactionId: string | null;
+  responseCode: string | null;
+  bankCode: string | null;
+  paidAt: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}) => ({
+  id: payment.id,
+  orderId: payment.orderId,
+  amount: payment.amount,
+  method: payment.paymentMethod,
+  status: normalizePaymentStatus(payment.paymentStatus),
+  transactionId: payment.transactionId,
+  responseCode: payment.responseCode,
+  bankCode: payment.bankCode,
+  paidAt: payment.paidAt,
+  notes: payment.notes,
+  createdAt: payment.createdAt,
+  updatedAt: payment.updatedAt,
+});
 
 const normalizeQueryParams = (params: Record<string, string>) => {
   const copy: Record<string, string> = { ...params };
@@ -126,29 +126,32 @@ export const paymentService = {
 
   // Lấy danh sách thanh toán của người dùng
   async listPaymentsByUser(userId: number, skip: number, take: number) {
-    try {
-      const payments = (await prisma.$queryRaw`
-        SELECT p.* FROM payments p
-        JOIN orders o ON p.order_id = o.id
-        WHERE o.user_id = ${userId}
-        ORDER BY p.created_at DESC
-        LIMIT ${take} OFFSET ${skip}
-      `) as PaymentRow[];
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({
+        where: {
+          order: {
+            userId,
+            deletedAt: null,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.payment.count({
+        where: {
+          order: {
+            userId,
+            deletedAt: null,
+          },
+        },
+      }),
+    ]);
 
-      const total = (await prisma.$queryRaw`
-        SELECT COUNT(*) as count FROM payments p
-        JOIN orders o ON p.order_id = o.id
-        WHERE o.user_id = ${userId}
-      `) as Array<{ count: bigint | number | string }>;
-
-      return {
-        payments: payments.map(normalizePayment),
-        total: normalizeCount(total),
-      };
-    } catch (error) {
-      // Nếu table chưa tồn tại, return empty list
-      return { payments: [], total: 0 };
-    }
+    return {
+      payments: payments.map(normalizePayment),
+      total,
+    };
   },
 
   // Tạo thanh toán mới
@@ -194,66 +197,70 @@ export const paymentService = {
       );
     }
 
-    // Tạo payment (hiện tại sử dụng raw query vì Payment model chưa được định nghĩa đầy đủ)
-    try {
-      const payment = (await prisma.$queryRaw`
-        INSERT INTO payments (order_id, amount, payment_status, payment_method, created_at, updated_at)
-        VALUES (${data.orderId}, ${data.amount}, 'PENDING', ${data.methodCode}, NOW(), NOW())
-        ON CONFLICT (order_id)
-        DO UPDATE SET
-          amount = EXCLUDED.amount,
-          payment_status = 'PENDING',
-          payment_method = EXCLUDED.payment_method,
-          updated_at = NOW()
-        RETURNING *
-      `) as PaymentRow[];
+    const payment = await prisma.payment.upsert({
+      where: { orderId: data.orderId },
+      update: {
+        amount: data.amount,
+        paymentMethod: data.methodCode,
+        paymentStatus: "PENDING",
+        responseCode: null,
+        paidAt: null,
+      },
+      create: {
+        orderId: data.orderId,
+        amount: data.amount,
+        paymentMethod: data.methodCode,
+        paymentStatus: "PENDING",
+      },
+    });
 
-      return normalizePayment(payment[0]);
-    } catch (error) {
-      throw new HttpError(500, "Lỗi tạo thanh toán", "INTERNAL_ERROR");
-    }
+    return normalizePayment(payment);
   },
 
   // Lấy chi tiết thanh toán
   async getPaymentDetail(userId: number, paymentId: number) {
-    try {
-      const payment = (await prisma.$queryRaw`
-        SELECT p.* FROM payments p
-        JOIN orders o ON p.order_id = o.id
-        WHERE p.id = ${paymentId} AND o.user_id = ${userId}
-      `) as PaymentRow[];
+    const payment = await prisma.payment.findFirst({
+      where: {
+        id: paymentId,
+        order: {
+          userId,
+          deletedAt: null,
+        },
+      },
+    });
 
-      if (!payment || payment.length === 0) {
-        throw new HttpError(404, "Thanh toán không tồn tại", "NOT_FOUND");
-      }
-
-      return normalizePayment(payment[0]);
-    } catch (error) {
+    if (!payment) {
       throw new HttpError(404, "Thanh toán không tồn tại", "NOT_FOUND");
     }
+
+    return normalizePayment(payment);
   },
 
   // Admin: Lấy danh sách tất cả thanh toán
   async listAllPayments(skip: number, take: number) {
-    try {
-      const payments = (await prisma.$queryRaw`
-        SELECT p.*, o.user_id FROM payments p
-        JOIN orders o ON p.order_id = o.id
-        ORDER BY p.created_at DESC
-        LIMIT ${take} OFFSET ${skip}
-      `) as PaymentRow[];
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+        include: {
+          order: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      }),
+      prisma.payment.count(),
+    ]);
 
-      const total = (await prisma.$queryRaw`
-        SELECT COUNT(*) as count FROM payments
-      `) as Array<{ count: bigint | number | string }>;
-
-      return {
-        payments: payments.map(normalizePayment),
-        total: normalizeCount(total),
-      };
-    } catch (error) {
-      return { payments: [], total: 0 };
-    }
+    return {
+      payments: payments.map((payment) => ({
+        ...normalizePayment(payment),
+        userId: payment.order.userId,
+      })),
+      total,
+    };
   },
 
   async createVnpayPaymentUrl(
@@ -279,11 +286,11 @@ export const paymentService = {
       throw new HttpError(404, "Đơn hàng không tồn tại", "NOT_FOUND");
     }
 
-    const existingPayment = (await prisma.$queryRaw`
-      SELECT * FROM payments WHERE order_id = ${order.id} LIMIT 1
-    `) as PaymentRow[];
+    const existingPayment = await prisma.payment.findUnique({
+      where: { orderId: order.id },
+    });
 
-    if ((existingPayment[0]?.payment_status ?? "").toUpperCase() === "PAID") {
+    if (normalizePaymentStatus(existingPayment?.paymentStatus) === "PAID") {
       throw new HttpError(409, "Đơn hàng đã thanh toán", "CONFLICT");
     }
 
@@ -292,27 +299,30 @@ export const paymentService = {
     const txnRef = `${order.id}_${Date.now()}`;
     const amount = Math.round(order.totalPrice * 100);
 
-    await prisma.$queryRaw`
-      INSERT INTO payments (order_id, amount, payment_method, payment_status, transaction_id, notes, created_at, updated_at)
-      VALUES (
-        ${order.id},
-        ${order.totalPrice},
-        'VNPAY',
-        'PENDING',
-        ${txnRef},
-        ${JSON.stringify({ stage: "INIT", createdAt: now.toISOString() })},
-        NOW(),
-        NOW()
-      )
-      ON CONFLICT (order_id)
-      DO UPDATE SET
-        amount = EXCLUDED.amount,
-        payment_method = 'VNPAY',
-        payment_status = 'PENDING',
-        transaction_id = EXCLUDED.transaction_id,
-        notes = EXCLUDED.notes,
-        updated_at = NOW()
-    `;
+    await prisma.payment.upsert({
+      where: { orderId: order.id },
+      update: {
+        amount: order.totalPrice,
+        paymentMethod: "VNPAY",
+        paymentStatus: "PENDING",
+        transactionId: txnRef,
+        bankCode: data.bankCode ?? null,
+        responseCode: null,
+        paidAt: null,
+        gatewayPayload: JSON.stringify({ stage: "INIT", createdAt: now.toISOString() }),
+        notes: "VNPAY init",
+      },
+      create: {
+        orderId: order.id,
+        amount: order.totalPrice,
+        paymentMethod: "VNPAY",
+        paymentStatus: "PENDING",
+        transactionId: txnRef,
+        bankCode: data.bankCode ?? null,
+        gatewayPayload: JSON.stringify({ stage: "INIT", createdAt: now.toISOString() }),
+        notes: "VNPAY init",
+      },
+    });
 
     const vnpParams: Record<string, string> = {
       vnp_Version: "2.1.0",
@@ -366,58 +376,77 @@ export const paymentService = {
     const txnRef = normalized.vnp_TxnRef ?? null;
     const responseCode = normalized.vnp_ResponseCode ?? "99";
     const transactionNo = normalized.vnp_TransactionNo ?? null;
+    const bankCode = normalized.vnp_BankCode ?? null;
+    const callbackTxnId = transactionNo ?? txnRef ?? "VNPAY_UNKNOWN_TXN";
     const amountFromGateway = Number(normalized.vnp_Amount ?? "0") / 100;
 
-    let paymentRows = (await prisma.$queryRaw`
-      SELECT * FROM payments WHERE transaction_id = ${txnRef} LIMIT 1
-    `) as PaymentRow[];
+    let payment = await prisma.payment.findFirst({
+      where: { transactionId: txnRef },
+    });
 
-    if (paymentRows.length === 0) {
+    if (!payment) {
       const orderIdFromRef = parseOrderIdFromTxnRef(txnRef);
       if (!orderIdFromRef) {
         return { success: false, code: "01", message: "Payment not found" };
       }
 
-      paymentRows = (await prisma.$queryRaw`
-        SELECT * FROM payments WHERE order_id = ${orderIdFromRef} LIMIT 1
-      `) as PaymentRow[];
+      payment = await prisma.payment.findUnique({
+        where: { orderId: orderIdFromRef },
+      });
     }
 
-    const payment = paymentRows[0];
     if (!payment) {
       return { success: false, code: "01", message: "Payment not found" };
     }
 
-    if (Math.abs(Number(payment.amount) - amountFromGateway) > 0.001) {
+    if (Math.abs(payment.amount - amountFromGateway) > 0.001) {
       return { success: false, code: "04", message: "Invalid amount" };
     }
 
-    const currentStatus = (payment.payment_status ?? "").toUpperCase();
+    const currentStatus = normalizePaymentStatus(payment.paymentStatus);
     if (currentStatus === "PAID") {
       return {
         success: true,
         code: "00",
         message: "Already confirmed",
-        orderId: payment.order_id,
-        paymentStatus: payment.payment_status ?? "PAID",
-        transactionId: payment.transaction_id ?? transactionNo ?? undefined,
+        orderId: payment.orderId,
+        paymentStatus: "PAID",
+        transactionId: payment.transactionId ?? callbackTxnId,
       };
     }
 
     if (responseCode === "00") {
       await prisma.$transaction(async (tx) => {
-        await tx.$queryRaw`
-          UPDATE payments
-          SET payment_status = 'PAID',
-              transaction_id = ${transactionNo ?? txnRef},
-              notes = ${JSON.stringify({ gateway: "VNPAY", params: normalized })},
-              updated_at = NOW()
-          WHERE id = ${payment.id}
-        `;
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: {
+            paymentStatus: "PAID",
+            transactionId: callbackTxnId,
+            bankCode,
+            responseCode,
+            paidAt: new Date(),
+            gatewayPayload: JSON.stringify(normalized),
+            notes: "VNPAY callback success",
+          },
+        });
 
         await tx.order.updateMany({
-          where: { id: payment.order_id, status: "PENDING" },
+          where: { id: payment.orderId, status: "PENDING" },
           data: { status: "CONFIRMED" },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            userId: null,
+            action: "payment_success",
+            entity: "payment",
+            entityId: payment.id,
+            newValues: JSON.stringify({
+              orderId: payment.orderId,
+              transactionId: callbackTxnId,
+              responseCode,
+            }),
+          },
         });
       });
 
@@ -425,28 +454,47 @@ export const paymentService = {
         success: true,
         code: "00",
         message: "Payment success",
-        orderId: payment.order_id,
+        orderId: payment.orderId,
         paymentStatus: "PAID",
-        transactionId: transactionNo ?? txnRef ?? undefined,
+        transactionId: callbackTxnId,
       };
     }
 
-    await prisma.$queryRaw`
-      UPDATE payments
-      SET payment_status = 'FAILED',
-          transaction_id = ${transactionNo ?? txnRef},
-          notes = ${JSON.stringify({ gateway: "VNPAY", params: normalized })},
-          updated_at = NOW()
-      WHERE id = ${payment.id}
-    `;
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          paymentStatus: "FAILED",
+          transactionId: callbackTxnId,
+          bankCode,
+          responseCode,
+          gatewayPayload: JSON.stringify(normalized),
+          notes: "VNPAY callback failed",
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId: null,
+          action: "payment_failed",
+          entity: "payment",
+          entityId: payment.id,
+          newValues: JSON.stringify({
+            orderId: payment.orderId,
+            transactionId: callbackTxnId,
+            responseCode,
+          }),
+        },
+      });
+    });
 
     return {
       success: false,
       code: responseCode,
       message: "Payment failed",
-      orderId: payment.order_id,
+      orderId: payment.orderId,
       paymentStatus: "FAILED",
-      transactionId: transactionNo ?? txnRef ?? undefined,
+      transactionId: callbackTxnId,
     };
   },
 };

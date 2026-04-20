@@ -156,12 +156,37 @@ model Order {
   // Keep order history intact: do not cascade delete orders when deleting users.
   user  User        @relation(fields: [userId], references: [id], onDelete: Restrict)
   items OrderItem[]
+  payment Payment?
 
   @@index([userId])
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@index([deletedAt])
   @@map("orders")
+}
+
+// Payment model
+model Payment {
+  id             Int       @id @default(autoincrement())
+  orderId        Int       @unique @map("order_id")
+  amount         Float
+  paymentMethod  String?   @map("payment_method")
+  paymentStatus  String    @default("PENDING") @map("payment_status")
+  transactionId  String?   @map("transaction_id")
+  bankCode       String?   @map("bank_code")
+  responseCode   String?   @map("response_code")
+  paidAt         DateTime? @map("paid_at")
+  gatewayPayload String?   @map("gateway_payload")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([paymentStatus])
+  @@index([transactionId])
+  @@index([createdAt])
+  @@map("payments")
 }
 
 // OrderItem model

@@ -109,9 +109,13 @@ export const paymentController = {
           : undefined;
 
       const forwardedFor = req.headers["x-forwarded-for"];
-      const clientIp =
+      const forwardedIp =
         typeof forwardedFor === "string"
-          ? forwardedFor.split(",")[0].trim()
+          ? forwardedFor.split(",")[0]?.trim()
+          : undefined;
+      const clientIp =
+        forwardedIp && forwardedIp.length > 0
+          ? forwardedIp
           : req.socket.remoteAddress ?? "127.0.0.1";
 
       const result = await paymentService.createVnpayPaymentUrl(userId, {
@@ -195,12 +199,13 @@ export const paymentController = {
         throw new HttpError(401, "Không thể xác định người dùng", "UNAUTHORIZED");
       }
 
-      const paymentId = req.params.paymentId;
-      if (!paymentId || isNaN(parseInt(paymentId))) {
+      const paymentIdRaw = req.params.paymentId;
+      const paymentId = Number(paymentIdRaw);
+      if (!Number.isInteger(paymentId) || paymentId <= 0) {
         throw new HttpError(400, "ID thanh toán không hợp lệ", "VALIDATION_ERROR");
       }
 
-      const payment = await paymentService.getPaymentDetail(userId, parseInt(paymentId));
+      const payment = await paymentService.getPaymentDetail(userId, paymentId);
 
       res.json({
         message: "Lấy chi tiết thanh toán thành công",

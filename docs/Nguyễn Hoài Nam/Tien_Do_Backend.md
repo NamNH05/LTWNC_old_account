@@ -28,7 +28,7 @@
 ## Ngày 20/04/2026
 | Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
 | :--- | :--- | :--- | :--- |
-| 20/04 | 1) Triển khai tích hợp VNPAY backend theo luồng create-url, return callback, IPN callback<br>2) Bổ sung verify chữ ký HMAC SHA512 cho dữ liệu callback/IPN và từ chối request sai chữ ký<br>3) Bổ sung xử lý idempotency cơ bản để tránh xử lý trùng giao dịch theo order/transaction<br>4) Cập nhật trạng thái payment (PAID/FAILED) và đồng bộ trạng thái order PENDING -> CONFIRMED khi thanh toán thành công<br>5) Chuẩn hóa lại payment routes/controller/service và bổ sung biến môi trường VNPAY trong config | Hoàn thành | Hoàn tất phần 5 Backend Tasks bản đầu, chưa triển khai hoàn tiền |
+| 20/04 | 1) Bổ sung model Payment trong Prisma schema và thêm migration mở rộng cột phục vụ VNPAY (bank_code, response_code, paid_at, gateway_payload)<br>2) Refactor payment service sang Prisma model (thay raw query chính), triển khai create payment URL VNPAY và xử lý callback/IPN có verify chữ ký + idempotency<br>3) Đồng bộ trạng thái thanh toán với đơn hàng (PAID -> CONFIRMED nếu order đang PENDING) và ghi audit log payment success/failed<br>4) Cập nhật controller payment để validate kiểu dữ liệu chặt hơn, xử lý client IP an toàn hơn<br>5) Chạy `prisma generate` + `tsc --noEmit` xác nhận compile pass<br>6) Chuẩn hóa tài liệu hướng dẫn report/tick cập nhật tiến độ cho từng phần tại docs/reports/README.md | Đang làm | Còn thiếu hôm nay: [ ] chạy migration trên DB thật/deploy, [ ] test luồng VNPAY sandbox (create-url/return/IPN), [ ] hoàn thiện refund flow, [ ] cập nhật API docs payment |
 
 ---
 
