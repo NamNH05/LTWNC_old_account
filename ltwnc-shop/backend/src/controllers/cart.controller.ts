@@ -11,11 +11,7 @@ export const cartController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        throw new HttpError(
-          401,
-          "Không thể xác định người dùng",
-          "UNAUTHORIZED"
-        );
+        throw new HttpError(401, "Không thể xác định người dùng");
       }
 
       // Gọi service để lấy thông tin giỏ hàng
@@ -35,11 +31,7 @@ export const cartController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        throw new HttpError(
-          401,
-          "Không thể xác định người dùng",
-          "UNAUTHORIZED"
-        );
+        throw new HttpError(401, "Điều kiện xác định người dùng không thành công");
       }
 
       // Lấy productId và quantity từ request body
@@ -47,15 +39,11 @@ export const cartController = {
 
       // Validate dữ liệu
       if (!productId || isNaN(parseInt(productId))) {
-        throw new HttpError(400, "ID sản phẩm không hợp lệ", "VALIDATION_ERROR");
+        throw new HttpError(400, "ID sản phẩm không hợp lệ");
       }
 
       if (!quantity || quantity <= 0) {
-        throw new HttpError(
-          400,
-          "Số lượng phải lớn hơn 0",
-          "VALIDATION_ERROR"
-        );
+        throw new HttpError(400, "Số lượng phải lớn hơn 0");
       }
 
       // Gọi service để thêm sản phẩm vào giỏ
@@ -75,11 +63,7 @@ export const cartController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        throw new HttpError(
-          401,
-          "Không thể xác định người dùng",
-          "UNAUTHORIZED"
-        );
+        throw new HttpError(401, "Điều kiện xác định người dùng không thành công");
       }
 
       const cartItemId = req.params.cartItemId as string;
@@ -87,15 +71,11 @@ export const cartController = {
 
       // Validate dữ liệu
       if (!cartItemId || isNaN(parseInt(cartItemId))) {
-        throw new HttpError(400, "ID mục giỏ không hợp lệ", "VALIDATION_ERROR");
+        throw new HttpError(400, "ID mục giỏ không hợp lệ");
       }
 
       if (!quantity || quantity <= 0) {
-        throw new HttpError(
-          400,
-          "Số lượng phải lớn hơn 0",
-          "VALIDATION_ERROR"
-        );
+        throw new HttpError(400, "Số lượng phải lớn hơn 0");
       }
 
       // Gọi service để cập nhật sản phẩm
@@ -119,18 +99,14 @@ export const cartController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        throw new HttpError(
-          401,
-          "Không thể xác định người dùng",
-          "UNAUTHORIZED"
-        );
+        throw new HttpError(401, "Điều kiện xác định người dùng không thành công");
       }
 
       const cartItemId = req.params.cartItemId as string;
 
       // Validate dữ liệu
       if (!cartItemId || isNaN(parseInt(cartItemId))) {
-        throw new HttpError(400, "ID mục giỏ không hợp lệ", "VALIDATION_ERROR");
+        throw new HttpError(400, "ID mục giỏ không hợp lệ");
       }
 
       // Gọi service để xóa sản phẩm
@@ -150,11 +126,7 @@ export const cartController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        throw new HttpError(
-          401,
-          "Không thể xác định người dùng",
-          "UNAUTHORIZED"
-        );
+        throw new HttpError(401, "Điều kiện xác định người dùng không thành công");
       }
 
       await cartService.clearCart(userId);

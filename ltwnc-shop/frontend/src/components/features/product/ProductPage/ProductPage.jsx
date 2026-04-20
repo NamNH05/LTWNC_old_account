@@ -5,7 +5,7 @@ import logger from '../../../../utils/logger';
 import Header from '../../../ui/Header/Header';
 import Footer from '../../../ui/Footer/Footer';
 import ProductCard from '../../../ui/ProductCard/ProductCard';
-import { products } from '../../../../data/products';
+import { productService } from '../../../../services/productService';
 import { formatCurrency } from '../../../../utils/format';
 import './ProductPage.css';
 
@@ -26,21 +26,27 @@ const ProductPage = ({
   const loadProductsByCategory = async () => {
     try {
       setLoading(true);
+      // Fetch products from API
+      const allProducts = await productService.listProducts(1, 50);
+      
       let filteredProducts;
-      if (category === 'all') {
-        filteredProducts = products;
+      if (category === 'all' || !category) {
+        filteredProducts = allProducts;
       } else {
-        filteredProducts = products.filter(product =>
-          product.category === category
+        // Filter by category name
+        filteredProducts = allProducts.filter(product =>
+          product.category?.name === category || product.category === category
         );
       }
-      // Lọc chỉ hiển thị sản phẩm có số lượng > 0
+      
+      // Filter only available products
       const availableProducts = filteredProducts.filter(product =>
-        product.quantum !== undefined ? product.quantum > 0 : true
+        product.stock > 0
       );
+      
       setDisplayProducts(availableProducts);
     } catch (error) {
-      console.error('Failed to load products:', error);
+      logger.error('Failed to load products:', error);
       message.error('Không thể tải sản phẩm');
       setDisplayProducts([]);
     } finally {
@@ -115,14 +121,14 @@ const ProductPage = ({
                     <ProductCard
                       key={product.id}
                       image={product.image}
-                      fallbackImages={product.images}
+                      fallbackImages={product.images || []}
                       alt={product.name}
-                      category={product.category}
+                      category={product.category?.name || product.category}
                       name={product.name}
                       currentPrice={formatCurrency(product.price)}
-                      oldPrice={product.oldPrice ? formatCurrency(product.oldPrice) : undefined}
+                      oldPrice={product.originPrice ? formatCurrency(product.originPrice) : undefined}
                       link={`/product/${product.id}`}
-                      badge={product.quantum < 10 ? { text: 'Sắp hết', type: 'warning' } : null}
+                      badge={product.stock < 10 ? { text: 'Sắp hết', type: 'warning' } : null}
                     />
                   ))}
                 </div>

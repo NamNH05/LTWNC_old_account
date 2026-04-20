@@ -34,9 +34,58 @@ async function main() {
   await prisma.address.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+  await prisma.paymentMethod.deleteMany();
   await prisma.user.deleteMany();
 
   console.log('✓ Dữ liệu cũ đã được xóa');
+
+  // 0. Create Payment Methods
+  console.log('💳 Tạo phương thức thanh toán...');
+
+  const paymentMethods = await Promise.all([
+    prisma.paymentMethod.create({
+      data: {
+        name: 'Thẻ Tín Dụng / Ghi Nợ',
+        code: 'CARD',
+        description: 'Thanh toán bằng thẻ tín dụng hoặc thẻ ghi nợ',
+        icon: '💳',
+        isActive: true,
+        displayOrder: 1,
+      },
+    }),
+    prisma.paymentMethod.create({
+      data: {
+        name: 'Chuyển Khoản Ngân Hàng',
+        code: 'BANK',
+        description: 'Chuyển tiền trực tiếp vào tài khoản ngân hàng',
+        icon: '🏦',
+        isActive: true,
+        displayOrder: 2,
+      },
+    }),
+    prisma.paymentMethod.create({
+      data: {
+        name: 'Ví Điện Tử',
+        code: 'WALLET',
+        description: 'Thanh toán qua ví điện tử (Momo, Zalo Pay, ViettelPay)',
+        icon: '📱',
+        isActive: true,
+        displayOrder: 3,
+      },
+    }),
+    prisma.paymentMethod.create({
+      data: {
+        name: 'Thanh Toán Khi Nhận',
+        code: 'COD',
+        description: 'Thanh toán tiền mặt khi nhận hàng',
+        icon: '🚚',
+        isActive: true,
+        displayOrder: 4,
+      },
+    }),
+  ]);
+
+  console.log(`✓ Tạo ${paymentMethods.length} phương thức thanh toán`);
 
   // Hash passwords
   const adminPassword = await bcrypt.hash('Admin@123', 10);
@@ -505,6 +554,7 @@ async function main() {
 
   console.log('\n✨ Seed dữ liệu hoàn tất!');
   console.log('\n📊 Tóm tắt:');
+  console.log(`  - ${paymentMethods.length} phương thức thanh toán`);
   console.log(`  - ${1 + seededUsers.length} tài khoản (1 admin, ${seededUsers.length} user)`);
   console.log(`  - 4 danh mục sản phẩm`);
   console.log(`  - ${products.length} sản phẩm`);
@@ -518,6 +568,10 @@ async function main() {
   console.log(`  User 3: user3@ltwnc.tech / User@123`);
   console.log(`  User 4: user4@ltwnc.tech / User@123`);
   console.log(`  User 5: user5@ltwnc.tech / User@123`);
+  console.log('\n💳 Phương thức thanh toán:');
+  paymentMethods.forEach((pm) => {
+    console.log(`  ${pm.icon} ${pm.name} (${pm.code}): ${pm.description}`);
+  });
 }
 
 main()

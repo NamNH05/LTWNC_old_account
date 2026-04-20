@@ -30,11 +30,30 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // UI only - no API calls
-      console.log("Login form submitted with:", { username, password });
+      // Call backend API
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Đăng nhập thất bại");
+        message.error(data.message || "Đăng nhập thất bại");
+        return;
+      }
+
+      // Save token and user to localStorage
+      login(data);
       
-      // Show success message for UI demonstration
-      message.success(`Đăng nhập thành công! Xin chào ${username}`);
+      message.success("Đăng nhập thành công!");
       
       // Redirect after delay
       setTimeout(() => {
@@ -42,7 +61,9 @@ const Login = () => {
       }, 1500);
     } catch (err) {
       logger.error('Login error:', err);
-      setError("Có lỗi xảy ra");
+      const errorMsg = err.message || "Có lỗi xảy ra";
+      setError(errorMsg);
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }

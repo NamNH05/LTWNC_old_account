@@ -1,43 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Spin } from 'antd';
+import { useAuth } from '../../../../context/AuthContext';
 import './OrderManagement.css';
 
-const SAMPLE_ORDERS = [
-  {
-    id: 101,
-    customerId: 55,
-    total: 1299000,
-    status: 'PENDING',
-    address: '123 Nguyễn Trãi, Quận 1, TP.HCM',
-    createdAt: '2026-04-05T10:15:00Z'
-  },
-  {
-    id: 102,
-    customerId: 56,
-    total: 890000,
-    status: 'PAID',
-    address: '78 Lê Lợi, Quận 3, TP.HCM',
-    createdAt: '2026-04-06T14:30:00Z'
-  },
-  {
-    id: 103,
-    customerId: 57,
-    total: 450000,
-    status: 'SHIPPED',
-    address: '12 Trần Hưng Đạo, Quận 5, TP.HCM',
-    createdAt: '2026-04-07T09:20:00Z'
-  },
-  {
-    id: 104,
-    customerId: 58,
-    total: 1590000,
-    status: 'DELIVERED',
-    address: '45 Phạm Ngũ Lão, Quận 1, TP.HCM',
-    createdAt: '2026-04-08T16:50:00Z'
-  }
-];
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const OrderManagement = () => {
+  const { token } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,10 +26,28 @@ const OrderManagement = () => {
     };
   }, []);
 
-  const loadOrders = () => {
-    setLoading(true);
-    setOrders(SAMPLE_ORDERS);
-    setLoading(false);
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/admin/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load orders');
+      }
+
+      const data = await response.json();
+      setOrders(data.data.orders || []);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      message.error('Lỗi khi tải danh sách đơn hàng');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditOrder = (order) => {
@@ -69,25 +56,61 @@ const OrderManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteOrder = (id) => {
-    setOrders((prev) => prev.filter((order) => order.id !== id));
-    message.success('Xóa đơn hàng thành công');
+  const handleDeleteOrder = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/orders/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete order');
+      }
+
+      setOrders((prev) => prev.filter((order) => order.id !== id));
+      message.success('Xóa đơn hàng thành công');
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      message.error('Lỗi khi xóa đơn hàng');
+    }
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     if (!editingOrder) {
       message.error('Không thể thêm đơn hàng mới từ admin dashboard');
       return;
     }
 
-    const updatedOrder = {
-      ...editingOrder,
-      status: values.status
-    };
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/orders/${editingOrder.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: values.status
+        })
+      });
 
-    setOrders((prev) => prev.map((item) => (item.id === editingOrder.id ? updatedOrder : item)));
-    message.success('Cập nhật đơn hàng thành công');
-    setIsModalOpen(false);
+      if (!response.ok) {
+        throw new Error('Failed to update order');
+      }
+
+      const updatedOrder = {
+        ...editingOrder,
+        status: values.status
+      };
+
+      setOrders((prev) => prev.map((item) => (item.id === editingOrder.id ? updatedOrder : item)));
+      message.success('Cập nhật đơn hàng thành công');
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error updating order:', error);
+      message.error('Lỗi khi cập nhật đơn hàng');
+    }
   };
 
   const columns = [
@@ -99,14 +122,14 @@ const OrderManagement = () => {
     },
     {
       title: 'ID Khách hàng',
-      dataIndex: 'customerId',
-      key: 'customerId',
+      dataIndex: ['user', 'id'],
+      key: 'userId',
     },
     {
       title: 'Số tiền',
-      dataIndex: 'total',
-      key: 'total',
-      render: (total) => `${Number(total).toLocaleString('vi-VN')} ₫`,
+      dataIndex: 'totalPrice',
+      key: 'totalPrice',
+      render: (totalPrice) => `${Number(totalPrice).toLocaleString('vi-VN')} ₫`,
     },
     {
       title: 'Trạng thái',
@@ -115,14 +138,14 @@ const OrderManagement = () => {
       render: (status) => {
         const statusColor = {
           PENDING: '#ffc53d',
-          PAID: '#1890ff',
+          CONFIRMED: '#1890ff',
           SHIPPED: '#52c41a',
           DELIVERED: '#13c2c2',
           CANCELLED: '#ff4d4f'
         };
         const statusLabel = {
           PENDING: 'Chờ xử lý',
-          PAID: 'Đã thanh toán',
+          CONFIRMED: 'Xác nhận',
           SHIPPED: 'Đã gửi',
           DELIVERED: 'Đã giao',
           CANCELLED: 'Đã hủy'
@@ -144,9 +167,9 @@ const OrderManagement = () => {
     },
     {
       title: 'Địa chỉ',
-      dataIndex: 'address',
-      key: 'address',
-      render: (address) => address || 'Chưa xác định',
+      dataIndex: 'shippingAddr',
+      key: 'shippingAddr',
+      render: (shippingAddr) => shippingAddr || 'Chưa xác định',
     },
     {
       title: 'Ngày đặt',
@@ -184,8 +207,8 @@ const OrderManagement = () => {
     return (
       !search ||
       `#${order.id}`.toLowerCase().includes(search) ||
-      `${order.customerId}`.toLowerCase().includes(search) ||
-      order.address?.toLowerCase().includes(search) ||
+      `${order.userId}`.toLowerCase().includes(search) ||
+      order.shippingAddr?.toLowerCase().includes(search) ||
       order.status?.toLowerCase().includes(search)
     );
   });

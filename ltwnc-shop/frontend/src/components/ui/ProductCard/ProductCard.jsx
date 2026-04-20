@@ -65,7 +65,7 @@ const ProductCard = ({
           )}
         </div>
         <div className="product-info">
-          <h3>{category}</h3>
+          <h3>{typeof category === 'string' ? category : category?.name}</h3>
           <span className="product-name">{name}</span>
           <div className="product-price">
             <span className="current-price">{currentPrice}</span>

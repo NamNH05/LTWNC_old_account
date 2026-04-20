@@ -8,13 +8,12 @@ import SearchPage from "../pages/Search/Search";
 import CartPage from "../pages/Cart/Cart";
 import OrderManagement from "../pages/OrderManagement/OrderManagement";
 import ProfilePage from "../pages/Profile/Profile";
-import AddressPage from "../pages/Address/AddressPage";
-import PaymentPage from "../pages/Payment/PaymentPage";
-import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
-import UserManagementPage from "../pages/AdminDashboard/UserManagementPage";
 import OrderManagementPage from "../pages/AdminDashboard/OrderManagementPage";
 import RevenueDashboardPage from "../pages/AdminDashboard/RevenueDashboardPage";
+import UserManagementPage from "../pages/AdminDashboard/UserManagementPage";
 import AuditLogsPage from "../pages/AdminDashboard/AuditLogsPage";
+import AddressPage from "../pages/Address/AddressPage";
+import PaymentPage from "../pages/Payment/PaymentPage";
 
 function AppRoutes() {
   return (
@@ -30,17 +29,13 @@ function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<OrderManagement />} />
-
+        <Route path="/admin/orders" element={<OrderManagementPage />} />
+        <Route path="/admin/revenue" element={<RevenueDashboardPage />} />
+        <Route path="/admin/users" element={<UserManagementPage />} />
+        <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/address" element={<AddressPage />} />
         <Route path="/payment" element={<PaymentPage />} />
-
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<UserManagementPage />} />
-        <Route path="/admin/orders" element={<OrderManagementPage />} />
-        <Route path="/admin/revenue" element={<RevenueDashboardPage />} />
-        <Route path="/audit-logs" element={<AuditLogsPage />} />
-
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
       </Routes>

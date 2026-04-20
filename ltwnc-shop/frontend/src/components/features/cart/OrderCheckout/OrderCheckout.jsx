@@ -1,5 +1,8 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { message } from 'antd';
 import { useCart } from '../../../../context/CartContext';
+import { useAuth } from '../../../../context/AuthContext';
 import './OrderCheckout.css';
 
 const sampleAddresses = [
@@ -30,9 +33,12 @@ const sampleAddresses = [
 ];
 
 const OrderCheckout = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
   const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [loading, setLoading] = useState(false);
   const [userAddresses] = useState(sampleAddresses);
   const [selectedAddressId, setSelectedAddressId] = useState(sampleAddresses[0]?.id || null);
   const [showAddNewAddress, setShowAddNewAddress] = useState(false);
@@ -173,15 +179,65 @@ const OrderCheckout = () => {
     }
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
+    if (!user?.id) {
+      message.error('Đăng nhập lại để tiếp tục');
+      navigate('/login');
+      return;
+    }
+
     if (cartItems.length === 0) {
       setErrorMessage('Giỏ hàng của bạn đang trống.');
       return;
     }
 
-    setSuccessMessage('Đơn hàng đã được đặt thành công!');
-    setErrorMessage('');
-    clearCart();
+    try {
+      setLoading(true);
+
+      // Format shipping address as a single string
+      const shippingAddr = `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.city}`;
+
+      const orderData = {
+        shippingAddr: shippingAddr,
+        phoneNumber: formData.phone,
+        note: formData.notes,
+        items: cartItems.map(item => ({
+          productId: parseInt(item.id) || item.id, // Ensure it's Int
+          quantity: parseInt(item.quantity) || 1,
+        })),
+      };
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8080/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Đặt hàng thất bại');
+      }
+
+      setSuccessMessage('Đơn hàng đã được đặt thành công!');
+      setErrorMessage('');
+      clearCart();
+      
+      setTimeout(() => {
+        message.success('Đơn hàng đã được tạo! Đường dẫn đến trang chủ...');
+        navigate('/');
+      }, 2000);
+    } catch (error) {
+      console.error('Lỗi đặt hàng:', error);
+      setErrorMessage(error.message || 'Không thể đặt hàng. Vui lòng thử lại.');
+      message.error(error.message || 'Không thể đặt hàng');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const subtotal = getCartTotal();
@@ -540,8 +596,8 @@ const OrderCheckout = () => {
                 </button>
               )}
               {step === 3 && (
-                <button className="btn btn-success" onClick={handleConfirmOrder}>
-                  ✓ Đặt Hàng Ngay
+                <button className="btn btn-success" onClick={handleConfirmOrder} disabled={loading}>
+                  {loading ? '⏳ Đang xử lý...' : '✓ Đặt Hàng Ngay'}
                 </button>
               )}
             </div>
