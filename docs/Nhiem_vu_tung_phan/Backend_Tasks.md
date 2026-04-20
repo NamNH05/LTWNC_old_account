@@ -31,9 +31,9 @@
 - [x] Theo dõi trạng thái đơn hàng (PATCH /api/orders/:orderId/status, PATCH /api/orders/:orderId/cancel)
 
 ### 5. Tích hợp thanh toán
-- [ ] Tích hợp cổng thanh toán VNPAY
-- [ ] Quản lý trạng thái thanh toán
-- [ ] Ghi log giao dịch
+- [x] Tích hợp cổng thanh toán VNPAY
+- [x] Quản lý trạng thái thanh toán
+- [x] Ghi log giao dịch
 - [ ] Xử lý hoàn tiền
 
 ### 6. Xử lý lỗi và kiểm tra dữ liệu

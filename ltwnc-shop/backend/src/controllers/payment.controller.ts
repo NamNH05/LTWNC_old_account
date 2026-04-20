@@ -85,6 +85,108 @@ export const paymentController = {
     }
   },
 
+  async createVnpayUrl(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new HttpError(401, "Không thể xác định người dùng", "UNAUTHORIZED");
+      }
+
+      const orderIdRaw = req.body?.orderId;
+      const orderId = Number(orderIdRaw);
+      if (!Number.isInteger(orderId) || orderId <= 0) {
+        throw new HttpError(400, "orderId không hợp lệ", "VALIDATION_ERROR");
+      }
+
+      const bankCode =
+        typeof req.body?.bankCode === "string" && req.body.bankCode.trim()
+          ? req.body.bankCode.trim().toUpperCase()
+          : undefined;
+
+      const locale =
+        typeof req.body?.locale === "string" && req.body.locale.trim()
+          ? req.body.locale.trim().toLowerCase()
+          : undefined;
+
+      const forwardedFor = req.headers["x-forwarded-for"];
+      const clientIp =
+        typeof forwardedFor === "string"
+          ? forwardedFor.split(",")[0].trim()
+          : req.socket.remoteAddress ?? "127.0.0.1";
+
+      const result = await paymentService.createVnpayPaymentUrl(userId, {
+        orderId,
+        bankCode,
+        locale,
+        clientIp,
+      });
+
+      res.status(201).json({
+        message: "Tạo link thanh toán VNPAY thành công",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async handleVnpayReturn(req: Request, res: Response, next: NextFunction) {
+    try {
+      const params: Record<string, string> = {};
+      for (const [key, value] of Object.entries(req.query)) {
+        if (Array.isArray(value)) {
+          params[key] = String(value[0] ?? "");
+        } else {
+          params[key] = String(value ?? "");
+        }
+      }
+
+      const result = await paymentService.handleVnpayCallback(params);
+
+      if (!result.success && result.code === "97") {
+        return res.status(400).json({
+          message: "Chữ ký VNPAY không hợp lệ",
+          data: result,
+        });
+      }
+
+      return res.json({
+        message: "Xử lý callback VNPAY hoàn tất",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async handleVnpayIpn(req: Request, res: Response, next: NextFunction) {
+    try {
+      const params: Record<string, string> = {};
+      for (const [key, value] of Object.entries(req.query)) {
+        if (Array.isArray(value)) {
+          params[key] = String(value[0] ?? "");
+        } else {
+          params[key] = String(value ?? "");
+        }
+      }
+
+      const result = await paymentService.handleVnpayCallback(params);
+      if (!result.success) {
+        return res.json({
+          RspCode: result.code,
+          Message: result.message,
+        });
+      }
+
+      return res.json({
+        RspCode: "00",
+        Message: "Confirm Success",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // Lấy chi tiết thanh toán
   async getPaymentDetail(req: Request, res: Response, next: NextFunction) {
     try {

@@ -9,11 +9,17 @@ const paymentRouter = Router();
 
 // Public routes
 paymentRouter.get("/methods", paymentController.getPaymentMethods);
+paymentRouter.get("/vnpay/return", paymentController.handleVnpayReturn);
+paymentRouter.get("/vnpay/ipn", paymentController.handleVnpayIpn);
 
 // Protected routes
 paymentRouter.get("/", requireAuth, paymentController.getMyPayments);
 paymentRouter.post("/", requireAuth, paymentController.createPayment);
-paymentRouter.get("/:paymentId", requireAuth, paymentController.getPaymentDetail);
+paymentRouter.post(
+  "/vnpay/create-url",
+  requireAuth,
+  paymentController.createVnpayUrl
+);
 
 // Admin routes
 paymentRouter.get(
@@ -22,5 +28,7 @@ paymentRouter.get(
   requireRoles(UserRole.ADMIN),
   paymentController.getAllPayments
 );
+
+paymentRouter.get("/:paymentId", requireAuth, paymentController.getPaymentDetail);
 
 export default paymentRouter;

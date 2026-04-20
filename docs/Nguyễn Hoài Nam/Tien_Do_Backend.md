@@ -25,6 +25,11 @@
 | :--- | :--- | :--- | :--- |
 | 12/04 | 1) Triển khai lớp API Gateway nội bộ tại prefix /api và gom route điều hướng tập trung (auth/users/products/cart/orders)<br>2) Bổ sung middleware request context + request logger dạng JSON (kèm requestId, latency, ip)<br>3) Bổ sung endpoint giám sát /api/gateway/health và /api/gateway/metrics<br>4) Triển khai rate limiter in-memory với header X-RateLimit-* cho toàn bộ API<br>5) Bổ sung cơ chế cân bằng tải bằng cluster mode (tự fork worker và tự khởi động lại worker khi crash)<br>6) Chuẩn hóa biến môi trường mới cho gateway/rate-limit/cluster và xác nhận TypeScript compile pass | Hoàn thành | Hoàn tất phần 7 Backend Tasks, sẵn sàng cho bước tích hợp API Gateway ở tầng infra/reverse proxy |
 
+## Ngày 20/04/2026
+| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| 20/04 | 1) Triển khai tích hợp VNPAY backend theo luồng create-url, return callback, IPN callback<br>2) Bổ sung verify chữ ký HMAC SHA512 cho dữ liệu callback/IPN và từ chối request sai chữ ký<br>3) Bổ sung xử lý idempotency cơ bản để tránh xử lý trùng giao dịch theo order/transaction<br>4) Cập nhật trạng thái payment (PAID/FAILED) và đồng bộ trạng thái order PENDING -> CONFIRMED khi thanh toán thành công<br>5) Chuẩn hóa lại payment routes/controller/service và bổ sung biến môi trường VNPAY trong config | Hoàn thành | Hoàn tất phần 5 Backend Tasks bản đầu, chưa triển khai hoàn tiền |
+
 ---
 
 ## TỔNG KẾT

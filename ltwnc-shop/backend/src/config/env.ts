@@ -35,4 +35,10 @@ export const env = {
   rateLimitMax: parseNumber(process.env.RATE_LIMIT_MAX, 120),
   enableClusterMode: parseBoolean(process.env.ENABLE_CLUSTER_MODE, false),
   clusterWorkers: parseNumber(process.env.CLUSTER_WORKERS, 1),
+  vnpayTmnCode: process.env.VNPAY_TMN_CODE ?? "",
+  vnpayHashSecret: process.env.VNPAY_HASH_SECRET ?? "",
+  vnpayUrl: process.env.VNPAY_URL ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+  vnpayReturnUrl: process.env.VNPAY_RETURN_URL ?? "",
+  vnpayIpnUrl: process.env.VNPAY_IPN_URL ?? "",
+  vnpayLocale: process.env.VNPAY_LOCALE ?? "vn",
 };
