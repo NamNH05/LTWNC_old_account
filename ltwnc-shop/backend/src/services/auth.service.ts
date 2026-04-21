@@ -26,6 +26,13 @@ type LoginInput = {
   password: string;
 };
 
+type OAuthProvider = "google" | "facebook";
+
+type OAuthProfile = {
+  email: string;
+  fullName: string;
+};
+
 type TokenResponse = {
   accessToken: string;
   refreshToken: string;
@@ -70,6 +77,96 @@ const issueTokenPair = (user: { id: number; email: string; role: UserRole }): To
   });
 
   return { accessToken, refreshToken, sessionId };
+};
+
+const getOAuthRedirectUri = (redirectUri?: string) => {
+  const uri = redirectUri?.trim() || env.oauthRedirectUri;
+  if (!uri) {
+    throw new HttpError(
+      400,
+      "redirectUri is required (or set OAUTH_REDIRECT_URI in environment)",
+      "VALIDATION_ERROR"
+    );
+  }
+
+  return uri;
+};
+
+const ensureOAuthClientConfig = (provider: OAuthProvider) => {
+  if (provider === "google") {
+    if (!env.googleClientId || !env.googleClientSecret) {
+      throw new HttpError(500, "Google OAuth is not configured", "INTERNAL_ERROR");
+    }
+    return;
+  }
+
+  if (!env.facebookClientId || !env.facebookClientSecret) {
+    throw new HttpError(500, "Facebook OAuth is not configured", "INTERNAL_ERROR");
+  }
+};
+
+const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(url, init);
+  const text = await response.text();
+
+  let payload: unknown = {};
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { raw: text };
+    }
+  }
+
+  if (!response.ok) {
+    throw new HttpError(401, "OAuth provider request failed", "UNAUTHORIZED", payload);
+  }
+
+  return payload as T;
+};
+
+const generateOAuthPassword = () => {
+  // Tài khoản OAuth không dùng password trực tiếp, vẫn cần giá trị hợp lệ để lưu DB.
+  return `OAuth-${crypto.randomBytes(24).toString("hex")}Aa1`;
+};
+
+const loginWithOAuthProfile = async (provider: OAuthProvider, profile: OAuthProfile) => {
+  const email = normalizeEmail(profile.email);
+  let user = await userRepository.findByEmail(email);
+
+  if (!user) {
+    user = await userRepository.create({
+      email,
+      fullName: profile.fullName.trim() || email,
+      password: generateOAuthPassword(),
+    });
+
+    await auditRepository.create({
+      userId: user.id,
+      action: `oauth_register_${provider}`,
+      entity: "user",
+      entityId: user.id,
+    });
+  }
+
+  await auditRepository.create({
+    userId: user.id,
+    action: `oauth_login_${provider}`,
+    entity: "user",
+    entityId: user.id,
+  });
+
+  const tokens = issueTokenPair(user);
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+    },
+    ...tokens,
+  };
 };
 
 export const authService = {
@@ -143,6 +240,95 @@ export const authService = {
       },
       ...tokens,
     };
+  },
+
+  oauthGoogle: async (code: string, redirectUri?: string) => {
+    ensureOAuthClientConfig("google");
+    const callbackUrl = getOAuthRedirectUri(redirectUri);
+
+    type GoogleTokenResponse = {
+      access_token?: string;
+    };
+
+    type GoogleUserInfoResponse = {
+      email?: string;
+      name?: string;
+    };
+
+    const tokenResult = await fetchJson<GoogleTokenResponse>("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: env.googleClientId,
+        client_secret: env.googleClientSecret,
+        redirect_uri: callbackUrl,
+        grant_type: "authorization_code",
+      }),
+    });
+
+    if (!tokenResult.access_token) {
+      throw new HttpError(401, "Google access token is missing", "UNAUTHORIZED");
+    }
+
+    const profile = await fetchJson<GoogleUserInfoResponse>(
+      `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${encodeURIComponent(tokenResult.access_token)}`
+    );
+
+    if (!profile.email) {
+      throw new HttpError(400, "Google account does not provide email", "VALIDATION_ERROR");
+    }
+
+    return loginWithOAuthProfile("google", {
+      email: profile.email,
+      fullName: profile.name ?? profile.email,
+    });
+  },
+
+  oauthFacebook: async (code: string, redirectUri?: string) => {
+    ensureOAuthClientConfig("facebook");
+    const callbackUrl = getOAuthRedirectUri(redirectUri);
+
+    type FacebookTokenResponse = {
+      access_token?: string;
+    };
+
+    type FacebookUserInfoResponse = {
+      email?: string;
+      name?: string;
+    };
+
+    const tokenUrl = new URL("https://graph.facebook.com/v19.0/oauth/access_token");
+    tokenUrl.searchParams.set("client_id", env.facebookClientId);
+    tokenUrl.searchParams.set("client_secret", env.facebookClientSecret);
+    tokenUrl.searchParams.set("redirect_uri", callbackUrl);
+    tokenUrl.searchParams.set("code", code);
+
+    const tokenResult = await fetchJson<FacebookTokenResponse>(tokenUrl.toString());
+    if (!tokenResult.access_token) {
+      throw new HttpError(401, "Facebook access token is missing", "UNAUTHORIZED");
+    }
+
+    const userInfoUrl = new URL("https://graph.facebook.com/me");
+    userInfoUrl.searchParams.set("fields", "id,name,email");
+    userInfoUrl.searchParams.set("access_token", tokenResult.access_token);
+
+    const profile = await fetchJson<FacebookUserInfoResponse>(userInfoUrl.toString());
+
+    if (!profile.email) {
+      throw new HttpError(
+        400,
+        "Facebook account does not provide email. Ensure email permission is granted.",
+        "VALIDATION_ERROR"
+      );
+    }
+
+    return loginWithOAuthProfile("facebook", {
+      email: profile.email,
+      fullName: profile.name ?? profile.email,
+    });
   },
 
   // Refresh: kiểm tra refresh token + session hiện hữu, xoay vòng token, cấp access token mới.

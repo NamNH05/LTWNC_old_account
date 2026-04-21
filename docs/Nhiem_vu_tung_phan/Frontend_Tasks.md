@@ -3,7 +3,8 @@
 ## Danh sách công việc cần hoàn tất cho Frontend
 
 ### 1. Trang xác thực
-- [ ] Triển khai trang đăng nhập
+- [x] Triển khai trang đăng nhập
+- [x] Tích hợp nút đăng nhập Google/Facebook
 - [ ] Triển khai trang đăng ký
 - [ ] Trang đặt lại mật khẩu
 - [ ] Thiết lập route được bảo vệ
