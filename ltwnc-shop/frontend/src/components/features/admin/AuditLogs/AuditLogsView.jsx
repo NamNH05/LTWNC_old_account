@@ -26,11 +26,11 @@ const AuditLogsView = () => {
             setLoading(true);
             
             const params = new URLSearchParams({
-                page: pageNum,
-                size: size,
+                page: pageNum + 1,
+                limit: size,
                 ...(user && { userId: user }),
-                ...(actionType && { actionType }),
-                ...(entity && { entityName: entity })
+                ...(actionType && { action: actionType }),
+                ...(entity && { entity })
             });
 
             const response = await fetch(`${API_BASE_URL}/admin/audit-logs?${params}`, {
@@ -58,7 +58,7 @@ const AuditLogsView = () => {
     };
 
     const handleSearch = () => {
-        fetchLogs(0);
+        fetchLogs(0, filterUser, filterType, filterEntity);
     };
 
     const handleReset = () => {
@@ -164,11 +164,18 @@ const AuditLogsView = () => {
                             onChange={(value) => setFilterType(value || '')}
                         >
                             <Select.Option value="">-- Chọn --</Select.Option>
-                            <Select.Option value="CREATE">CREATE</Select.Option>
-                            <Select.Option value="UPDATE">UPDATE</Select.Option>
-                            <Select.Option value="DELETE">DELETE</Select.Option>
-                            <Select.Option value="LOGIN">LOGIN</Select.Option>
-                            <Select.Option value="LOGOUT">LOGOUT</Select.Option>
+                            <Select.Option value="created">created</Select.Option>
+                            <Select.Option value="create">create</Select.Option>
+                            <Select.Option value="update">update</Select.Option>
+                            <Select.Option value="delete">delete</Select.Option>
+                            <Select.Option value="login">login</Select.Option>
+                            <Select.Option value="logout">logout</Select.Option>
+                            <Select.Option value="register">register</Select.Option>
+                            <Select.Option value="checkout">checkout</Select.Option>
+                            <Select.Option value="cancel">cancel</Select.Option>
+                            <Select.Option value="status_update">status_update</Select.Option>
+                            <Select.Option value="payment_success">payment_success</Select.Option>
+                            <Select.Option value="payment_failed">payment_failed</Select.Option>
                         </Select>
                     </Col>
 
@@ -180,9 +187,9 @@ const AuditLogsView = () => {
                             onChange={(value) => setFilterEntity(value || '')}
                         >
                             <Select.Option value="">-- Chọn --</Select.Option>
-                            <Select.Option value="ORDER">ORDER</Select.Option>
-                            <Select.Option value="PRODUCT">PRODUCT</Select.Option>
-                            <Select.Option value="USER">USER</Select.Option>
+                            <Select.Option value="order">ORDER</Select.Option>
+                            <Select.Option value="product">PRODUCT</Select.Option>
+                            <Select.Option value="user">USER</Select.Option>
                         </Select>
                     </Col>
 
@@ -223,7 +230,7 @@ const AuditLogsView = () => {
                         current={page + 1}
                         pageSize={size}
                         total={total}
-                        onChange={(pageNum) => fetchLogs(pageNum - 1)}
+                            onChange={(pageNum) => fetchLogs(pageNum - 1, filterUser, filterType, filterEntity)}
                         showTotal={(total) => `Tổng cộng ${total} logs`}
                     />
                 </div>

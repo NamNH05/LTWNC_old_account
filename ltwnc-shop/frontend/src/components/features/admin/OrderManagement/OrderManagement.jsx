@@ -52,7 +52,7 @@ const OrderManagement = () => {
 
   const handleEditOrder = (order) => {
     setEditingOrder(order);
-    form.setFieldsValue(order);
+    form.setFieldsValue({ status: order.status });
     setIsModalOpen(true);
   };
 
@@ -99,12 +99,8 @@ const OrderManagement = () => {
         throw new Error('Failed to update order');
       }
 
-      const updatedOrder = {
-        ...editingOrder,
-        status: values.status
-      };
-
-      setOrders((prev) => prev.map((item) => (item.id === editingOrder.id ? updatedOrder : item)));
+      const data = await response.json();
+      setOrders((prev) => prev.map((item) => (item.id === editingOrder.id ? data.data : item)));
       message.success('Cập nhật đơn hàng thành công');
       setIsModalOpen(false);
     } catch (error) {
@@ -252,14 +248,14 @@ const OrderManagement = () => {
                 <Form.Item label="Mã đơn hàng">
                   <Input value={`#${editingOrder.id}`} disabled />
                 </Form.Item>
-                <Form.Item label="ID Khách hàng">
-                  <Input value={editingOrder.customerId} disabled />
+                <Form.Item label="Khách hàng">
+                  <Input value={`${editingOrder.user?.fullName || '-'} (${editingOrder.user?.email || '-'})`} disabled />
                 </Form.Item>
                 <Form.Item label="Số tiền">
-                  <Input value={`${Number(editingOrder.total).toLocaleString('vi-VN')} ₫`} disabled />
+                  <Input value={`${Number(editingOrder.totalPrice).toLocaleString('vi-VN')} ₫`} disabled />
                 </Form.Item>
                 <Form.Item label="Địa chỉ">
-                  <Input value={editingOrder.address || 'Chưa xác định'} disabled />
+                  <Input value={editingOrder.shippingAddr || 'Chưa xác định'} disabled />
                 </Form.Item>
                 <Form.Item label="Ngày đặt">
                   <Input value={editingOrder.createdAt ? new Date(editingOrder.createdAt).toLocaleDateString('vi-VN') : '-'} disabled />
@@ -274,7 +270,7 @@ const OrderManagement = () => {
               <Select
                 options={[
                   { value: 'PENDING', label: 'Chờ xử lý' },
-                  { value: 'PAID', label: 'Đã thanh toán' },
+                  { value: 'CONFIRMED', label: 'Xác nhận' },
                   { value: 'SHIPPED', label: 'Đã gửi' },
                   { value: 'DELIVERED', label: 'Đã giao' },
                   { value: 'CANCELLED', label: 'Đã hủy' }

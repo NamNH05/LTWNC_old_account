@@ -6,6 +6,7 @@ import { requireRoles } from "../middlewares/rbac.middleware";
 const orderRouter = Router();
 
 // Route người dùng: checkout, xem đơn của bản thân, hủy đơn đúng điều kiện.
+orderRouter.post("/", requireAuth, orderController.checkout);
 orderRouter.post("/checkout", requireAuth, orderController.checkout);
 orderRouter.get("/my", requireAuth, orderController.listMyOrders);
 orderRouter.get("/:orderId", requireAuth, orderController.getOrderDetail);

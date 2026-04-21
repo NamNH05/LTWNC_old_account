@@ -14,6 +14,11 @@ const UserManagement = () => {
   const [form] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
 
+  const authHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  });
+
   useEffect(() => {
     loadUsers();
   }, []);
@@ -23,7 +28,7 @@ const UserManagement = () => {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/admin/users`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -43,14 +48,17 @@ const UserManagement = () => {
   };
 
   const handleAddUser = () => {
-    setEditingUser(null);
-    form.resetFields();
-    setIsModalOpen(true);
+    message.info('Backend hiện chưa có API tạo người dùng trong admin');
   };
 
   const handleEditUser = (user) => {
     setEditingUser(user);
-    form.setFieldsValue(user);
+    form.setFieldsValue({
+      fullName: user.fullName,
+      phone: user.phone,
+      role: user.role,
+      isActive: user.isActive,
+    });
     setIsModalOpen(true);
   };
 
@@ -59,7 +67,7 @@ const UserManagement = () => {
       const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -77,44 +85,29 @@ const UserManagement = () => {
 
   const handleSubmit = async (values) => {
     try {
-      if (editingUser) {
-        const response = await fetch(`${API_BASE_URL}/admin/users/${editingUser.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(values)
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update user');
-        }
-
-        setUsers((prev) =>
-          prev.map((item) =>
-            item.id === editingUser.id ? { ...item, ...values } : item
-          )
-        );
-        message.success('Đã cập nhật người dùng thành công');
-      } else {
-        const response = await fetch(`${API_BASE_URL}/admin/users`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(values)
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to create user');
-        }
-
-        const data = await response.json();
-        setUsers((prev) => [data.data, ...prev]);
-        message.success('Đã thêm người dùng thành công');
+      if (!editingUser) {
+        message.error('Backend chưa hỗ trợ tạo người dùng từ trang admin này');
+        return;
       }
+
+      const response = await fetch(`${API_BASE_URL}/admin/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          fullName: values.fullName,
+          phone: values.phone,
+          role: values.role,
+          isActive: values.isActive,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update user');
+      }
+
+      const data = await response.json();
+      setUsers((prev) => prev.map((item) => (item.id === editingUser.id ? data.data : item)));
+      message.success('Đã cập nhật người dùng thành công');
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving user:', error);
@@ -163,23 +156,22 @@ const UserManagement = () => {
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'status',
+      dataIndex: 'isActive',
       key: 'status',
-      render: (status) => {
+      render: (isActive) => {
         const statusColors = {
-          'active': '#52c41a',
-          'inactive': '#999',
-          'suspended': '#ffc53d'
+          true: '#52c41a',
+          false: '#999'
         };
         return (
           <span style={{
             color: '#fff',
-            backgroundColor: statusColors[status] || '#999',
+            backgroundColor: statusColors[String(Boolean(isActive))] || '#999',
             padding: '4px 8px',
             borderRadius: '4px',
             fontSize: '12px'
           }}>
-            {status === 'active' ? 'Hoạt động' : status === 'inactive' ? 'Không hoạt động' : 'Tạm khóa'}
+            {isActive ? 'Hoạt động' : 'Không hoạt động'}
           </span>
         );
       }
@@ -253,32 +245,6 @@ const UserManagement = () => {
             layout="vertical"
             onFinish={handleSubmit}
           >
-            {!editingUser && (
-              <Form.Item
-                label="Tên đăng nhập"
-                name="username"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập tên đăng nhập' },
-                  { min: 3, max: 50, message: 'Tên đăng nhập phải có 3-50 ký tự' }
-                ]}
-              >
-                <Input placeholder="Ví dụ: user123" />
-              </Form.Item>
-            )}
-
-            {!editingUser && (
-              <Form.Item
-                label="Mật khẩu"
-                name="password"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập mật khẩu' },
-                  { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' }
-                ]}
-              >
-                <Input.Password placeholder="Nhập mật khẩu" />
-              </Form.Item>
-            )}
-
             <Form.Item
               label="Tên đầy đủ"
               name="fullName"
@@ -313,19 +279,17 @@ const UserManagement = () => {
               <Select>
                 <Select.Option value="ADMIN">Admin</Select.Option>
                 <Select.Option value="USER">Người dùng</Select.Option>
-                <Select.Option value="STAFF">Nhân viên</Select.Option>
               </Select>
             </Form.Item>
 
             <Form.Item
-              label="Trạng thái"
-              name="status"
+              label="Hoạt động"
+              name="isActive"
               rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
             >
               <Select>
-                <Select.Option value="active">Hoạt động</Select.Option>
-                <Select.Option value="inactive">Không hoạt động</Select.Option>
-                <Select.Option value="suspended">Tạm khóa</Select.Option>
+                <Select.Option value={true}>Hoạt động</Select.Option>
+                <Select.Option value={false}>Không hoạt động</Select.Option>
               </Select>
             </Form.Item>
           </Form>

@@ -20,7 +20,7 @@ export const orderController = {
         throw new HttpError(401, "Không thể xác định người dùng", "UNAUTHORIZED");
       }
 
-      const { shippingAddr, phoneNumber, note } = req.body;
+      const { shippingAddr, phoneNumber, note, items } = req.body;
 
       if (!shippingAddr || typeof shippingAddr !== "string") {
         throw new HttpError(400, "Địa chỉ giao hàng không hợp lệ", "VALIDATION_ERROR");
@@ -34,10 +34,15 @@ export const orderController = {
         throw new HttpError(400, "Ghi chú không hợp lệ", "VALIDATION_ERROR");
       }
 
+      if (items !== undefined && !Array.isArray(items)) {
+        throw new HttpError(400, "Danh sách sản phẩm không hợp lệ", "VALIDATION_ERROR");
+      }
+
       const order = await orderService.checkout(userId, {
         shippingAddr: shippingAddr.trim(),
         phoneNumber: phoneNumber.trim(),
         ...(note ? { note: note.trim() } : {}),
+        ...(Array.isArray(items) ? { items } : {}),
       });
 
       res.status(201).json({

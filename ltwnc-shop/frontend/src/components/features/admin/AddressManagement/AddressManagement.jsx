@@ -14,6 +14,11 @@ const AddressManagement = () => {
   const [form] = Form.useForm();
   const isMountedRef = useRef(false);
 
+  const authHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  });
+
   useEffect(() => {
     if (!isMountedRef.current) {
       isMountedRef.current = true;
@@ -50,14 +55,21 @@ const AddressManagement = () => {
   };
 
   const handleAddAddress = () => {
-    setEditingAddress(null);
-    form.resetFields();
-    setIsModalOpen(true);
+    message.info('Backend hiện chưa có API tạo địa chỉ trong trang admin này');
   };
 
   const handleEditAddress = (address) => {
     setEditingAddress(address);
-    form.setFieldsValue(address);
+    form.setFieldsValue({
+      street: address.street,
+      ward: address.ward,
+      district: address.district,
+      city: address.city,
+      zipCode: address.zipCode,
+      isDefault: address.isDefault,
+      fullName: address.user?.fullName,
+      phone: address.user?.phone,
+    });
     setIsModalOpen(true);
   };
 
@@ -83,71 +95,36 @@ const AddressManagement = () => {
   };
 
   const handleSetDefault = async (id) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/addresses/${id}/set-default`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to set default address');
-      }
-
-      setAddresses((prev) =>
-        prev.map((address) => ({
-          ...address,
-          isDefault: address.id === id
-        }))
-      );
-      message.success('Đặt địa chỉ mặc định thành công');
-    } catch (error) {
-      console.error('Error setting default address:', error);
-      message.error('Lỗi khi đặt địa chỉ mặc định');
-    }
+    message.info('Backend hiện chưa hỗ trợ đặt mặc định từ trang admin này');
   };
 
   const handleSubmit = async (values) => {
     try {
-      if (editingAddress) {
-        const response = await fetch(`${API_BASE_URL}/admin/addresses/${editingAddress.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(values)
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update address');
-        }
-
-        const updatedAddress = { ...editingAddress, ...values };
-        setAddresses((prev) => prev.map((item) => (item.id === editingAddress.id ? updatedAddress : item)));
-        message.success('Cập nhật địa chỉ thành công');
-      } else {
-        const response = await fetch(`${API_BASE_URL}/admin/addresses`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            ...values,
-            isDefault: addresses.length === 0
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to create address');
-        }
-
-        const data = await response.json();
-        setAddresses((prev) => [...prev, data.data]);
-        message.success('Thêm địa chỉ thành công');
+      if (!editingAddress) {
+        message.error('Backend chưa hỗ trợ tạo địa chỉ từ trang admin này');
+        return;
       }
+
+      const response = await fetch(`${API_BASE_URL}/admin/addresses/${editingAddress.id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          street: values.street,
+          ward: values.ward,
+          district: values.district,
+          city: values.city,
+          zipCode: values.zipCode,
+          isDefault: values.isDefault,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update address');
+      }
+
+      const data = await response.json();
+      setAddresses((prev) => prev.map((item) => (item.id === editingAddress.id ? data.data : item)));
+      message.success('Cập nhật địa chỉ thành công');
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving address:', error);
@@ -158,31 +135,19 @@ const AddressManagement = () => {
   const columns = [
     {
       title: 'Họ tên',
-      dataIndex: 'fullName',
+      dataIndex: ['user', 'fullName'],
       key: 'fullName',
     },
     {
       title: 'Số điện thoại',
-      dataIndex: 'phone',
+      dataIndex: ['user', 'phone'],
       key: 'phone',
     },
     {
       title: 'Địa chỉ',
-      dataIndex: 'address',
+      dataIndex: 'street',
       key: 'address',
-    },
-    {
-      title: 'Loại',
-      dataIndex: 'type',
-      key: 'type',
-      render: (type) => {
-        const typeLabels = {
-          'home': 'Nhà riêng',
-          'work': 'Nơi làm việc',
-          'other': 'Khác'
-        };
-        return typeLabels[type] || type;
-      }
+      render: (_, record) => `${record.street}, ${record.ward}, ${record.district}, ${record.city}`,
     },
     {
       title: 'Mặc định',
@@ -259,38 +224,52 @@ const AddressManagement = () => {
             onFinish={handleSubmit}
           >
             <Form.Item
-              label="Họ tên"
-              name="fullName"
-              rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Số điện thoại"
-              name="phone"
-              rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Địa chỉ"
-              name="address"
+              label="Số nhà, đường"
+              name="street"
               rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
             >
-              <Input.TextArea rows={3} />
+              <Input />
             </Form.Item>
 
             <Form.Item
-              label="Loại địa chỉ"
-              name="type"
-              rules={[{ required: true, message: 'Vui lòng chọn loại địa chỉ' }]}
+              label="Phường/Xã"
+              name="ward"
+              rules={[{ required: true, message: 'Vui lòng nhập phường/xã' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Quận/Huyện"
+              name="district"
+              rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Tỉnh/Thành phố"
+              name="city"
+              rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Mã bưu chính"
+              name="zipCode"
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Mặc định"
+              name="isDefault"
+              rules={[{ required: true, message: 'Vui lòng chọn trạng thái mặc định' }]}
             >
               <Select>
-                <Select.Option value="home">Nhà riêng</Select.Option>
-                <Select.Option value="work">Nơi làm việc</Select.Option>
-                <Select.Option value="other">Khác</Select.Option>
+                <Select.Option value={true}>Có</Select.Option>
+                <Select.Option value={false}>Không</Select.Option>
               </Select>
             </Form.Item>
           </Form>

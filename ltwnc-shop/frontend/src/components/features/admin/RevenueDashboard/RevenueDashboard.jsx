@@ -78,24 +78,6 @@ const RevenueDashboard = () => {
       key: 'revenue',
       render: (text) => formatCurrency(text),
     },
-    {
-      title: 'Số Đơn Hàng',
-      dataIndex: 'orders',
-      key: 'orders',
-      render: () => '-',
-    },
-    {
-      title: 'Sản Phẩm Bán Ra',
-      dataIndex: 'products',
-      key: 'products',
-      render: () => '-',
-    },
-    {
-      title: 'Trạng Thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: () => <span className="status-badge status-completed">Hoàn tất</span>,
-    },
   ];
 
 

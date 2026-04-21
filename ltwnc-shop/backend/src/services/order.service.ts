@@ -6,6 +6,10 @@ interface CheckoutPayload {
   shippingAddr: string;
   phoneNumber: string;
   note?: string;
+  items?: Array<{
+    productId: number;
+    quantity: number;
+  }>;
 }
 
 interface ListOrdersParams {
@@ -55,7 +59,31 @@ const validateAdminStatusTransition = (
 export const orderService = {
   // Checkout: tạo đơn từ giỏ hàng, trừ tồn kho và dọn cart item trong cùng transaction.
   async checkout(userId: number, payload: CheckoutPayload) {
-    const { shippingAddr, phoneNumber, note } = payload;
+    const { shippingAddr, phoneNumber, note, items } = payload;
+
+    const requestedItems = Array.isArray(items) && items.length > 0
+      ? items.reduce<Array<{ productId: number; quantity: number }>>((acc, item) => {
+          const productId = Number(item.productId);
+          const quantity = Number(item.quantity);
+
+          if (!Number.isInteger(productId) || productId <= 0) {
+            throw new HttpError(400, "ID sản phẩm không hợp lệ", "VALIDATION_ERROR");
+          }
+
+          if (!Number.isInteger(quantity) || quantity <= 0) {
+            throw new HttpError(400, "Số lượng sản phẩm không hợp lệ", "VALIDATION_ERROR");
+          }
+
+          const existingItem = acc.find((currentItem) => currentItem.productId === productId);
+          if (existingItem) {
+            existingItem.quantity += quantity;
+          } else {
+            acc.push({ productId, quantity });
+          }
+
+          return acc;
+        }, [])
+      : null;
 
     const order = await prisma.$transaction(async (tx) => {
       const cart = await tx.cart.findUnique({
@@ -69,37 +97,67 @@ export const orderService = {
         },
       });
 
-      if (!cart || cart.items.length === 0) {
+      const checkoutItems = requestedItems ?? cart?.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })) ?? [];
+
+      if (checkoutItems.length === 0) {
         throw new HttpError(400, "Giỏ hàng trống, không thể checkout", "VALIDATION_ERROR");
       }
 
-      for (const item of cart.items) {
-        if (!item.product.isActive) {
+      const productIds = [...new Set(checkoutItems.map((item) => item.productId))];
+      const products = await tx.product.findMany({
+        where: {
+          id: { in: productIds },
+        },
+      });
+
+      if (products.length !== productIds.length) {
+        const missingIds = productIds.filter((productId) => !products.some((product) => product.id === productId));
+        throw new HttpError(404, "Một hoặc nhiều sản phẩm không tồn tại", "NOT_FOUND", {
+          productIds: missingIds,
+        });
+      }
+
+      const productMap = new Map(products.map((product) => [product.id, product]));
+      const orderItemDetails = checkoutItems.map((item) => {
+        const product = productMap.get(item.productId);
+
+        if (!product) {
+          throw new HttpError(404, "Một hoặc nhiều sản phẩm không tồn tại", "NOT_FOUND", {
+            productId: item.productId,
+          });
+        }
+
+        if (!product.isActive) {
           throw new HttpError(
             400,
-            `Sản phẩm ${item.product.name} đã ngừng kinh doanh`,
+            `Sản phẩm ${product.name} đã ngừng kinh doanh`,
             "VALIDATION_ERROR"
           );
         }
 
-        if (item.product.stock < item.quantity) {
+        if (product.stock < item.quantity) {
           throw new HttpError(
             400,
-            `Sản phẩm ${item.product.name} chỉ còn ${item.product.stock} trong kho`,
+            `Sản phẩm ${product.name} chỉ còn ${product.stock} trong kho`,
             "VALIDATION_ERROR",
-            { productId: item.productId, available: item.product.stock }
+            { productId: item.productId, available: product.stock }
           );
         }
-      }
 
-      const totalPrice = cart.items.reduce((sum, item) => {
+        return { product, quantity: item.quantity };
+      });
+
+      const totalPrice = orderItemDetails.reduce((sum, item) => {
         return sum + item.product.price * item.quantity;
       }, 0);
 
-      for (const item of cart.items) {
+      for (const item of orderItemDetails) {
         const updated = await tx.product.updateMany({
           where: {
-            id: item.productId,
+            id: item.product.id,
             stock: { gte: item.quantity },
           },
           data: {
@@ -125,8 +183,8 @@ export const orderService = {
           phoneNumber,
           ...(note ? { note } : {}),
           items: {
-            create: cart.items.map((item) => ({
-              productId: item.productId,
+            create: orderItemDetails.map((item) => ({
+              productId: item.product.id,
               quantity: item.quantity,
               price: item.product.price,
             })),
@@ -152,9 +210,11 @@ export const orderService = {
         },
       });
 
-      await tx.cartItem.deleteMany({
-        where: { cartId: cart.id },
-      });
+      if (requestedItems === null && cart) {
+        await tx.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
+      }
 
       await tx.auditLog.create({
         data: {

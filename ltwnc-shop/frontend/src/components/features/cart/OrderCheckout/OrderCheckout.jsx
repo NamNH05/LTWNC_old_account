@@ -5,6 +5,8 @@ import { useCart } from '../../../../context/CartContext';
 import { useAuth } from '../../../../context/AuthContext';
 import './OrderCheckout.css';
 
+const API_BASE_URL = 'http://localhost:8080/api';
+
 const sampleAddresses = [
   {
     id: 1,
@@ -208,7 +210,7 @@ const OrderCheckout = () => {
       };
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
