@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { message } from "antd";
 import logger from "../utils/logger";
 import { useAuth } from "../context/AuthContext";
 import { validateLoginForm } from "../utils/validation";
 import "./Login/login.css";
+
+const API_BASE_URL = "http://localhost:8080/api";
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const FACEBOOK_AUTH_URL = "https://www.facebook.com/v19.0/dialog/oauth";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -14,6 +18,53 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
+  const redirectUri = useMemo(() => `${window.location.origin}/auth/callback`, []);
+
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+  const facebookClientId = import.meta.env.VITE_FACEBOOK_CLIENT_ID || "";
+
+  const createOAuthState = (provider) => {
+    const nonce = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    const state = `${provider}:${nonce}`;
+    sessionStorage.setItem("oauth_state", state);
+    return state;
+  };
+
+  const handleGoogleLogin = () => {
+    if (!googleClientId) {
+      message.error("Thiếu VITE_GOOGLE_CLIENT_ID trong frontend/.env");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      client_id: googleClientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "openid email profile",
+      access_type: "offline",
+      prompt: "consent",
+      state: createOAuthState("google"),
+    });
+
+    window.location.href = `${GOOGLE_AUTH_URL}?${params.toString()}`;
+  };
+
+  const handleFacebookLogin = () => {
+    if (!facebookClientId) {
+      message.error("Thiếu VITE_FACEBOOK_CLIENT_ID trong frontend/.env");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      client_id: facebookClientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "email,public_profile",
+      state: createOAuthState("facebook"),
+    });
+
+    window.location.href = `${FACEBOOK_AUTH_URL}?${params.toString()}`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +82,7 @@ const Login = () => {
 
     try {
       // Call backend API
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,6 +202,19 @@ const Login = () => {
             <button className="login-btn" disabled={loading}>
               {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
+
+            <div className="social-divider">
+              <span>hoặc tiếp tục với</span>
+            </div>
+
+            <div className="social-login">
+              <button type="button" className="social-btn google-btn" onClick={handleGoogleLogin}>
+                Google
+              </button>
+              <button type="button" className="social-btn facebook-btn" onClick={handleFacebookLogin}>
+                Facebook
+              </button>
+            </div>
           </form>
         </div>
 

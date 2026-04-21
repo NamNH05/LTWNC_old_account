@@ -17,6 +17,7 @@
 7. [🔐 Tài khoản Test](#-tài-khoản-test-sẵn-sàng-sau-seed)
 8. [✅ Kiểm tra setup thành công](#-kiểm-tra-setup-thành-công)
 9. [🔧 Các lệnh hữu ích](#-các-lệnh-hữu-ích)
+10. [🛠️ Hướng dẫn chạy trên máy dev mới](ltwnc-shop/DEV_SETUP.md)
 
 ---
 

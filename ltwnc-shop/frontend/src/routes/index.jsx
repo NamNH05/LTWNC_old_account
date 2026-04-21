@@ -15,6 +15,7 @@ import UserManagementPage from "../pages/AdminDashboard/UserManagementPage";
 import AuditLogsPage from "../pages/AdminDashboard/AuditLogsPage";
 import AddressPage from "../pages/Address/AddressPage";
 import PaymentPage from "../pages/Payment/PaymentPage";
+import AuthCallback from "../pages/AuthCallback";
 
 function AppRoutes() {
   return (
@@ -39,6 +40,7 @@ function AppRoutes() {
         <Route path="/address" element={<AddressPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/register" element={<RegisterPage />} />
       </Routes>
     </BrowserRouter>

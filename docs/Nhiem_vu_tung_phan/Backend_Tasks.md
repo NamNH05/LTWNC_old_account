@@ -4,6 +4,7 @@
 
 ### 1. Xác thực và phân quyền
 - [x] Xây dựng API login/register
+- [x] Tích hợp đăng nhập OAuth Google/Facebook
 - [x] Triển khai kiểm tra JWT token
 - [x] Thiết lập phân quyền theo vai trò (RBAC)
 - [x] Chức năng đặt lại mật khẩu
@@ -34,7 +35,6 @@
 - [x] Tích hợp cổng thanh toán VNPAY
 - [x] Quản lý trạng thái thanh toán
 - [x] Ghi log giao dịch
-- [ ] Xử lý hoàn tiền
 
 ### 6. Xử lý lỗi và kiểm tra dữ liệu
 - [x] Middleware kiểm tra dữ liệu đầu vào (validation in controllers)
