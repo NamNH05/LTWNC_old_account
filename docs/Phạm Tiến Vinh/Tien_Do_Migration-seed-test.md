@@ -25,7 +25,10 @@
 | :--- | :--- | :--- | :--- |
 | 16/04 | 1) Tối ưu JOIN queries - tạo 6 database views (order_fulfillment_status, product_inventory_status, user_orders_summary, product_popularity, category_performance, user_spending_report) 2) Thiết lập query caching service với cascade invalidation rules 3) Slow query monitoring service + reporting 4) Query performance middleware auto-tracking 5) Migration 20260416_step5_query_optimization (6 views, 2 logging tables, performance indexes) 
 
-TỔNG KẾT
+# Ngày 21/04/2026
+| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| 16/04 | 1) cập nhật và sửa lỗi api trang admin, user, giao diện, routes 2) Fix search, frontend trang product 3) Nối api quản lý sản phẩm, sửa api quản lý người dùng 
 
 1. Tinh chỉnh Database Schema
 [X] Thêm các index còn thiếu để optimize queries
