@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { message } from 'antd';
 import Header from '../../components/ui/Header/Header';
 import Footer from '../../components/ui/Footer/Footer';
 import ProductCard from '../../components/ui/ProductCard/ProductCard';
-import { products } from '../../data/products';
 import { formatCurrency } from '../../utils/format';
 import './ProductPage.css';
+
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const categories = [
   { value: 'all', label: 'Tất cả sản phẩm' },
@@ -17,13 +19,49 @@ const categories = [
 
 const ProductPage = () => {
   const [category, setCategory] = useState('all');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
+  
+  const DEFAULT_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect fill="%23f0f0f0" width="300" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%23999"%3EKhông có ảnh%3C/text%3E%3C/svg%3E';
+
+  // Load products from API
+  useEffect(() => {
+    loadProducts();
+  }, [category]);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const url = new URL(`${API_BASE_URL}/products`);
+      url.searchParams.append('limit', '100');
+      
+      const response = await fetch(url.toString());
+      
+      if (!response.ok) {
+        throw new Error('Failed to load products');
+      }
+      
+      const data = await response.json();
+      setProducts(data.data || []);
+    } catch (err) {
+      console.error('Error loading products:', err);
+      setError('Lỗi khi tải sản phẩm');
+      message.error('Lỗi khi tải sản phẩm');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     if (category === 'all') {
       return products;
     }
     return products.filter((product) => product.category === category);
-  }, [category]);
+  }, [products, category]);
 
   return (
     <div className="product-page">
@@ -71,11 +109,20 @@ const ProductPage = () => {
               </div>
 
               <div className="products-grid">
-                {filteredProducts.length > 0 ? (
+                {loading ? (
+                  <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center' }}>
+                    <div className="loading-spinner"></div>
+                    <p>Đang tải sản phẩm...</p>
+                  </div>
+                ) : error ? (
+                  <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center' }}>
+                    <p style={{ color: '#f5222d' }}>Lỗi: {error}</p>
+                  </div>
+                ) : filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
                     <ProductCard
                       key={product.id}
-                      image={product.image}
+                      image={product.image || product.imageUrl || DEFAULT_PLACEHOLDER}
                       alt={product.name}
                       category={product.category}
                       name={product.name}

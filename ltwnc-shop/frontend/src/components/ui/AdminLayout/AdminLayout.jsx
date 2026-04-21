@@ -23,6 +23,9 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
 
   const handleMenuClick = ({ key }) => {
     switch (key) {
+      case 'products':
+        navigate('/admin/products');
+        break;
       case 'orders':
         navigate('/admin/orders');
         break;
@@ -45,6 +48,11 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
   };
 
   const menuItems = [
+    {
+      key: 'products',
+      icon: <ShoppingOutlined />,
+      label: 'Quản lý sản phẩm',
+    },
     {
       key: 'orders',
       icon: <FileTextOutlined />,

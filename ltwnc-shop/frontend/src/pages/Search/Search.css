@@ -78,6 +78,7 @@
 
 .search-results {
   min-height: 400px;
+  will-change: contents;
 }
 
 .results-header {

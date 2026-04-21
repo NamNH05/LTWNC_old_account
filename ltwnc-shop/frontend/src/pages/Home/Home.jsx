@@ -14,6 +14,7 @@ const Home = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const DEFAULT_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect fill="%23f0f0f0" width="300" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%23999"%3EKhông có ảnh%3C/text%3E%3C/svg%3E';
 
   useEffect(() => {
     loadProducts();
@@ -148,7 +149,7 @@ const Home = () => {
               products.slice(0, 4).map((product) => (
                 <ProductCard
                   key={product.id}
-                  image={product.imageUrl || product.image || 'https://via.placeholder.com/300'}
+                  image={product.imageUrl || product.image || DEFAULT_PLACEHOLDER}
                   fallbackImages={product.images || []}
                   alt={product.name}
                   category={product.category?.name || product.category || product.type}

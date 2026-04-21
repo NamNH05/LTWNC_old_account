@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
+const EMPTY_FALLBACK_IMAGES = [];
+
 const ProductCard = ({
   image,
-  fallbackImages = [],
+  fallbackImages = EMPTY_FALLBACK_IMAGES,
   alt,
   category,
   name,
@@ -15,15 +17,16 @@ const ProductCard = ({
 }) => {
   const [imageError, setImageError] = React.useState(false);
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const images = React.useMemo(
-    () => [image, ...fallbackImages].filter(Boolean),
-    [image, fallbackImages]
-  );
+  const images = React.useMemo(() => {
+    const imageList = [image, ...(Array.isArray(fallbackImages) ? fallbackImages : [])];
+    return imageList.filter(Boolean);
+  }, [image, fallbackImages]);
+  const imageSourcesKey = React.useMemo(() => images.join('||'), [images]);
 
   React.useEffect(() => {
     setCurrentImageIndex(0);
     setImageError(false);
-  }, [images]);
+  }, [imageSourcesKey]);
 
   const handleImageError = () => {
     if (currentImageIndex + 1 < images.length) {

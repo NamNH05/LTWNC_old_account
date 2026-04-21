@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { message } from 'antd';
 import Header from '../../components/ui/Header/Header';
 import Footer from '../../components/ui/Footer/Footer';
 import ProductCard from '../../components/ui/ProductCard/ProductCard';
-import { products as allProducts } from '../../data/products';
 import { formatCurrency } from '../../utils/format';
 import './Search.css';
+
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +14,7 @@ const Search = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = (e) => {
+  const handleSearch = useCallback(async (e) => {
     e.preventDefault();
 
     if (!searchTerm.trim()) {
@@ -26,20 +27,18 @@ const Search = () => {
     setIsSearching(true);
     setHasSearched(true);
 
-    const keyword = searchTerm.trim().toLowerCase();
-    const filteredResults = allProducts.filter((product) => {
-      const name = product.name?.toLowerCase() || '';
-      const category = product.category?.toLowerCase() || '';
-      const description = product.description?.toLowerCase() || '';
-      const matchKeyword =
-        name.includes(keyword) ||
-        category.includes(keyword) ||
-        description.includes(keyword);
+    try {
+      const keyword = searchTerm.trim();
+      const response = await fetch(`${API_BASE_URL}/products?search=${encodeURIComponent(keyword)}&limit=50`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to search products');
+      }
+      
+      const data = await response.json();
+      const filteredResults = data.data || [];
 
-      return product.quantum > 0 && matchKeyword;
-    });
-
-    setTimeout(() => {
+      // Update all state at once
       setSearchResults(filteredResults);
       setIsSearching(false);
 
@@ -48,12 +47,35 @@ const Search = () => {
       } else {
         message.success(`Tìm thấy ${filteredResults.length} sản phẩm`);
       }
-    }, 250);
-  };
+    } catch (error) {
+      console.error('Error searching products:', error);
+      message.error('Lỗi khi tìm kiếm sản phẩm');
+      setSearchResults([]);
+      setIsSearching(false);
+    }
+  }, [searchTerm]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     setSearchTerm(e.target.value);
-  };
+  }, []);
+
+  // Memoize results to prevent re-renders
+  const DEFAULT_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect fill="%23f0f0f0" width="300" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%23999"%3EKhông có ảnh%3C/text%3E%3C/svg%3E';
+  
+  const memoizedResults = useMemo(() => {
+    return searchResults.map((product) => (
+      <ProductCard
+        key={product.id}
+        image={product.image || product.imageUrl || DEFAULT_PLACEHOLDER}
+        alt={product.name}
+        category={product.category?.name || product.category || 'Sản phẩm'}
+        name={product.name}
+        currentPrice={formatCurrency(product.price)}
+        oldPrice={product.originPrice ? formatCurrency(product.originPrice) : undefined}
+        link={`/product/${product.id}`}
+      />
+    ));
+  }, [searchResults]);
 
   return (
     <div className="search-page">
@@ -87,42 +109,33 @@ const Search = () => {
                 <div className="loading-spinner"></div>
                 <p>Đang tìm kiếm...</p>
               </div>
-            ) : searchResults.length > 0 ? (
-              <>
-                <div className="results-header">
-                  <p>Tìm thấy <strong>{searchResults.length}</strong> sản phẩm</p>
+            ) : hasSearched ? (
+              searchResults.length > 0 ? (
+                <>
+                  <div className="results-header">
+                    <p>Tìm thấy <strong>{searchResults.length}</strong> sản phẩm</p>
+                  </div>
+                  <div className="products-grid">
+                    {memoizedResults}
+                  </div>
+                </>
+              ) : (
+                <div className="no-results">
+                  <div className="no-results-icon">
+                    <span className="material-icons">search_off</span>
+                  </div>
+                  <h3>Không tìm thấy sản phẩm</h3>
+                  <p>Không có sản phẩm nào phù hợp với từ khóa "<strong>{searchTerm}</strong>"</p>
+                  <div className="suggestions">
+                    <h4>Gợi ý tìm kiếm:</h4>
+                    <ul>
+                      <li>Kiểm tra chính tả</li>
+                      <li>Sử dụng từ khóa khác</li>
+                      <li>Tìm kiếm theo danh mục sản phẩm</li>
+                    </ul>
+                  </div>
                 </div>
-                <div className="products-grid">
-                  {searchResults.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      image={product.imageUrl || product.image || 'https://via.placeholder.com/300'}
-                      alt={product.name}
-                      category={product.category || product.type}
-                      name={product.name}
-                      currentPrice={formatCurrency(product.price)}
-                      oldPrice={product.oldPrice ? formatCurrency(product.oldPrice) : undefined}
-                      link={`/product/${product.id}`}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : hasSearched && !isSearching ? (
-              <div className="no-results">
-                <div className="no-results-icon">
-                  <span className="material-icons">search_off</span>
-                </div>
-                <h3>Không tìm thấy sản phẩm</h3>
-                <p>Không có sản phẩm nào phù hợp với từ khóa "<strong>{searchTerm}</strong>"</p>
-                <div className="suggestions">
-                  <h4>Gợi ý tìm kiếm:</h4>
-                  <ul>
-                    <li>Kiểm tra chính tả</li>
-                    <li>Sử dụng từ khóa khác</li>
-                    <li>Tìm kiếm theo danh mục sản phẩm</li>
-                  </ul>
-                </div>
-              </div>
+              )
             ) : (
               <div className="search-placeholder">
                 <div className="placeholder-icon">

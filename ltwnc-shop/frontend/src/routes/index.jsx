@@ -8,6 +8,7 @@ import SearchPage from "../pages/Search/Search";
 import CartPage from "../pages/Cart/Cart";
 import OrderManagement from "../pages/OrderManagement/OrderManagement";
 import ProfilePage from "../pages/Profile/Profile";
+import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
 import OrderManagementPage from "../pages/AdminDashboard/OrderManagementPage";
 import RevenueDashboardPage from "../pages/AdminDashboard/RevenueDashboardPage";
 import UserManagementPage from "../pages/AdminDashboard/UserManagementPage";
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<OrderManagement />} />
+        <Route path="/admin/products" element={<AdminDashboard />} />
         <Route path="/admin/orders" element={<OrderManagementPage />} />
         <Route path="/admin/revenue" element={<RevenueDashboardPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />

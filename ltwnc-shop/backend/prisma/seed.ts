@@ -254,7 +254,7 @@ async function main() {
       price: 199000,
       originPrice: 299000,
       stock: 50,
-      image: 'https://via.placeholder.com/300x400?text=Ao+Thun+Nam',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 0,
@@ -264,7 +264,7 @@ async function main() {
       price: 349000,
       originPrice: 499000,
       stock: 30,
-      image: 'https://via.placeholder.com/300x400?text=Ao+So+Mi+Nam',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 0,
@@ -274,7 +274,7 @@ async function main() {
       price: 549000,
       originPrice: 799000,
       stock: 25,
-      image: 'https://via.placeholder.com/300x400?text=Quan+Jeans+Nam',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 0,
@@ -284,7 +284,7 @@ async function main() {
       price: 459000,
       originPrice: 629000,
       stock: 18,
-      image: 'https://via.placeholder.com/300x400?text=Ao+Khoac+Bomber',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 0,
@@ -294,7 +294,7 @@ async function main() {
       price: 219000,
       originPrice: 299000,
       stock: 40,
-      image: 'https://via.placeholder.com/300x400?text=Quan+Short+Nam',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 1,
@@ -304,7 +304,7 @@ async function main() {
       price: 189000,
       originPrice: 289000,
       stock: 45,
-      image: 'https://via.placeholder.com/300x400?text=Ao+Thun+Nu',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 1,
@@ -314,7 +314,7 @@ async function main() {
       price: 399000,
       originPrice: 599000,
       stock: 20,
-      image: 'https://via.placeholder.com/300x400?text=Vay+Nu+Xep+Li',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 1,
@@ -324,7 +324,7 @@ async function main() {
       price: 249000,
       originPrice: 399000,
       stock: 40,
-      image: 'https://via.placeholder.com/300x400?text=Quan+Legging+Nu',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 1,
@@ -334,7 +334,7 @@ async function main() {
       price: 279000,
       originPrice: 349000,
       stock: 22,
-      image: 'https://via.placeholder.com/300x400?text=Ao+Kieu+Nu',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 1,
@@ -344,7 +344,7 @@ async function main() {
       price: 329000,
       originPrice: 449000,
       stock: 28,
-      image: 'https://via.placeholder.com/300x400?text=Chan+Vay+Chu+A',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 2,
@@ -354,7 +354,7 @@ async function main() {
       price: 699000,
       originPrice: 999000,
       stock: 35,
-      image: 'https://via.placeholder.com/300x400?text=Giay+Sneaker',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 2,
@@ -364,7 +364,7 @@ async function main() {
       price: 1299000,
       originPrice: 1799000,
       stock: 15,
-      image: 'https://via.placeholder.com/300x400?text=Giay+Boot+Da',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 2,
@@ -374,7 +374,7 @@ async function main() {
       price: 149000,
       originPrice: 249000,
       stock: 60,
-      image: 'https://via.placeholder.com/300x400?text=Dep+Sandal',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 2,
@@ -384,7 +384,7 @@ async function main() {
       price: 899000,
       originPrice: 1199000,
       stock: 12,
-      image: 'https://via.placeholder.com/300x400?text=Giay+Loafer',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 2,
@@ -394,7 +394,7 @@ async function main() {
       price: 799000,
       originPrice: 1099000,
       stock: 19,
-      image: 'https://via.placeholder.com/300x400?text=Giay+Chay+Bo',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 3,
@@ -404,7 +404,7 @@ async function main() {
       price: 99000,
       originPrice: 179000,
       stock: 70,
-      image: 'https://via.placeholder.com/300x400?text=Mu+Thoi+Trang',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 3,
@@ -414,7 +414,7 @@ async function main() {
       price: 899000,
       originPrice: 1299000,
       stock: 20,
-      image: 'https://via.placeholder.com/300x400?text=Tui+Xach+Nu',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 3,
@@ -424,7 +424,7 @@ async function main() {
       price: 149000,
       originPrice: 249000,
       stock: 50,
-      image: 'https://via.placeholder.com/300x400?text=Khan+Choang+Lua',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 3,
@@ -434,7 +434,7 @@ async function main() {
       price: 259000,
       originPrice: 349000,
       stock: 33,
-      image: 'https://via.placeholder.com/300x400?text=That+Lung+Da',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
     {
       categoryIndex: 3,
@@ -444,7 +444,7 @@ async function main() {
       price: 189000,
       originPrice: 259000,
       stock: 41,
-      image: 'https://via.placeholder.com/300x400?text=Vi+Cam+Tay',
+      image: 'https://naidecor.vn/wp-content/uploads/2020/01/ct00192-549k.jpg',
     },
   ];
 

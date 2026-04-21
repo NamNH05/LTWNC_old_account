@@ -48,7 +48,7 @@ const Header = () => {
               </Link>              {user ? (
                 <div className="user-menu">
                   {user.role && user.role.toUpperCase().includes('ADMIN') && (
-                    <Link to="/admin/orders" className="icon-btn admin-btn" title="Admin Dashboard">
+                    <Link to="/admin/products" className="icon-btn admin-btn" title="Admin Dashboard">
                       <span className="material-icons">admin_panel_settings</span>
                     </Link>
                   )}

@@ -41,7 +41,7 @@ export const productService = {
       // Tìm kiếm theo tên hoặc mô tả sản phẩm (case-insensitive)
       whereClause.OR = [
         { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+        { desc: { contains: search, mode: "insensitive" } },
       ];
     }
 
