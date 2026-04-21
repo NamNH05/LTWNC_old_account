@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import logger from "../utils/logger";
 
 const API_BASE_URL = "http://localhost:8080/api";
+const handledOAuthCodes = new Set();
 
 const resolveProvider = (state) => {
   if (!state) {
@@ -42,6 +43,11 @@ const AuthCallback = () => {
         return;
       }
 
+      // React StrictMode (dev) có thể gọi effect 2 lần; bỏ qua code đã xử lý.
+      if (handledOAuthCodes.has(code)) {
+        return;
+      }
+
       if (!state || !savedState || state !== savedState) {
         message.error("Trạng thái OAuth không hợp lệ.");
         navigate("/login", { replace: true });
@@ -54,6 +60,8 @@ const AuthCallback = () => {
         navigate("/login", { replace: true });
         return;
       }
+
+      handledOAuthCodes.add(code);
 
       try {
         const response = await fetch(`${API_BASE_URL}/auth/oauth/${provider}`, {
@@ -78,6 +86,7 @@ const AuthCallback = () => {
         message.success("Đăng nhập thành công!");
         navigate("/", { replace: true });
       } catch (error) {
+        handledOAuthCodes.delete(code);
         logger.error("OAuth callback error:", error);
         message.error(error.message || "Có lỗi khi xử lý OAuth");
         navigate("/login", { replace: true });

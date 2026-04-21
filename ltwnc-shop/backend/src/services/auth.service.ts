@@ -130,6 +130,11 @@ const generateOAuthPassword = () => {
   return `OAuth-${crypto.randomBytes(24).toString("hex")}Aa1`;
 };
 
+const generateFacebookFallbackEmail = (facebookId: string) => {
+  // Dùng domain example.com cho email giả trong môi trường test/dev.
+  return `facebook_${facebookId}@example.com`;
+};
+
 const loginWithOAuthProfile = async (provider: OAuthProvider, profile: OAuthProfile) => {
   const email = normalizeEmail(profile.email);
   let user = await userRepository.findByEmail(email);
@@ -296,6 +301,7 @@ export const authService = {
     };
 
     type FacebookUserInfoResponse = {
+      id?: string;
       email?: string;
       name?: string;
     };
@@ -317,17 +323,15 @@ export const authService = {
 
     const profile = await fetchJson<FacebookUserInfoResponse>(userInfoUrl.toString());
 
-    if (!profile.email) {
-      throw new HttpError(
-        400,
-        "Facebook account does not provide email. Ensure email permission is granted.",
-        "VALIDATION_ERROR"
-      );
+    if (!profile.email && !profile.id) {
+      throw new HttpError(400, "Facebook profile is missing both email and id", "VALIDATION_ERROR");
     }
 
+    const resolvedEmail = profile.email ?? generateFacebookFallbackEmail(profile.id as string);
+
     return loginWithOAuthProfile("facebook", {
-      email: profile.email,
-      fullName: profile.name ?? profile.email,
+      email: resolvedEmail,
+      fullName: profile.name ?? resolvedEmail,
     });
   },
 
