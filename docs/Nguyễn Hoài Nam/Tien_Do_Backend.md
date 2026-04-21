@@ -30,6 +30,11 @@
 | :--- | :--- | :--- | :--- |
 | 20/04 | 1) Bổ sung model Payment trong Prisma schema và thêm migration mở rộng cột phục vụ VNPAY (bank_code, response_code, paid_at, gateway_payload)<br>2) Refactor payment service sang Prisma model (thay raw query chính), triển khai create payment URL VNPAY và xử lý callback/IPN có verify chữ ký + idempotency<br>3) Đồng bộ trạng thái thanh toán với đơn hàng (PAID -> CONFIRMED nếu order đang PENDING) và ghi audit log payment success/failed<br>4) Cập nhật controller payment để validate kiểu dữ liệu chặt hơn, xử lý client IP an toàn hơn<br>5) Chạy `prisma generate` + `tsc --noEmit` xác nhận compile pass<br>6) Chuẩn hóa tài liệu hướng dẫn report/tick cập nhật tiến độ cho từng phần tại docs/reports/README.md | Đang làm | Còn thiếu hôm nay: [ ] chạy migration trên DB thật/deploy, [ ] test luồng VNPAY sandbox (create-url/return/IPN), [ ] hoàn thiện refund flow, [ ] cập nhật API docs payment |
 
+## Ngày 21/04/2026
+| Ngày | Chức năng phụ trách | Trạng thái | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| 21/04 | 1) Tích hợp OAuth backend cho Google/Facebook: thêm endpoint `POST /api/auth/oauth/google` và `POST /api/auth/oauth/facebook`<br>2) Xử lý exchange authorization code lấy profile từ provider, chuẩn hóa email, auto tạo user mới nếu chưa tồn tại rồi cấp access/refresh token theo luồng JWT hiện có<br>3) Bổ sung cấu hình OAuth vào `env.ts` và cập nhật `backend/.env.example` (GOOGLE/FACEBOOK client + redirect URI)<br>4) Cập nhật checklist backend/frontend tasks theo trạng thái thực tế OAuth/login<br>5) Viết tài liệu chạy dự án trên máy dev mới tại `ltwnc-shop/DEV_SETUP.md` và cập nhật link ở README | Hoàn thành | Đã kiểm tra compile backend (`npx tsc --noEmit`) pass; luồng OAuth cần cấu hình đúng redirect URI trên Google/Facebook console để chạy E2E |
+
 ---
 
 ## TỔNG KẾT
