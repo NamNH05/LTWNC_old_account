@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { paymentService } from "../services/payment.service";
 import { HttpError } from "../utils/http-error";
+import { env } from "../config/env";
 
 // Controller quản lý thanh toán
 export const paymentController = {
@@ -147,17 +148,18 @@ export const paymentController = {
 
       const result = await paymentService.handleVnpayCallback(params);
 
-      if (!result.success && result.code === "97") {
-        return res.status(400).json({
-          message: "Chữ ký VNPAY không hợp lệ",
-          data: result,
-        });
-      }
-
-      return res.json({
-        message: "Xử lý callback VNPAY hoàn tất",
-        data: result,
+      // Build redirect URL with payment result
+      const callbackParams = new URLSearchParams({
+        success: result.success.toString(),
+        orderId: result.orderId?.toString() ?? "",
+        transactionId: result.transactionId ?? "",
+        responseCode: result.code ?? "",
+        message: result.message ?? "",
+        paymentStatus: result.paymentStatus ?? "",
       });
+
+      const redirectUrl = `${env.frontendUrl}/payment/callback?${callbackParams.toString()}`;
+      return res.redirect(redirectUrl);
     } catch (error) {
       next(error);
     }

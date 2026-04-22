@@ -75,7 +75,7 @@ const Cart = () => {
       <main className="cart-container">
         <h1 className="cart-title">Giỏ Hàng Của Bạn</h1>
 
-        <Spin spinning={loading} tip="Đang xử lý đơn hàng...">
+        <Spin spinning={loading} description="Đang xử lý đơn hàng...">
           <div className="cart-content">
             {/* Cart Items */}
             <div className="cart-items">
@@ -162,7 +162,7 @@ const Cart = () => {
 
               {getShippingFee() === 0 && (
                 <p className="free-shipping-note">
-                  🎉 Miễn phí vận chuyển cho đơn hàng từ 500.000 ₫
+                  Miễn phí vận chuyển cho đơn hàng từ 500.000 ₫
                 </p>
               )}
 
@@ -182,7 +182,7 @@ const Cart = () => {
               </button>
 
               <a href="/" className="continue-shopping-link">
-                ← Tiếp tục mua sắm
+                 Tiếp tục mua sắm
               </a>
             </div>
           </div>

@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { message, Button } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useCart } from '../../../../context/CartContext';
 import { useAuth } from '../../../../context/AuthContext';
 import './OrderCheckout.css';
@@ -36,10 +37,11 @@ const sampleAddresses = [
 
 const OrderCheckout = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, token } = useAuth();
   const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
   const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [loading, setLoading] = useState(false);
   const [userAddresses] = useState(sampleAddresses);
   const [selectedAddressId, setSelectedAddressId] = useState(sampleAddresses[0]?.id || null);
@@ -63,6 +65,16 @@ const OrderCheckout = () => {
     expiryDate: '',
     cvv: '',
   });
+
+  useEffect(() => {
+    const cancelled = searchParams.get('cancelled') === 'true';
+    if (cancelled) {
+      setPaymentMethod('');
+      setStep(2);
+      message.error('Giao dịch thanh toán đã bị hủy. Vui lòng chọn phương thức thanh toán khác.');
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (userAddresses.length > 0 && selectedAddressId === null) {
@@ -148,11 +160,11 @@ const OrderCheckout = () => {
   };
 
   const validateStep2 = () => {
-    const { cardName, cardNumber, expiryDate, cvv } = formData;
-    if (!paymentMethod) {
+    if (!paymentMethod || paymentMethod.trim() === '') {
       setErrorMessage('Vui lòng chọn phương thức thanh toán');
       return false;
     }
+    const { cardName, cardNumber, expiryDate, cvv } = formData;
     if (paymentMethod === 'card') {
       if (!cardName.trim() || !cardNumber.trim() || !expiryDate.trim() || !cvv.trim()) {
         setErrorMessage('Vui lòng điền đầy đủ thông tin thẻ');
@@ -182,8 +194,8 @@ const OrderCheckout = () => {
   };
 
   const handleConfirmOrder = async () => {
-    if (!user?.id) {
-      message.error('Đăng nhập lại để tiếp tục');
+    if (!user?.id || !token) {
+      message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
       navigate('/login');
       return;
     }
@@ -209,7 +221,6 @@ const OrderCheckout = () => {
         })),
       };
 
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: {
@@ -222,17 +233,62 @@ const OrderCheckout = () => {
       const result = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+          navigate('/login');
+          return;
+        }
         throw new Error(result.message || 'Đặt hàng thất bại');
       }
 
-      setSuccessMessage('Đơn hàng đã được đặt thành công!');
-      setErrorMessage('');
-      clearCart();
-      
-      setTimeout(() => {
-        message.success('Đơn hàng đã được tạo! Đường dẫn đến trang chủ...');
-        navigate('/');
-      }, 2000);
+      const orderId = result.data?.id;
+
+      // If payment method is wallet (VNPAY), create payment URL and redirect
+      if (paymentMethod === 'wallet' && orderId) {
+        const paymentResponse = await fetch(`${API_BASE_URL}/payments/vnpay/create-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orderId: orderId,
+            locale: 'vn',
+          }),
+        });
+
+        const paymentData = await paymentResponse.json();
+
+        if (!paymentResponse.ok) {
+          if (paymentResponse.status === 401) {
+            message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+            navigate('/login');
+            return;
+          }
+          throw new Error(paymentData.message || 'Không thể tạo link thanh toán VNPAY');
+        }
+
+        setSuccessMessage('Đơn hàng đã được tạo! Chuyển hướng đến VNPAY...');
+        message.success('Vui lòng hoàn thành thanh toán');
+        
+        // DO NOT clear cart here - only clear after successful payment
+        // clearCart() will be called in PaymentCallback after success
+        
+        // Redirect to VNPAY payment URL
+        setTimeout(() => {
+          window.location.href = paymentData.data?.paymentUrl;
+        }, 1000);
+      } else {
+        // For COD and other methods, just clear cart and go home
+        setSuccessMessage('Đơn hàng đã được đặt thành công!');
+        setErrorMessage('');
+        clearCart();
+        
+        setTimeout(() => {
+          message.success('Đơn hàng đã được tạo! Đường dẫn đến trang chủ...');
+          navigate('/');
+        }, 2000);
+      }
     } catch (error) {
       console.error('Lỗi đặt hàng:', error);
       setErrorMessage(error.message || 'Không thể đặt hàng. Vui lòng thử lại.');
@@ -257,6 +313,17 @@ const OrderCheckout = () => {
 
   return (
     <div className="payment-container">
+      <div className="payment-header">
+        <Button 
+          type="primary" 
+          ghost 
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/')}
+          className="back-to-home-btn"
+        >
+          Quay Lại Trang Chủ
+        </Button>
+      </div>
       <div className="payment-wrapper">
         <div className="progress-bar">
           <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>
@@ -327,7 +394,7 @@ const OrderCheckout = () => {
                         }));
                       }}
                     >
-                      + Thêm Địa Chỉ Mới
+                       Thêm Địa Chỉ Mới
                     </button>
                   </div>
                 )}
@@ -442,7 +509,7 @@ const OrderCheckout = () => {
                         fillFormWithAddress(defaultAddress);
                       }}
                     >
-                      ← Quay Lại Danh Sách Địa Chỉ
+                       Quay Lại Danh Sách Địa Chỉ
                     </button>
                   </div>
                 )}
@@ -453,6 +520,9 @@ const OrderCheckout = () => {
               <div className="form-section">
                 <h2>Phương Thức Thanh Toán</h2>
 
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                {successMessage && <div className="success-message">{successMessage}</div>}
+
                 <div className="payment-methods">
                   <label className="payment-method-option">
                     <input
@@ -462,7 +532,7 @@ const OrderCheckout = () => {
                       checked={paymentMethod === 'card'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
-                    <span className="option-label">💳 Thẻ Tín Dụng / Ghi Nợ</span>
+                    <span className="option-label"> Thẻ Tín Dụng / Ghi Nợ</span>
                   </label>
                   <label className="payment-method-option">
                     <input
@@ -472,7 +542,7 @@ const OrderCheckout = () => {
                       checked={paymentMethod === 'bank'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
-                    <span className="option-label">🏦 Chuyển Khoản Ngân Hàng</span>
+                    <span className="option-label"> Chuyển Khoản Ngân Hàng</span>
                   </label>
                   <label className="payment-method-option">
                     <input
@@ -482,7 +552,7 @@ const OrderCheckout = () => {
                       checked={paymentMethod === 'wallet'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
-                    <span className="option-label">📱 Ví Điện Tử</span>
+                    <span className="option-label"> Ví Điện Tử</span>
                   </label>
                 </div>
 
@@ -534,7 +604,7 @@ const OrderCheckout = () => {
                       </div>
                     </div>
                     <div className="security-info">
-                      🔒 Thông tin thẻ của bạn được mã hóa và bảo mật
+                       Thông tin thẻ của bạn được mã hóa và bảo mật
                     </div>
                   </div>
                 )}
@@ -554,9 +624,14 @@ const OrderCheckout = () => {
                   <div className="wallet-info">
                     <p>Chọn ví điện tử để thanh toán</p>
                     <div className="wallet-options">
-                      <button type="button" className="wallet-btn">Momo</button>
-                      <button type="button" className="wallet-btn">ZaloPay</button>
-                      <button type="button" className="wallet-btn">ViettelPay</button>
+                      <button 
+                        type="button" 
+                        className="wallet-btn vnpay-btn"
+                        title="Thanh toán qua cổng VNPAY an toàn"
+                      >
+                        <span className="vnpay-icon"></span>
+                        Thanh Toán VNPAY
+                      </button>
                     </div>
                   </div>
                 )}
@@ -566,6 +641,10 @@ const OrderCheckout = () => {
             {step === 3 && (
               <div className="form-section">
                 <h2>Xác Nhận</h2>
+
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                {successMessage && <div className="success-message">{successMessage}</div>}
+
                 <div className="confirmation-section">
                   <div className="confirmation-block">
                     <h3>Địa Chỉ Giao Hàng</h3>
@@ -577,9 +656,9 @@ const OrderCheckout = () => {
                   <div className="confirmation-block">
                     <h3>Phương Thức Thanh Toán</h3>
                     <p>
-                      {paymentMethod === 'card' && '💳 Thẻ Tín Dụng / Ghi Nợ'}
-                      {paymentMethod === 'bank' && '🏦 Chuyển Khoản Ngân Hàng'}
-                      {paymentMethod === 'wallet' && '📱 Ví Điện Tử'}
+                      {paymentMethod === 'card' && ' Thẻ Tín Dụng / Ghi Nợ'}
+                      {paymentMethod === 'bank' && ' Chuyển Khoản Ngân Hàng'}
+                      {paymentMethod === 'wallet' && ' Ví Điện Tử'}
                     </p>
                   </div>
                 </div>
@@ -589,17 +668,17 @@ const OrderCheckout = () => {
             <div className="form-actions">
               {step > 1 && (
                 <button className="btn btn-secondary" onClick={handlePreviousStep}>
-                  ← Quay Lại
+                  Quay Lại
                 </button>
               )}
               {step < 3 && (
                 <button className="btn btn-primary" onClick={handleNextStep}>
-                  Tiếp Tục →
+                  Tiếp Tục 
                 </button>
               )}
               {step === 3 && (
                 <button className="btn btn-success" onClick={handleConfirmOrder} disabled={loading}>
-                  {loading ? '⏳ Đang xử lý...' : '✓ Đặt Hàng Ngay'}
+                  {loading ? ' Đang xử lý...' : ' Đặt Hàng Ngay'}
                 </button>
               )}
             </div>
@@ -638,7 +717,7 @@ const OrderCheckout = () => {
                   <span>{shipping === 0 ? 'Miễn phí' : formatCurrency(shipping)}</span>
                 </div>
                 {shipping === 0 && (
-                  <p className="free-shipping-note">🎉 Miễn phí vận chuyển cho đơn hàng từ 500.000 ₫</p>
+                  <p className="free-shipping-note"> Miễn phí vận chuyển cho đơn hàng từ 500.000 ₫</p>
                 )}
                 {discount > 0 && (
                   <div className="summary-row discount">

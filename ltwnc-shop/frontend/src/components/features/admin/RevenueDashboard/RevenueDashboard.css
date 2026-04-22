@@ -1,5 +1,5 @@
-.revenue-dashboard {
-  padding: 0;
+.admin-content {
+  padding: 20px;
 }
 
 .admin-header {
@@ -7,8 +7,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
 }
 
 .admin-header h1 {
@@ -16,6 +15,10 @@
   font-size: 24px;
   font-weight: 600;
   color: #000;
+}
+
+.admin-header button {
+  flex-shrink: 0;
 }
 
 .filter-controls {

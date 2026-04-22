@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Spin, Statistic, Row, Col, Card, Table, message } from 'antd';
+import { Spin, Statistic, Row, Col, Card, Table, message, Button } from 'antd';
 import { useAuth } from '../../../../context/AuthContext';
 import './RevenueDashboard.css';
 
@@ -8,6 +8,7 @@ const API_BASE_URL = 'http://localhost:8080/api';
 const RevenueDashboard = () => {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // State cho dữ liệu từ API
   const [revenueData, setRevenueData] = useState([]);
@@ -17,25 +18,37 @@ const RevenueDashboard = () => {
     averageOrderValue: 0
   });
 
-  // Load dữ liệu khi component mount
+  // Load dữ liệu khi component mount hoặc token thay đổi
   useEffect(() => {
-    loadRevenueData();
-  }, []);
+    if (token) {
+      loadRevenueData();
+    }
+  }, [token]);
 
   const loadRevenueData = async () => {
+    if (!token) {
+      message.error('Vui lòng đăng nhập để xem dữ liệu doanh thu');
+      setError('Không có token xác thực');
+      return;
+    }
+
     try {
       setLoading(true);
+      setError(null);
       const response = await fetch(`${API_BASE_URL}/admin/revenue`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to load revenue data');
+        const errorMessage = data.message || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
       setSummary(data.data?.summary || {
         totalRevenue: 0,
         totalOrders: 0,
@@ -44,7 +57,8 @@ const RevenueDashboard = () => {
       setRevenueData(data.data?.dailyRevenue || []);
     } catch (error) {
       console.error('Error loading revenue data:', error);
-      message.error('Lỗi khi tải dữ liệu doanh thu');
+      setError(error.message);
+      message.error(`Lỗi khi tải dữ liệu doanh thu: ${error.message}`);
       setSummary({ totalRevenue: 0, totalOrders: 0, averageOrderValue: 0 });
       setRevenueData([]);
     } finally {
@@ -82,11 +96,33 @@ const RevenueDashboard = () => {
 
 
   return (
-    <div className="revenue-dashboard">
-      <Spin spinning={loading} size="large">
+    <Spin spinning={loading} size="large">
+      <div className="admin-content">
         <div className="admin-header">
           <h1>Báo Cáo Doanh Thu</h1>
+          <Button 
+            type="primary" 
+            onClick={loadRevenueData}
+            loading={loading}
+          >
+            Làm mới dữ liệu
+          </Button>
         </div>
+
+        {/* Hiển thị thông báo lỗi nếu có */}
+        {error && (
+          <Card 
+            style={{ 
+              marginBottom: '24px', 
+              borderColor: '#ff4d4f',
+              backgroundColor: '#fff7f6'
+            }}
+          >
+            <p style={{ color: '#ff4d4f', margin: 0 }}>
+              <strong>Lỗi:</strong> {error}
+            </p>
+          </Card>
+        )}
 
         {/* Thống kê tổng quan */}
         <Row gutter={16} className="stats-section">
@@ -151,8 +187,8 @@ const RevenueDashboard = () => {
             pagination={{ pageSize: 10 }}
           />
         </Card>
-      </Spin>
-    </div>
+      </div>
+    </Spin>
   );
 };
 

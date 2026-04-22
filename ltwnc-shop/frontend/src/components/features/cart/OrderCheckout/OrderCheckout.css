@@ -785,6 +785,62 @@
   color: #999;
 }
 
+/* Back Button */
+.payment-header {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.back-to-home-btn {
+  background-color: white !important;
+  color: #007bff !important;
+  border-color: #007bff !important;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.back-to-home-btn:hover {
+  background-color: #007bff !important;
+  color: white !important;
+  border-color: #007bff !important;
+}
+
+/* VNPAY Button */
+.wallet-options {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.vnpay-btn {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+  color: white !important;
+  border-color: #1e3c72 !important;
+  font-weight: 600;
+  padding: 20px !important;
+  font-size: 16px !important;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vnpay-icon {
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.vnpay-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3) !important;
+}
+
 @media (max-width: 768px) {
   .payment-content {
     grid-template-columns: 1fr;

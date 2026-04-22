@@ -93,14 +93,16 @@ const ProfilePage = () => {
   const loadOrders = async () => {
     try {
       setOrdersLoading(true);
-      const response = await fetch(`${API_BASE_URL}/orders`, {
+      const response = await fetch(`${API_BASE_URL}/orders/my`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to load orders');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || `HTTP ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -275,7 +277,7 @@ const ProfilePage = () => {
                       className="edit-btn"
                       onClick={() => setIsEditing(true)}
                     >
-                      ✏️ Chỉnh sửa
+                       Chỉnh sửa
                     </button>
                   )}
                 </div>
@@ -326,7 +328,7 @@ const ProfilePage = () => {
               {isEditing && (
                 <div className="form-actions">
                   <button type="submit" className="save-btn">
-                    💾 Lưu thay đổi
+                     Lưu thay đổi
                   </button>
                   <button type="button" className="cancel-btn" onClick={handleCancel}>
                     ✕ Hủy
@@ -365,9 +367,9 @@ const ProfilePage = () => {
                         </p>
                       </div>
                       <div className={`order-status status-${order.status.toLowerCase()}`}>
-                        {order.status === 'PENDING' ? '⏳ Đang xử lý' :
-                         order.status === 'COMPLETED' ? '✅ Hoàn thành' :
-                         order.status === 'CANCELLED' ? '❌ Đã hủy' :
+                        {order.status === 'PENDING' ? ' Đang xử lý' :
+                         order.status === 'COMPLETED' ? ' Hoàn thành' :
+                         order.status === 'CANCELLED' ? ' Đã hủy' :
                          order.status}
                       </div>
                     </div>
@@ -414,7 +416,7 @@ const ProfilePage = () => {
                 className="add-address-btn"
                 onClick={() => setShowAddressForm(!showAddressForm)}
               >
-                ➕ {showAddressForm ? 'Hủy' : 'Thêm địa chỉ'}
+                 {showAddressForm ? 'Hủy' : 'Thêm địa chỉ'}
               </button>
             </div>
 
@@ -479,7 +481,7 @@ const ProfilePage = () => {
 
                   <div className="form-actions">
                     <button type="submit" className="save-btn">
-                      💾 Thêm địa chỉ
+                       Thêm địa chỉ
                     </button>
                     <button 
                       type="button" 

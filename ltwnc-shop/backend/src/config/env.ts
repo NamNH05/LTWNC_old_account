@@ -46,4 +46,5 @@ export const env = {
   facebookClientId: process.env.FACEBOOK_CLIENT_ID ?? "",
   facebookClientSecret: process.env.FACEBOOK_CLIENT_SECRET ?? "",
   oauthRedirectUri: process.env.OAUTH_REDIRECT_URI ?? "",
+  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
 };

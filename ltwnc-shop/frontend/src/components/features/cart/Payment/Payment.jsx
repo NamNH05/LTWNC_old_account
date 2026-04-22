@@ -451,12 +451,12 @@ const Payment = () => {
             <div className="form-actions">
               {step > 1 && (
                 <button className="btn btn-secondary" onClick={handlePreviousStep}>
-                  ← Quay Lại
+                   Quay Lại
                 </button>
               )}
               {step < 3 && (
                 <button className="btn btn-primary" onClick={handleNextStep} disabled={loading}>
-                  Tiếp Tục →
+                  Tiếp Tục 
                 </button>
               )}
               {step === 3 && (

@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, Menu, message } from 'antd';
+import { Layout, Menu } from 'antd';
 import { DashboardOutlined, ShoppingOutlined, UserOutlined, FileTextOutlined, BarChartOutlined, AuditOutlined, LogoutOutlined, HomeOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../context/AuthContext';
 import Header from '../Header/Header';
@@ -11,15 +11,7 @@ const { Sider, Content } = Layout;
 
 const AdminLayout = ({ children, activePage = 'orders' }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  useEffect(() => {
-    if (!user || (user.role && !user.role.toUpperCase().includes('ADMIN'))) {
-      message.error('Bạn không có quyền truy cập trang này');
-      navigate('/');
-      return;
-    }
-  }, [user, navigate]);
+  const { logout } = useAuth();
 
   const handleMenuClick = ({ key }) => {
     switch (key) {

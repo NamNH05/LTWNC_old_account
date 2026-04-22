@@ -5,12 +5,19 @@
   background-color: #f5f5f5;
 }
 
+/* Ant Design Layout already handles flex layout for Sider and Content */
+.admin-page > :nth-child(2) {
+  display: flex;
+  flex: 1;
+}
+
 .admin-sider {
   position: sticky;
   top: 0;
   left: 0;
-  height: calc(100vh - 140px);
+  max-height: calc(100vh - 60px);
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .admin-logo {
@@ -26,6 +33,23 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Menu styling */
+.admin-sider :global(.ant-menu) {
+  background-color: #001529;
+  border-right: 0;
+}
+
+.admin-sider :global(.ant-menu-item) {
+  padding-left: 24px !important;
+  height: 40px;
+  line-height: 40px;
+  margin-bottom: 4px;
+}
+
+.admin-sider :global(.ant-menu-item-selected) {
+  background-color: #177ddc !important;
 }
 
 .admin-content {
