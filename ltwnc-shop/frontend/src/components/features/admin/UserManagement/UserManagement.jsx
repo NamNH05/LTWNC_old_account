@@ -48,7 +48,9 @@ const UserManagement = () => {
   };
 
   const handleAddUser = () => {
-    message.info('Backend hiện chưa có API tạo người dùng trong admin');
+    setEditingUser(null);
+    form.resetFields();
+    setIsModalOpen(true);
   };
 
   const handleEditUser = (user) => {
@@ -86,7 +88,27 @@ const UserManagement = () => {
   const handleSubmit = async (values) => {
     try {
       if (!editingUser) {
-        message.error('Backend chưa hỗ trợ tạo người dùng từ trang admin này');
+        const response = await fetch(`${API_BASE_URL}/admin/users`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            fullName: values.fullName,
+            email: values.email,
+            phone: values.phone,
+            role: values.role,
+            password: values.password,
+            isActive: values.isActive,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create user');
+        }
+
+        const data = await response.json();
+        setUsers((prev) => [data.data, ...prev]);
+        message.success('Đã tạo người dùng thành công');
+        setIsModalOpen(false);
         return;
       }
 
@@ -98,7 +120,7 @@ const UserManagement = () => {
           phone: values.phone,
           role: values.role,
           isActive: values.isActive,
-        })
+        }),
       });
 
       if (!response.ok) {
@@ -253,16 +275,28 @@ const UserManagement = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: 'Vui lòng nhập email' },
-                { type: 'email', message: 'Email không hợp lệ' }
-              ]}
-            >
-              <Input />
-            </Form.Item>
+            {!editingUser && (
+              <>
+                <Form.Item
+                  label="Email"
+                  name="email"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập email' },
+                    { type: 'email', message: 'Email không hợp lệ' }
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  label="Mật khẩu"
+                  name="password"
+                  rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+              </>
+            )}
 
             <Form.Item
               label="Điện thoại"
@@ -275,6 +309,7 @@ const UserManagement = () => {
               label="Vai trò"
               name="role"
               rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+              initialValue="USER"
             >
               <Select>
                 <Select.Option value="ADMIN">Admin</Select.Option>
@@ -286,6 +321,7 @@ const UserManagement = () => {
               label="Hoạt động"
               name="isActive"
               rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+              initialValue={true}
             >
               <Select>
                 <Select.Option value={true}>Hoạt động</Select.Option>

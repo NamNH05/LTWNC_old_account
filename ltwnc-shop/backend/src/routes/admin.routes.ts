@@ -14,6 +14,9 @@ adminRouter.use(requireRoles(UserRole.ADMIN));
 // Get all orders
 adminRouter.get("/orders", adminController.getAllOrders);
 
+// Create order
+adminRouter.post("/orders", adminController.createOrder);
+
 // Update order status
 adminRouter.put("/orders/:id", adminController.updateOrderStatus);
 
@@ -28,6 +31,9 @@ adminRouter.get("/revenue", adminController.getRevenueStats);
 // Get all users
 adminRouter.get("/users", adminController.getAllUsers);
 
+// Create user
+adminRouter.post("/users", adminController.createUser);
+
 // Update user
 adminRouter.put("/users/:id", adminController.updateUser);
 
@@ -38,8 +44,14 @@ adminRouter.delete("/users/:id", adminController.deleteUser);
 // Get all addresses
 adminRouter.get("/addresses", adminController.getAllAddresses);
 
+// Create address
+adminRouter.post("/addresses", adminController.createAddress);
+
 // Update address
 adminRouter.put("/addresses/:id", adminController.updateAddress);
+
+// Set default address
+adminRouter.post("/addresses/:id/set-default", adminController.setDefaultAddress);
 
 // Delete address
 adminRouter.delete("/addresses/:id", adminController.deleteAddress);

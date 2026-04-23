@@ -8,12 +8,15 @@ import './Payment.css';
 const Payment = () => {
   const navigate = useNavigate();
   const { cartItems, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [userAddresses, setUserAddresses] = useState([]);
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
 
   const [formData, setFormData] = useState({
     // Shipping Info
@@ -47,6 +50,62 @@ const Payment = () => {
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (token) {
+      loadAddresses();
+    }
+  }, [token]);
+
+  const loadAddresses = async () => {
+    try {
+      setAddressesLoading(true);
+      const response = await fetch('http://localhost:8080/api/addresses', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load addresses');
+      }
+
+      const data = await response.json();
+      const addresses = data.data || [];
+      setUserAddresses(addresses);
+
+      const defaultAddress = addresses.find((addr) => addr.isDefault) || addresses[0];
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+        applySelectedAddress(defaultAddress);
+      }
+    } catch (err) {
+      console.error('Error loading user addresses:', err);
+      setUserAddresses([]);
+    } finally {
+      setAddressesLoading(false);
+    }
+  };
+
+  const applySelectedAddress = (address) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: address.street || '',
+      ward: address.ward || '',
+      district: address.district || '',
+      city: address.city || '',
+      phone: address.phoneNumber || prev.phone,
+      notes: prev.notes,
+    }));
+  };
+
+  const handleAddressSelect = (addressId) => {
+    setSelectedAddressId(addressId);
+    const address = userAddresses.find((item) => item.id === addressId);
+    if (address) {
+      applySelectedAddress(address);
+    }
+  };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = 30000;
@@ -140,7 +199,28 @@ const Payment = () => {
     try {
       setLoading(true);
 
-      // Simulate order processing
+      if (!token) {
+        throw new Error('Bạn cần đăng nhập để đặt hàng');
+      }
+
+      const response = await fetch('http://localhost:8080/api/orders/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          shippingAddr: `${formData.address}${formData.ward ? ', ' + formData.ward : ''}${formData.district ? ', ' + formData.district : ''}${formData.city ? ', ' + formData.city : ''}`,
+          phoneNumber: formData.phone,
+          note: formData.notes,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Không thể đặt đơn hàng');
+      }
+
       message.success('Đơn hàng đã được đặt thành công!');
       setError('');
       clearCart();
@@ -196,6 +276,31 @@ const Payment = () => {
 
                 {error && <div className="error-message">{error}</div>}
                 {loading && <div className="loading-message">Đang tải...</div>}
+
+                {addressesLoading ? (
+                  <div className="loading-message">Đang tải địa chỉ đã lưu...</div>
+                ) : userAddresses.length > 0 ? (
+                  <div className="saved-addresses">
+                    <label>Địa chỉ đã lưu</label>
+                    <div className="address-options">
+                      {userAddresses.map((address) => (
+                        <label key={address.id} className={`address-option ${selectedAddressId === address.id ? 'selected' : ''}`}>
+                          <input
+                            type="radio"
+                            name="selectedAddress"
+                            value={address.id}
+                            checked={selectedAddressId === address.id}
+                            onChange={() => handleAddressSelect(address.id)}
+                          />
+                          <span>
+                            {address.street}, {address.ward ? `${address.ward}, ` : ''}{address.district}, {address.city}
+                            {address.isDefault && ' (Mặc định)'}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="no-address-form">
                   <div className="form-group">

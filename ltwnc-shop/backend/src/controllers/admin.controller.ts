@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../models/prisma";
+import { orderService } from "../services/order.service";
 import { HttpError } from "../utils/http-error";
+import { hashPassword } from "../utils/password";
 
 // Admin controller - Quản lý admin operations
 export const adminController = {
@@ -61,6 +63,43 @@ export const adminController = {
             totalPages: Math.ceil(total / limit),
           },
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Tạo đơn hàng mới cho người dùng
+  async createOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, shippingAddr, phoneNumber, note, items } = req.body;
+
+      if (!userId) {
+        throw new HttpError(400, "Vui lòng cung cấp userId");
+      }
+      if (!shippingAddr || typeof shippingAddr !== "string") {
+        throw new HttpError(400, "Địa chỉ giao hàng không hợp lệ");
+      }
+      if (!phoneNumber || typeof phoneNumber !== "string") {
+        throw new HttpError(400, "Số điện thoại không hợp lệ");
+      }
+      if (note !== undefined && typeof note !== "string") {
+        throw new HttpError(400, "Ghi chú không hợp lệ");
+      }
+      if (items !== undefined && !Array.isArray(items)) {
+        throw new HttpError(400, "Danh sách sản phẩm không hợp lệ");
+      }
+
+      const order = await orderService.checkout(Number(userId), {
+        shippingAddr: shippingAddr.trim(),
+        phoneNumber: phoneNumber.trim(),
+        ...(note ? { note: note.trim() } : {}),
+        ...(Array.isArray(items) ? { items } : {}),
+      });
+
+      res.status(201).json({
+        message: "Tạo đơn hàng thành công",
+        data: order,
       });
     } catch (error) {
       next(error);
@@ -251,6 +290,60 @@ export const adminController = {
     }
   },
 
+  // Tạo người dùng mới
+  async createUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fullName, email, phone, role, password, isActive } = req.body;
+
+      if (!fullName || !email || !password) {
+        throw new HttpError(400, "Vui lòng cung cấp fullName, email và password");
+      }
+
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const existingUser = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+      });
+
+      if (existingUser) {
+        throw new HttpError(400, "Email đã tồn tại");
+      }
+
+      const hashedPassword = await hashPassword(String(password));
+      const normalizedRole = String(role || "USER").toUpperCase();
+      if (!["ADMIN", "USER"].includes(normalizedRole)) {
+        throw new HttpError(400, "Vai trò không hợp lệ");
+      }
+
+      const createdUser = await prisma.user.create({
+        data: {
+          fullName,
+          email: normalizedEmail,
+          password: hashedPassword,
+          phone: phone || null,
+          role: normalizedRole as any,
+          isActive: isActive === false ? false : true,
+        },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      res.status(201).json({
+        message: "Tạo người dùng thành công",
+        data: createdUser,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // Cập nhật người dùng
   async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
@@ -388,7 +481,19 @@ export const adminController = {
       if (district !== undefined) updateData.district = district;
       if (city !== undefined) updateData.city = city;
       if (zipCode !== undefined) updateData.zipCode = zipCode;
-      if (isDefault !== undefined) updateData.isDefault = isDefault;
+      if (isDefault !== undefined) {
+        if (isDefault) {
+          await prisma.address.updateMany({
+            where: {
+              userId: address.userId,
+              id: { not: address.id },
+              deletedAt: null,
+            },
+            data: { isDefault: false },
+          });
+        }
+        updateData.isDefault = isDefault;
+      }
 
       const updated = await prisma.address.update({
         where: { id: parseInt(id as string) },
@@ -402,6 +507,101 @@ export const adminController = {
 
       res.json({
         message: "Cập nhật địa chỉ thành công",
+        data: updated,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Tạo địa chỉ mới cho người dùng
+  async createAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, street, ward, district, city, zipCode, isDefault } = req.body;
+
+      if (!userId || isNaN(parseInt(userId as string))) {
+        throw new HttpError(400, "ID người dùng không hợp lệ");
+      }
+      if (!street || !ward || !district || !city) {
+        throw new HttpError(400, "Vui lòng cung cấp: street, ward, district, city");
+      }
+
+      const userExists = await prisma.user.findUnique({
+        where: { id: parseInt(userId as string) },
+      });
+      if (!userExists) {
+        throw new HttpError(404, "Người dùng không tồn tại");
+      }
+
+      if (isDefault) {
+        await prisma.address.updateMany({
+          where: {
+            userId: userExists.id,
+            deletedAt: null,
+          },
+          data: { isDefault: false },
+        });
+      }
+
+      const createdAddress = await prisma.address.create({
+        data: {
+          userId: userExists.id,
+          street,
+          ward,
+          district,
+          city,
+          zipCode: zipCode || null,
+          isDefault: Boolean(isDefault),
+        },
+        include: {
+          user: {
+            select: { id: true, fullName: true, email: true, phone: true },
+          },
+        },
+      });
+
+      res.status(201).json({
+        message: "Tạo địa chỉ thành công",
+        data: createdAddress,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Đặt địa chỉ mặc định
+  async setDefaultAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+
+      const address = await prisma.address.findUnique({
+        where: { id: parseInt(id as string) },
+      });
+
+      if (!address) {
+        throw new HttpError(404, "Địa chỉ không tồn tại");
+      }
+
+      await prisma.address.updateMany({
+        where: {
+          userId: address.userId,
+          deletedAt: null,
+        },
+        data: { isDefault: false },
+      });
+
+      const updated = await prisma.address.update({
+        where: { id: parseInt(id as string) },
+        data: { isDefault: true },
+        include: {
+          user: {
+            select: { id: true, fullName: true, email: true, phone: true },
+          },
+        },
+      });
+
+      res.json({
+        message: "Đặt địa chỉ mặc định thành công",
         data: updated,
       });
     } catch (error) {

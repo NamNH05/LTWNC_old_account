@@ -8,33 +8,6 @@ import './OrderCheckout.css';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
-const sampleAddresses = [
-  {
-    id: 1,
-    recipientName: 'Nguyễn Văn A',
-    phone: '0912 345 678',
-    addressLine: '123 Đường Trần Hưng Đạo',
-    ward: 'Phường 1',
-    district: 'Quận 5',
-    province: 'TP.HCM',
-    postalCode: '700000',
-    notes: 'Gọi trước 30 phút',
-    isDefault: true,
-  },
-  {
-    id: 2,
-    recipientName: 'Lê Thị B',
-    phone: '0987 654 321',
-    addressLine: '456 Đường Lê Lợi',
-    ward: 'Phường Bến Thành',
-    district: 'Quận 1',
-    province: 'TP.HCM',
-    postalCode: '700000',
-    notes: 'Giao trong giờ hành chính',
-    isDefault: false,
-  },
-];
-
 const OrderCheckout = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,23 +16,23 @@ const OrderCheckout = () => {
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [loading, setLoading] = useState(false);
-  const [userAddresses] = useState(sampleAddresses);
-  const [selectedAddressId, setSelectedAddressId] = useState(sampleAddresses[0]?.id || null);
+  const [userAddresses, setUserAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddNewAddress, setShowAddNewAddress] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   const [formData, setFormData] = useState({
-    fullName: sampleAddresses[0]?.recipientName || '',
+    fullName: '',
     email: '',
-    phone: sampleAddresses[0]?.phone || '',
-    address: sampleAddresses[0]?.addressLine || '',
-    ward: sampleAddresses[0]?.ward || '',
-    district: sampleAddresses[0]?.district || '',
-    city: sampleAddresses[0]?.province || '',
-    postalCode: sampleAddresses[0]?.postalCode || '',
-    recipientName: sampleAddresses[0]?.recipientName || '',
-    notes: sampleAddresses[0]?.notes || '',
+    phone: '',
+    address: '',
+    ward: '',
+    district: '',
+    city: '',
+    postalCode: '',
+    recipientName: '',
+    notes: '',
     cardName: '',
     cardNumber: '',
     expiryDate: '',
@@ -76,9 +49,56 @@ const OrderCheckout = () => {
     }
   }, [searchParams, setSearchParams]);
 
+  const fetchUserAddresses = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/addresses`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+          navigate('/login');
+          return;
+        }
+        throw new Error('Không thể tải địa chỉ người dùng');
+      }
+
+      const result = await response.json();
+      const addresses = result.data || [];
+      setUserAddresses(addresses);
+
+      if (addresses.length === 0) {
+        setShowAddNewAddress(true);
+        setSelectedAddressId(null);
+        return;
+      }
+
+      const defaultAddress = addresses.find((addr) => addr.isDefault) || addresses[0];
+      setSelectedAddressId(defaultAddress.id);
+      setShowAddNewAddress(false);
+      fillFormWithAddress(defaultAddress);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách địa chỉ:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserAddresses();
+  }, [token]);
+
   useEffect(() => {
     if (userAddresses.length > 0 && selectedAddressId === null) {
-      setSelectedAddressId(userAddresses[0].id);
+      const defaultAddress = userAddresses.find((addr) => addr.isDefault) || userAddresses[0];
+      setSelectedAddressId(defaultAddress.id);
+      fillFormWithAddress(defaultAddress);
+    }
+
+    if (userAddresses.length === 0) {
+      setShowAddNewAddress(true);
     }
   }, [userAddresses, selectedAddressId]);
 
@@ -503,10 +523,15 @@ const OrderCheckout = () => {
                       type="button"
                       className="btn-cancel-new"
                       onClick={() => {
-                        setShowAddNewAddress(false);
-                        const defaultAddress = userAddresses.find((addr) => addr.isDefault) || userAddresses[0];
-                        setSelectedAddressId(defaultAddress.id);
-                        fillFormWithAddress(defaultAddress);
+                        if (userAddresses.length > 0) {
+                          const defaultAddress = userAddresses.find((addr) => addr.isDefault) || userAddresses[0];
+                          setSelectedAddressId(defaultAddress.id);
+                          fillFormWithAddress(defaultAddress);
+                          setShowAddNewAddress(false);
+                        } else {
+                          setShowAddNewAddress(false);
+                          setSelectedAddressId(null);
+                        }
                       }}
                     >
                        Quay Lại Danh Sách Địa Chỉ

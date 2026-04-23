@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Spin } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Spin, InputNumber } from 'antd';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../../context/AuthContext';
 import './OrderManagement.css';
 
@@ -8,8 +9,11 @@ const API_BASE_URL = 'http://localhost:8080/api';
 const OrderManagement = () => {
   const { token } = useAuth();
   const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [form] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +23,8 @@ const OrderManagement = () => {
     if (!isMountedRef.current) {
       isMountedRef.current = true;
       loadOrders();
+      loadUsers();
+      loadProducts();
     }
 
     return () => {
@@ -50,8 +56,58 @@ const OrderManagement = () => {
     }
   };
 
+  const authHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  });
+
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users?limit=100`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load users');
+      }
+
+      const data = await response.json();
+      setUsers(data.data.users || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      message.error('Lỗi khi tải danh sách người dùng');
+      setUsers([]);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+      if (!response.ok) {
+        throw new Error('Failed to load products');
+      }
+
+      const data = await response.json();
+      setProducts(data.data || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      message.error('Lỗi khi tải danh sách sản phẩm');
+      setProducts([]);
+    }
+  };
+
+  const handleAddOrder = () => {
+    setEditingOrder(null);
+    setIsCreating(true);
+    form.resetFields();
+    setIsModalOpen(true);
+  };
+
   const handleEditOrder = (order) => {
     setEditingOrder(order);
+    setIsCreating(false);
     form.setFieldsValue({ status: order.status });
     setIsModalOpen(true);
   };
@@ -78,25 +134,48 @@ const OrderManagement = () => {
   };
 
   const handleSubmit = async (values) => {
-    if (!editingOrder) {
-      message.error('Không thể thêm đơn hàng mới từ admin dashboard');
-      return;
-    }
-
     try {
+      if (isCreating) {
+        const response = await fetch(`${API_BASE_URL}/admin/orders`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            userId: values.userId,
+            shippingAddr: values.shippingAddr,
+            phoneNumber: values.phoneNumber,
+            note: values.note,
+            items: values.items,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(errorBody || 'Failed to create order');
+        }
+
+        const data = await response.json();
+        setOrders((prev) => [data.data, ...prev]);
+        message.success('Tạo đơn hàng thành công');
+        setIsModalOpen(false);
+        return;
+      }
+
+      if (!editingOrder) {
+        message.error('Vui lòng chọn đơn hàng để cập nhật');
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/admin/orders/${editingOrder.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          status: values.status
-        })
+          status: values.status,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update order');
+        const errorBody = await response.text();
+        throw new Error(errorBody || 'Failed to update order');
       }
 
       const data = await response.json();
@@ -104,8 +183,8 @@ const OrderManagement = () => {
       message.success('Cập nhật đơn hàng thành công');
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Error updating order:', error);
-      message.error('Lỗi khi cập nhật đơn hàng');
+      console.error('Error saving order:', error);
+      message.error('Lỗi khi lưu đơn hàng');
     }
   };
 
@@ -214,9 +293,14 @@ const OrderManagement = () => {
       <div className="admin-content">
         <div className="admin-header">
           <h1>Quản Lý Đơn Hàng</h1>
-          <Button onClick={() => loadOrders()} style={{ marginLeft: '10px' }}>
-            Làm mới
-          </Button>
+          <div>
+            <Button type="primary" onClick={handleAddOrder} style={{ marginRight: '10px' }}>
+              Tạo đơn hàng
+            </Button>
+            <Button onClick={() => loadOrders()}>
+              Làm mới
+            </Button>
+          </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
@@ -237,46 +321,140 @@ const OrderManagement = () => {
         />
 
         <Modal
-          title="Cập nhật trạng thái đơn hàng"
+          title={isCreating ? 'Tạo đơn hàng mới' : 'Cập nhật trạng thái đơn hàng'}
           open={isModalOpen}
           onOk={() => form.submit()}
           onCancel={() => setIsModalOpen(false)}
         >
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            {editingOrder && (
+            {isCreating ? (
               <>
-                <Form.Item label="Mã đơn hàng">
-                  <Input value={`#${editingOrder.id}`} disabled />
+                <Form.Item
+                  label="Người dùng"
+                  name="userId"
+                  rules={[{ required: true, message: 'Vui lòng chọn người dùng' }]}
+                >
+                  <Select placeholder="Chọn người dùng">
+                    {users.map((user) => (
+                      <Select.Option key={user.id} value={user.id}>
+                        {user.fullName} ({user.email})
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
-                <Form.Item label="Khách hàng">
-                  <Input value={`${editingOrder.user?.fullName || '-'} (${editingOrder.user?.email || '-'})`} disabled />
+
+                <Form.Item
+                  label="Địa chỉ giao hàng"
+                  name="shippingAddr"
+                  rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng' }]}
+                >
+                  <Input />
                 </Form.Item>
-                <Form.Item label="Số tiền">
-                  <Input value={`${Number(editingOrder.totalPrice).toLocaleString('vi-VN')} ₫`} disabled />
+
+                <Form.Item
+                  label="Số điện thoại"
+                  name="phoneNumber"
+                  rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
+                >
+                  <Input />
                 </Form.Item>
-                <Form.Item label="Địa chỉ">
-                  <Input value={editingOrder.shippingAddr || 'Chưa xác định'} disabled />
+
+                <Form.Item label="Ghi chú" name="note">
+                  <Input.TextArea rows={3} />
                 </Form.Item>
-                <Form.Item label="Ngày đặt">
-                  <Input value={editingOrder.createdAt ? new Date(editingOrder.createdAt).toLocaleDateString('vi-VN') : '-'} disabled />
-                </Form.Item>
+
+                <Form.List
+                  name="items"
+                  initialValue={[{ productId: null, quantity: 1 }]}
+                  rules={[
+                    {
+                      validator: async (_, items) => {
+                        if (!items || items.length === 0) {
+                          return Promise.reject(new Error('Vui lòng thêm ít nhất một sản phẩm'));
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  {(fields, { add, remove }, { errors }) => (
+                    <>
+                      {fields.map(({ key, name, ...field }) => (
+                        <Space key={key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
+                          <Form.Item
+                            {...field}
+                            name={[name, 'productId']}
+                            rules={[{ required: true, message: 'Vui lòng chọn sản phẩm' }]}
+                          >
+                            <Select placeholder="Chọn sản phẩm" style={{ width: 280 }}>
+                              {products.map((product) => (
+                                <Select.Option key={product.id} value={product.id}>
+                                  {product.name} - {Number(product.price).toLocaleString('vi-VN')} ₫
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+
+                          <Form.Item
+                            {...field}
+                            name={[name, 'quantity']}
+                            rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+                          >
+                            <InputNumber min={1} style={{ width: 120 }} />
+                          </Form.Item>
+
+                          <MinusCircleOutlined onClick={() => remove(name)} />
+                        </Space>
+                      ))}
+
+                      <Form.Item>
+                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                          Thêm sản phẩm
+                        </Button>
+                        <Form.ErrorList errors={errors} />
+                      </Form.Item>
+                    </>
+                  )}
+                </Form.List>
               </>
+            ) : (
+              editingOrder && (
+                <>
+                  <Form.Item label="Mã đơn hàng">
+                    <Input value={`#${editingOrder.id}`} disabled />
+                  </Form.Item>
+                  <Form.Item label="Khách hàng">
+                    <Input value={`${editingOrder.user?.fullName || '-'} (${editingOrder.user?.email || '-'})`} disabled />
+                  </Form.Item>
+                  <Form.Item label="Số tiền">
+                    <Input value={`${Number(editingOrder.totalPrice).toLocaleString('vi-VN')} ₫`} disabled />
+                  </Form.Item>
+                  <Form.Item label="Địa chỉ">
+                    <Input value={editingOrder.shippingAddr || 'Chưa xác định'} disabled />
+                  </Form.Item>
+                  <Form.Item label="Ngày đặt">
+                    <Input value={editingOrder.createdAt ? new Date(editingOrder.createdAt).toLocaleDateString('vi-VN') : '-'} disabled />
+                  </Form.Item>
+                </>
+              )
             )}
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
-            >
-              <Select
-                options={[
-                  { value: 'PENDING', label: 'Chờ xử lý' },
-                  { value: 'CONFIRMED', label: 'Xác nhận' },
-                  { value: 'SHIPPED', label: 'Đã gửi' },
-                  { value: 'DELIVERED', label: 'Đã giao' },
-                  { value: 'CANCELLED', label: 'Đã hủy' }
-                ]}
-              />
-            </Form.Item>
+
+            {!isCreating && (
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+              >
+                <Select
+                  options={[
+                    { value: 'PENDING', label: 'Chờ xử lý' },
+                    { value: 'CONFIRMED', label: 'Xác nhận' },
+                    { value: 'SHIPPED', label: 'Đã gửi' },
+                    { value: 'DELIVERED', label: 'Đã giao' },
+                    { value: 'CANCELLED', label: 'Đã hủy' }
+                  ]}
+                />
+              </Form.Item>
+            )}
           </Form>
         </Modal>
       </div>

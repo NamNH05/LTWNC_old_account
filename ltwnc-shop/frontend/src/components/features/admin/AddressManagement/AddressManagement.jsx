@@ -8,6 +8,7 @@ const API_BASE_URL = 'http://localhost:8080/api';
 const AddressManagement = () => {
   const { token } = useAuth();
   const [addresses, setAddresses] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -23,6 +24,7 @@ const AddressManagement = () => {
     if (!isMountedRef.current) {
       isMountedRef.current = true;
       loadAddresses();
+      loadUsers();
     }
 
     return () => {
@@ -54,8 +56,31 @@ const AddressManagement = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users?limit=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load users');
+      }
+
+      const data = await response.json();
+      setUsers(data.data.users || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      message.error('Lỗi khi tải danh sách người dùng');
+      setUsers([]);
+    }
+  };
+
   const handleAddAddress = () => {
-    message.info('Backend hiện chưa có API tạo địa chỉ trong trang admin này');
+    setEditingAddress(null);
+    form.resetFields();
+    setIsModalOpen(true);
   };
 
   const handleEditAddress = (address) => {
@@ -67,8 +92,6 @@ const AddressManagement = () => {
       city: address.city,
       zipCode: address.zipCode,
       isDefault: address.isDefault,
-      fullName: address.user?.fullName,
-      phone: address.user?.phone,
     });
     setIsModalOpen(true);
   };
@@ -95,13 +118,52 @@ const AddressManagement = () => {
   };
 
   const handleSetDefault = async (id) => {
-    message.info('Backend hiện chưa hỗ trợ đặt mặc định từ trang admin này');
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/addresses/${id}/set-default`, {
+        method: 'POST',
+        headers: authHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to set default address');
+      }
+
+      const data = await response.json();
+      setAddresses((prev) => prev.map((address) =>
+        address.id === id ? data.data : { ...address, isDefault: false }
+      ));
+      message.success('Đặt địa chỉ mặc định thành công');
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      message.error('Lỗi khi đặt địa chỉ mặc định');
+    }
   };
 
   const handleSubmit = async (values) => {
     try {
       if (!editingAddress) {
-        message.error('Backend chưa hỗ trợ tạo địa chỉ từ trang admin này');
+        const response = await fetch(`${API_BASE_URL}/admin/addresses`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            userId: values.userId,
+            street: values.street,
+            ward: values.ward,
+            district: values.district,
+            city: values.city,
+            zipCode: values.zipCode,
+            isDefault: values.isDefault,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create address');
+        }
+
+        const data = await response.json();
+        setAddresses((prev) => [data.data, ...prev]);
+        message.success('Tạo địa chỉ thành công');
+        setIsModalOpen(false);
         return;
       }
 
@@ -223,6 +285,22 @@ const AddressManagement = () => {
             layout="vertical"
             onFinish={handleSubmit}
           >
+            {!editingAddress && (
+              <Form.Item
+                label="Người dùng"
+                name="userId"
+                rules={[{ required: true, message: 'Vui lòng chọn người dùng' }]}
+              >
+                <Select placeholder="Chọn người dùng">
+                  {users.map((user) => (
+                    <Select.Option key={user.id} value={user.id}>
+                      {user.fullName} ({user.email})
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
             <Form.Item
               label="Số nhà, đường"
               name="street"

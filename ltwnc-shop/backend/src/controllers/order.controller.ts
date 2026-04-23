@@ -1,6 +1,7 @@
 import { OrderStatus } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import { orderService } from "../services/order.service";
+import { prisma } from "../models/prisma";
 import { HttpError } from "../utils/http-error";
 
 const VALID_ORDER_STATUSES: OrderStatus[] = [
@@ -135,6 +136,50 @@ export const orderController = {
           limit,
           totalPages: Math.ceil(result.total / limit),
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async createOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, shippingAddr, phoneNumber, note, items } = req.body;
+
+      if (!userId || isNaN(parseInt(userId as string, 10))) {
+        throw new HttpError(400, "ID người dùng không hợp lệ", "VALIDATION_ERROR");
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: parseInt(userId as string, 10) },
+      });
+
+      if (!user) {
+        throw new HttpError(404, "Người dùng không tồn tại", "NOT_FOUND");
+      }
+
+      if (!shippingAddr || typeof shippingAddr !== "string") {
+        throw new HttpError(400, "Địa chỉ giao hàng không hợp lệ", "VALIDATION_ERROR");
+      }
+
+      if (!phoneNumber || typeof phoneNumber !== "string") {
+        throw new HttpError(400, "Số điện thoại không hợp lệ", "VALIDATION_ERROR");
+      }
+
+      if (!Array.isArray(items) || items.length === 0) {
+        throw new HttpError(400, "Danh sách sản phẩm không hợp lệ", "VALIDATION_ERROR");
+      }
+
+      const order = await orderService.checkout(parseInt(userId as string, 10), {
+        shippingAddr: shippingAddr.trim(),
+        phoneNumber: phoneNumber.trim(),
+        ...(note ? { note: note.trim() } : {}),
+        items,
+      });
+
+      res.status(201).json({
+        message: "Tạo đơn hàng thành công",
+        data: order,
       });
     } catch (error) {
       next(error);
