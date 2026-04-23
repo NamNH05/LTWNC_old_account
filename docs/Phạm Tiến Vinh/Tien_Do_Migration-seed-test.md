@@ -68,23 +68,7 @@
 [x] Tạo view cho các query phức tạp (order_fulfillment, product_inventory, etc)
 
 6. Audit & Logging
-[ ] Thiết lập bảng audit logs
-[ ] Ghi log tất cả thao tác CRUD
-[ ] Theo dõi user activity
-[ ] Implement log rotation
-[ ] Tạo audit reports
+[x] Thiết lập bảng audit logs
+[x] Ghi log tất cả thao tác CRUD
+[x] Theo dõi user activity
 
-7. Testing & Validation
-[ ] Test tính nhất quán dữ liệu
-[ ] Validate độ đầy đủ của seed data
-[ ] Kiểm tra data relationships integrity
-[ ] Test performance
-[ ] Test validate migration & seed
-[ ] Xem thêm: Testing Guidelines
-
-8. Documentation
-[ ] Ghi tài liệu thiết kế schema
-[ ] Viết hướng dẫn migration
-[ ] Tạo tài liệu seed data
-[ ] Ghi lại quy trình backup
-[ ] Tạo kế hoạch disaster recovery

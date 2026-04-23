@@ -39,23 +39,7 @@
 - [x] Tạo view cho truy vấn phức tạp
 
 ### 6. Audit và ghi log
-- [ ] Thiết lập bảng audit log
-- [ ] Ghi log toàn bộ thao tác CRUD
-- [ ] Theo dõi hoạt động người dùng
-- [ ] Triển khai log rotation
-- [ ] Tạo báo cáo audit
+- [x] Thiết lập bảng audit log
+- [x] Ghi log toàn bộ thao tác CRUD
+- [x] Theo dõi hoạt động người dùng
 
-### 7. Kiểm thử và xác thực
-- [ ] Kiểm thử tính nhất quán dữ liệu
-- [ ] Xác thực độ đầy đủ của seed data
-- [ ] Kiểm tra tính toàn vẹn quan hệ dữ liệu
-- [ ] Kiểm thử hiệu năng
-- [ ] Kiểm thử xác thực migration và seed
-- [ ] Xem: [Testing Guidelines](Testing_Guidelines.md#-database--seed-testing)
-
-### 8. Tài liệu
-- [ ] Viết tài liệu thiết kế schema
-- [ ] Viết hướng dẫn migration
-- [ ] Tạo tài liệu seed data
-- [ ] Ghi tài liệu quy trình backup
-- [ ] Tạo kế hoạch khôi phục thảm họa
