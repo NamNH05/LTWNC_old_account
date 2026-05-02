@@ -5,3 +5,68 @@ WORKLOG_20260412.md
 
 # Report writing guide (local/internal)
 docs/reports/README.md
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+.env*.production
+
+# Keep example env files
+!.env.example
+!.env.*.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tgz
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-workspace
+*.sublime-project
+.vim/
+.vimrc
+.nvimrc
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3

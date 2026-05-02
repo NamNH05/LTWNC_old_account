@@ -1,8 +1,26 @@
 {
-  "name": "backend",
+  "name": "ltwnc-shop-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "LTWNC Shop Backend API - TypeScript/Express eCommerce platform",
   "main": "index.js",
+  "author": "Nam Nguyen",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ltwnc-shop"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ltwnc-shop/issues"
+  },
+  "homepage": "https://github.com/your-username/ltwnc-shop#readme",
+  "keywords": [
+    "ecommerce",
+    "shop",
+    "express",
+    "typescript",
+    "postgresql",
+    "vnpay"
+  ],
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,9 +30,6 @@
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.16.2",
     "bcrypt": "^6.0.0",

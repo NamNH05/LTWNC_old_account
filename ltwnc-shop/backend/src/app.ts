@@ -4,6 +4,7 @@ import { env } from "./config/env";
 import { adminRouter, adminModuleRouter } from "./modules/admin";
 import { authRouter } from "./modules/auth";
 import { addressRouter } from "./modules/address";
+import { announcementRouter } from "./modules/announcement";
 import { cartRouter } from "./modules/cart";
 import { orderRouter } from "./modules/order";
 import { paymentRouter } from "./modules/payment";
@@ -84,6 +85,7 @@ app.use("/api/cart", checkModuleEnabled("cart"), cartRouter);
 app.use("/api/addresses", checkModuleEnabled("address"), addressRouter);
 app.use("/api/orders", checkModuleEnabled("order"), orderRouter);
 app.use("/api/payments", checkModuleEnabled("payment"), paymentRouter);
+app.use("/api/announcements", checkModuleEnabled("announcement"), announcementRouter);
 app.use("/api/admin/modules", adminModuleRouter);
 app.use("/api/admin", adminRouter);
 

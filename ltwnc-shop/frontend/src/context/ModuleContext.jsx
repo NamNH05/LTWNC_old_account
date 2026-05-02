@@ -5,13 +5,16 @@ const ModuleContext = createContext(null);
 
 export function ModuleProvider({ children }) {
   const [moduleStatuses, setModuleStatuses] = useState({});
+  const [moduleCatalog, setModuleCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadModuleStatuses = useCallback(async () => {
+  const loadModuleData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get("/admin/modules");
-      setModuleStatuses(response.data || {});
+      const payload = response.data || {};
+      setModuleStatuses(payload.statuses || {});
+      setModuleCatalog(payload.modules || []);
     } catch (error) {
       console.error("Failed to load module statuses", error);
     } finally {
@@ -20,12 +23,12 @@ export function ModuleProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    loadModuleStatuses();
-  }, []);
+    loadModuleData();
+  }, [loadModuleData]);
 
   const refreshModuleStatuses = useCallback(async () => {
-    await loadModuleStatuses();
-  }, [loadModuleStatuses]);
+    await loadModuleData();
+  }, [loadModuleData]);
 
   const isModuleEnabled = useCallback(
     (moduleName) => {
@@ -39,7 +42,9 @@ export function ModuleProvider({ children }) {
   );
 
   return (
-    <ModuleContext.Provider value={{ moduleStatuses, loading, isModuleEnabled, refreshModuleStatuses }}>
+    <ModuleContext.Provider
+      value={{ moduleStatuses, moduleCatalog, loading, isModuleEnabled, refreshModuleStatuses }}
+    >
       {children}
     </ModuleContext.Provider>
   );

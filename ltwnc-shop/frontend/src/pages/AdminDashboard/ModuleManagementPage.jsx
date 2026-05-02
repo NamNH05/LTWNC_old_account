@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Switch, Card, Button, message, Spin } from "antd";
+import { Switch, Card, Button, message, Spin, Modal } from "antd";
 import AdminLayout from "../../components/ui/AdminLayout/AdminLayout";
 import { useModules } from "../../context/ModuleContext";
 import api from "../../services/api";
 
-const MODULES = [
-  { key: "product", label: "Sản phẩm", description: "Cho phép truy cập và quản lý trang sản phẩm" },
-  { key: "cart", label: "Giỏ hàng", description: "Cho phép người dùng thêm sản phẩm vào giỏ hàng" },
-  { key: "order", label: "Đơn hàng", description: "Cho phép tạo và xử lý đơn hàng" },
-  { key: "user", label: "Người dùng", description: "Cho phép quản lý thông tin người dùng" },
-  { key: "address", label: "Địa chỉ", description: "Cho phép quản lý địa chỉ giao hàng" },
-  { key: "payment", label: "Thanh toán", description: "Cho phép xử lý thanh toán" },
-];
-
 const ModuleManagementPage = () => {
   const navigate = useNavigate();
-  const { moduleStatuses, refreshModuleStatuses } = useModules();
+  const { moduleCatalog, refreshModuleStatuses, loading } = useModules();
   const [savingModule, setSavingModule] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [detailModule, setDetailModule] = useState(null);
 
   const handleAuthError = () => {
     localStorage.removeItem("token");
@@ -48,7 +41,7 @@ const ModuleManagementPage = () => {
     }
   };
 
-  if (!moduleStatuses || Object.keys(moduleStatuses).length === 0) {
+  if (loading) {
     return (
       <AdminLayout activePage="modules">
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
@@ -89,14 +82,12 @@ const ModuleManagementPage = () => {
             gap: '16px',
           }}
         >
-          {MODULES.map((module) => {
-            const enabled = moduleStatuses.hasOwnProperty(module.key)
-              ? moduleStatuses[module.key]
-              : true;
+          {moduleCatalog.map((module) => {
+            const enabled = module.isEnabled;
 
             return (
               <div
-                key={module.key}
+                key={module.name}
                 style={{
                   padding: '20px',
                   borderRadius: '12px',
@@ -112,17 +103,55 @@ const ModuleManagementPage = () => {
                 <div style={{ minWidth: 0 }}>
                   <div className="font-semibold text-lg">{module.label}</div>
                   <div className="text-sm text-slate-500">{module.description}</div>
+                  <div className="text-xs text-slate-400" style={{ marginTop: 8 }}>
+                    Mặc định: {module.defaultEnabled ? 'bật' : 'tắt'} · {module.sample ? 'module mẫu' : module.category}
+                  </div>
                 </div>
-                <Switch
-                  checked={enabled}
-                  loading={savingModule === module.key}
-                  onChange={(checked) => handleToggle(module.key, checked)}
-                />
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <Button type="link" onClick={() => { setDetailModule(module); setDetailModalVisible(true); }}>
+                    Chi tiết
+                  </Button>
+                  <Switch
+                    checked={enabled}
+                    loading={savingModule === module.name}
+                    onChange={(checked) => handleToggle(module.name, checked)}
+                  />
+                </div>
               </div>
             );
           })}
         </div>
       </Card>
+      <Modal
+        title={detailModule ? `${detailModule.label} — Chi tiết` : 'Chi tiết module'}
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        {detailModule ? (
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div><strong>Tên hiển thị:</strong> {detailModule.label}</div>
+            <div><strong>Key:</strong> {detailModule.name}</div>
+            <div><strong>Mô tả:</strong> {detailModule.description}</div>
+            <div><strong>Danh mục:</strong> {detailModule.category}</div>
+            <div><strong>Mặc định:</strong> {detailModule.defaultEnabled ? 'Bật' : 'Tắt'}</div>
+            <div><strong>Hiện bật:</strong> {detailModule.isEnabled ? 'Có' : 'Không'}</div>
+            <div><strong>Đã lưu setting:</strong> {detailModule.hasStoredSetting ? 'Có' : 'Không'}</div>
+            {/* Entry point and routes intentionally hidden in UI */}
+            {detailModule.dependencies && detailModule.dependencies.length > 0 && (
+              <div>
+                <strong>Dependencies:</strong>
+                <ul style={{ marginTop: 6 }}>
+                  {detailModule.dependencies.map((d, i) => (
+                    <li key={i}>{d}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </Modal>
     </AdminLayout>
   );
 };

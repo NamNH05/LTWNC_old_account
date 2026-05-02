@@ -8,6 +8,7 @@ if (!databaseUrl) {
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { MODULE_MANIFESTS } from '../src/modules/module.registry';
 
 // For Prisma v7, we need to create a custom client
 const prisma = new PrismaClient();
@@ -43,15 +44,16 @@ async function main() {
   // 0. Create Module Settings
   console.log('⚙️ Tạo cài đặt module...');
 
-  const moduleSettings = await Promise.all([
-    prisma.moduleSetting.create({ data: { name: 'cart', isEnabled: true } }),
-    prisma.moduleSetting.create({ data: { name: 'order', isEnabled: true } }),
-    prisma.moduleSetting.create({ data: { name: 'payment', isEnabled: true } }),
-    prisma.moduleSetting.create({ data: { name: 'product', isEnabled: true } }),
-    prisma.moduleSetting.create({ data: { name: 'user', isEnabled: true } }),
-    prisma.moduleSetting.create({ data: { name: 'address', isEnabled: true } }),
-    prisma.moduleSetting.create({ data: { name: 'admin', isEnabled: true } }),
-  ]);
+  const moduleSettings = await Promise.all(
+    MODULE_MANIFESTS.map((manifest) =>
+      prisma.moduleSetting.create({
+        data: {
+          name: manifest.name,
+          isEnabled: manifest.defaultEnabled,
+        },
+      })
+    )
+  );
 
   console.log(`✓ Tạo ${moduleSettings.length} cài đặt module`);
 

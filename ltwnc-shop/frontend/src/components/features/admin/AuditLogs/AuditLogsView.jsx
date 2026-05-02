@@ -142,7 +142,7 @@ const AuditLogsView = () => {
     return (
         <div className="audit-logs-view">
             <div className="audit-logs-header">
-                <h1>📋 Audit Logs</h1>
+                <h1>Audit Logs</h1>
             </div>
 
             <div className="audit-logs-filters">

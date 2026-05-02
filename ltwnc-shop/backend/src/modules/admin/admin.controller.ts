@@ -695,10 +695,17 @@ export const adminController = {
   // Lấy trạng thái tất cả modules
   async getModuleStatuses(req: Request, res: Response, next: NextFunction) {
     try {
-      const statuses = await ModuleService.getAllModuleStatuses();
+      const modules = await ModuleService.getModuleCatalog();
+      const statuses = modules.reduce<Record<string, boolean>>((result, module) => {
+        result[module.name] = module.isEnabled;
+        return result;
+      }, {});
       res.json({
         success: true,
-        data: statuses,
+        data: {
+          statuses,
+          modules,
+        },
       });
     } catch (error) {
       next(error);
@@ -708,8 +715,14 @@ export const adminController = {
   // Cập nhật trạng thái module
   async updateModuleStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const { moduleName } = req.params;
+      const rawModuleName = req.params.moduleName;
       const { isEnabled } = req.body;
+
+      const moduleName = Array.isArray(rawModuleName) ? rawModuleName[0] : rawModuleName;
+
+      if (!moduleName) {
+        throw new HttpError(400, "moduleName is required");
+      }
 
       if (typeof isEnabled !== 'boolean') {
         throw new HttpError(400, "isEnabled must be a boolean");
