@@ -4,6 +4,12 @@ import { requireRoles } from "../../middlewares/rbac.middleware";
 import { UserRole } from "@prisma/client";
 import { adminController } from "./admin.controller";
 
+export const adminModuleRouter = Router();
+adminModuleRouter.use(requireAuth);
+adminModuleRouter.use(requireRoles(UserRole.ADMIN));
+adminModuleRouter.get("/", adminController.getModuleStatuses);
+adminModuleRouter.put("/:moduleName", adminController.updateModuleStatus);
+
 export const adminRouter = Router();
 
 // All admin routes require authentication and ADMIN role

@@ -36,8 +36,24 @@ async function main() {
   await prisma.category.deleteMany();
   await prisma.paymentMethod.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.moduleSetting.deleteMany();
 
   console.log('✓ Dữ liệu cũ đã được xóa');
+
+  // 0. Create Module Settings
+  console.log('⚙️ Tạo cài đặt module...');
+
+  const moduleSettings = await Promise.all([
+    prisma.moduleSetting.create({ data: { name: 'cart', isEnabled: true } }),
+    prisma.moduleSetting.create({ data: { name: 'order', isEnabled: true } }),
+    prisma.moduleSetting.create({ data: { name: 'payment', isEnabled: true } }),
+    prisma.moduleSetting.create({ data: { name: 'product', isEnabled: true } }),
+    prisma.moduleSetting.create({ data: { name: 'user', isEnabled: true } }),
+    prisma.moduleSetting.create({ data: { name: 'address', isEnabled: true } }),
+    prisma.moduleSetting.create({ data: { name: 'admin', isEnabled: true } }),
+  ]);
+
+  console.log(`✓ Tạo ${moduleSettings.length} cài đặt module`);
 
   // 0. Create Payment Methods
   console.log('💳 Tạo phương thức thanh toán...');

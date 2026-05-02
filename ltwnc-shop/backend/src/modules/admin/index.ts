@@ -1,3 +1,3 @@
-import { adminRouter } from "./admin.routes";
+import { adminRouter, adminModuleRouter } from "./admin.routes";
 
-export { adminRouter };
+export { adminRouter, adminModuleRouter };

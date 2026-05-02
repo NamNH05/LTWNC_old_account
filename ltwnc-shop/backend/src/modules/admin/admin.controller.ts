@@ -3,6 +3,7 @@ import { prisma } from "../../models/prisma";
 import { orderService } from "../order/order.service";
 import { HttpError } from "../../utils/http-error";
 import { hashPassword } from "../../utils/password";
+import { ModuleService } from "../../services/module.service";
 
 // Admin controller - Quản lý admin operations
 export const adminController = {
@@ -684,6 +685,41 @@ export const adminController = {
             numberOfElements: logs.length,
           },
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // ========== MODULES ==========
+  // Lấy trạng thái tất cả modules
+  async getModuleStatuses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const statuses = await ModuleService.getAllModuleStatuses();
+      res.json({
+        success: true,
+        data: statuses,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Cập nhật trạng thái module
+  async updateModuleStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { moduleName } = req.params;
+      const { isEnabled } = req.body;
+
+      if (typeof isEnabled !== 'boolean') {
+        throw new HttpError(400, "isEnabled must be a boolean");
+      }
+
+      await ModuleService.setModuleStatus(moduleName, isEnabled);
+
+      res.json({
+        success: true,
+        message: `Module ${moduleName} ${isEnabled ? 'enabled' : 'disabled'} successfully`,
       });
     } catch (error) {
       next(error);

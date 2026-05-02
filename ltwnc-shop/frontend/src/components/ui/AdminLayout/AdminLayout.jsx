@@ -27,6 +27,9 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
       case 'users':
         navigate('/admin/users');
         break;
+      case 'modules':
+        navigate('/admin/modules');
+        break;
       case 'audit':
         navigate('/admin/audit-logs');
         break;
@@ -59,6 +62,11 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
       key: 'users',
       icon: <UserOutlined />,
       label: 'Quản lý người dùng',
+    },
+    {
+      key: 'modules',
+      icon: <DashboardOutlined />,
+      label: 'Quản lý module',
     },
     {
       type: 'divider',

@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import { env } from "./config/env";
-import { adminRouter } from "./modules/admin";
+import { adminRouter, adminModuleRouter } from "./modules/admin";
 import { authRouter } from "./modules/auth";
 import { addressRouter } from "./modules/address";
 import { cartRouter } from "./modules/cart";
@@ -9,10 +9,11 @@ import { orderRouter } from "./modules/order";
 import { paymentRouter } from "./modules/payment";
 import { productRouter } from "./modules/product";
 import { userRouter } from "./modules/user";
-import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
+import { checkModuleEnabled } from "./middlewares/module.middleware";
 import { createRateLimiter } from "./middlewares/rate-limit.middleware";
 import { assignRequestContext } from "./middlewares/request-context.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
+import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
 export const app = express();
 
@@ -77,12 +78,13 @@ app.use("/api", apiRateLimiter);
 
 // Mount toàn bộ route dưới prefix /api/*.
 app.use("/api/auth", authRouter);
-app.use("/api/users", userRouter);
-app.use("/api/products", productRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/addresses", addressRouter);
-app.use("/api/orders", orderRouter);
-app.use("/api/payments", paymentRouter);
+app.use("/api/users", checkModuleEnabled("user"), userRouter);
+app.use("/api/products", checkModuleEnabled("product"), productRouter);
+app.use("/api/cart", checkModuleEnabled("cart"), cartRouter);
+app.use("/api/addresses", checkModuleEnabled("address"), addressRouter);
+app.use("/api/orders", checkModuleEnabled("order"), orderRouter);
+app.use("/api/payments", checkModuleEnabled("payment"), paymentRouter);
+app.use("/api/admin/modules", adminModuleRouter);
 app.use("/api/admin", adminRouter);
 
 // Bất kỳ route nào không match sẽ trả 404 để test dễ hơn.

@@ -243,3 +243,14 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+// ModuleSettings model
+model ModuleSetting {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // e.g., 'cart', 'order', 'payment', 'product', 'user', 'address', 'admin'
+  isEnabled Boolean  @default(true) @map("is_enabled")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("module_settings")
+}
