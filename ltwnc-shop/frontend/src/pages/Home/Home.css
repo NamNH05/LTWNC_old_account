@@ -1,7 +1,7 @@
 /* Home.css */
 
 .home {
-  font-family: 'Inter', sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 .hero-section {
@@ -44,7 +44,7 @@
 }
 
 .hero-title {
-  font-family: 'Playfair Display', serif;
+  font-family: Arial, sans-serif;
   font-weight: 800;
   color: #111827;
   font-size: 3rem;
@@ -176,7 +176,7 @@
 }
 
 .categories-section h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: Arial, sans-serif;
   font-weight: bold;
   color: #111827;
   text-align: center;
@@ -225,7 +225,7 @@
   right: 0;
   padding: 1.5rem;
   color: white;
-  font-family: 'Playfair Display', serif;
+  font-family: Arial, sans-serif;
   font-size: 1.5rem;
   font-weight: bold;
   margin: 0;
@@ -256,7 +256,7 @@
 }
 
 .section-header h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: Arial, sans-serif;
   font-weight: bold;
   color: #111827;
   font-size: 1.875rem;
@@ -317,7 +317,7 @@
 }
 
 .promotion-content h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: Arial, sans-serif;
   font-weight: bold;
   font-size: 1.875rem;
   margin-bottom: 1rem;
@@ -356,7 +356,7 @@
   font-weight: bold;
   color: #111827;
   margin-bottom: 0.5rem;
-  font-family: 'Playfair Display', serif;
+  font-family: Arial, sans-serif;
 }
 
 .newsletter-section p {

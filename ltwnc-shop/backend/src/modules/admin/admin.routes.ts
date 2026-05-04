@@ -29,10 +29,6 @@ adminRouter.put("/orders/:id", adminController.updateOrderStatus);
 // Delete order
 adminRouter.delete("/orders/:id", adminController.deleteOrder);
 
-// ========== REVENUE ==========
-// Get revenue statistics
-adminRouter.get("/revenue", adminController.getRevenueStats);
-
 // ========== USERS ==========
 // Get all users
 adminRouter.get("/users", adminController.getAllUsers);

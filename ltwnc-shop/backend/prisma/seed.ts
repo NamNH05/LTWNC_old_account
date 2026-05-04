@@ -171,7 +171,7 @@ async function main() {
   console.log(`✓ Tạo ${1 + seededUsers.length} tài khoản: ${admin.email}, ${seededUsers.map((item) => item.email).join(', ')}`);
 
   // 2. Create Addresses
-  console.log('📍 Tạo địa chỉ...');
+  console.log('Tạo địa chỉ...');
 
   const addressSeeds = [
     {

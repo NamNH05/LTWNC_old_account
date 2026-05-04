@@ -4,7 +4,27 @@ import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../../context/AuthContext';
 import './OrderManagement.css';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+  
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+  
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+  
+  const protocol = window.location.protocol;
+  
+  // Convert to api subdomain
+  if (hostname.startsWith('api.')) {
+    return `${protocol}//${hostname}/api`;
+  }
+  
+  return `${protocol}//api.${hostname}/api`;
+})();
 
 const OrderManagement = () => {
   const { token } = useAuth();
@@ -45,8 +65,8 @@ const OrderManagement = () => {
         throw new Error('Failed to load orders');
       }
 
-      const data = await response.json();
-      setOrders(data.data.orders || []);
+      const data = await response.json().catch(() => ({}));
+      setOrders(data?.data?.orders || []);
     } catch (error) {
       console.error('Error loading orders:', error);
       message.error('Lỗi khi tải danh sách đơn hàng');
@@ -73,8 +93,8 @@ const OrderManagement = () => {
         throw new Error('Failed to load users');
       }
 
-      const data = await response.json();
-      setUsers(data.data.users || []);
+      const data = await response.json().catch(() => ({}));
+      setUsers(data?.data?.users || []);
     } catch (error) {
       console.error('Error loading users:', error);
       message.error('Lỗi khi tải danh sách người dùng');
@@ -89,8 +109,8 @@ const OrderManagement = () => {
         throw new Error('Failed to load products');
       }
 
-      const data = await response.json();
-      setProducts(data.data || []);
+      const data = await response.json().catch(() => ({}));
+      setProducts(data?.data || []);
     } catch (error) {
       console.error('Error loading products:', error);
       message.error('Lỗi khi tải danh sách sản phẩm');

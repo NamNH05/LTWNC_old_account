@@ -3,7 +3,27 @@ import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, 
 import { useAuth } from '../../../../context/AuthContext';
 import './UserManagement.css';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+  
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+  
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+  
+  const protocol = window.location.protocol;
+  
+  // Convert to api subdomain
+  if (hostname.startsWith('api.')) {
+    return `${protocol}//${hostname}/api`;
+  }
+  
+  return `${protocol}//api.${hostname}/api`;
+})();
 
 const UserManagement = () => {
   const { token } = useAuth();
@@ -36,8 +56,8 @@ const UserManagement = () => {
         throw new Error('Failed to load users');
       }
 
-      const data = await response.json();
-      setUsers(data.data.users || []);
+      const data = await response.json().catch(() => ({}));
+      setUsers(data?.data?.users || []);
     } catch (error) {
       console.error('Error loading users:', error);
       message.error('Lỗi khi tải danh sách người dùng');
@@ -105,7 +125,7 @@ const UserManagement = () => {
           throw new Error('Failed to create user');
         }
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         setUsers((prev) => [data.data, ...prev]);
         message.success('Đã tạo người dùng thành công');
         setIsModalOpen(false);
@@ -127,7 +147,7 @@ const UserManagement = () => {
         throw new Error('Failed to update user');
       }
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       setUsers((prev) => prev.map((item) => (item.id === editingUser.id ? data.data : item)));
       message.success('Đã cập nhật người dùng thành công');
       setIsModalOpen(false);

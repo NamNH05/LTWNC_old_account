@@ -5,6 +5,7 @@ type CreateUserInput = {
   email: string;
   password: string;
   fullName: string;
+  phone?: string;
   role?: UserRole;
 };
 
@@ -13,6 +14,7 @@ const userAuthSelect = {
   email: true,
   password: true,
   fullName: true,
+  phone: true,
   role: true,
   isActive: true,
 } satisfies Prisma.UserSelect;
@@ -55,6 +57,7 @@ export const userRepository = {
         email: input.email,
         password: input.password,
         fullName: input.fullName,
+        phone: input.phone,
         role: input.role ?? UserRole.USER,
       },
     });

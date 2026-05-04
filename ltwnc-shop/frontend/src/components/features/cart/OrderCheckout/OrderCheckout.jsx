@@ -4,9 +4,8 @@ import { message, Button } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useCart } from '../../../../context/CartContext';
 import { useAuth } from '../../../../context/AuthContext';
+import api from '../../../../services/api';
 import './OrderCheckout.css';
-
-const API_BASE_URL = 'http://localhost:8080/api';
 
 const OrderCheckout = () => {
   const navigate = useNavigate();
@@ -41,33 +40,49 @@ const OrderCheckout = () => {
 
   useEffect(() => {
     const cancelled = searchParams.get('cancelled') === 'true';
+    const failed = searchParams.get('failed') === 'true';
+    
     if (cancelled) {
       setPaymentMethod('');
       setStep(2);
       message.error('Giao dịch thanh toán đã bị hủy. Vui lòng chọn phương thức thanh toán khác.');
       setSearchParams({});
     }
+    
+    if (failed) {
+      setPaymentMethod('');
+      setStep(2);
+      const responseCode = searchParams.get('responseCode');
+      const responseCodeMap = {
+        '01': 'Không tìm thấy thanh toán',
+        '02': 'Giao dịch bị từ chối',
+        '04': 'Số tiền không khớp',
+        '97': 'Chữ ký không hợp lệ',
+        '99': 'Lỗi khác',
+      };
+      const errorMsg = responseCodeMap[responseCode] || 'Thanh toán thất bại. Vui lòng thử lại.';
+      message.error(`${errorMsg} Vui lòng chọn phương thức thanh toán khác.`);
+      setSearchParams({});
+    }
   }, [searchParams, setSearchParams]);
+
+  // Initialize form with user data on mount
+  useEffect(() => {
+    if (user?.fullName || user?.phone) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.fullName || prev.fullName,
+        recipientName: user.fullName || prev.recipientName,
+        phone: user.phone || prev.phone,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
 
   const fetchUserAddresses = async () => {
     if (!token) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
-          navigate('/login');
-          return;
-        }
-        throw new Error('Không thể tải địa chỉ người dùng');
-      }
-
-      const result = await response.json();
+      const result = await api.get('/addresses');
       const addresses = result.data || [];
       setUserAddresses(addresses);
 
@@ -94,7 +109,7 @@ const OrderCheckout = () => {
     if (userAddresses.length > 0 && selectedAddressId === null) {
       const defaultAddress = userAddresses.find((addr) => addr.isDefault) || userAddresses[0];
       setSelectedAddressId(defaultAddress.id);
-      fillFormWithAddress(defaultAddress);
+      fillFormWithAddress(defaultAddress, user);
     }
 
     if (userAddresses.length === 0) {
@@ -106,24 +121,30 @@ const OrderCheckout = () => {
     if (!showAddNewAddress && selectedAddressId !== null) {
       const selectedAddress = userAddresses.find((address) => address.id === selectedAddressId);
       if (selectedAddress) {
-        fillFormWithAddress(selectedAddress);
+        fillFormWithAddress(selectedAddress, user);
       }
     }
   }, [selectedAddressId, showAddNewAddress, userAddresses]);
 
-  const fillFormWithAddress = (address) => {
-    setFormData((prev) => ({
-      ...prev,
-      fullName: address.recipientName || prev.fullName,
-      recipientName: address.recipientName || prev.recipientName,
-      phone: address.phone || prev.phone,
-      address: address.addressLine || prev.address,
-      ward: address.ward || prev.ward,
-      district: address.district || prev.district,
-      city: address.province || prev.city,
-      postalCode: address.postalCode || prev.postalCode,
-      notes: address.notes || prev.notes,
-    }));
+  const fillFormWithAddress = (address, userObj = user) => {
+    setFormData((prev) => {
+      const filledData = {
+        ...prev,
+        // Use address recipientName, fallback to user fullName, then prev
+        recipientName: address.recipientName || userObj?.fullName || prev.recipientName,
+        // Use address phone/phoneNumber, fallback to user phone, then prev
+        phone: address.phone || address.phoneNumber || userObj?.phone || prev.phone,
+        // Address fields with multiple field name options
+        address: address.addressLine || address.street || prev.address,
+        ward: address.ward || prev.ward,
+        district: address.district || prev.district,
+        city: address.province || address.city || prev.city,
+        postalCode: address.postalCode || address.zipCode || prev.postalCode,
+        notes: address.notes || prev.notes,
+        fullName: address.recipientName || userObj?.fullName || prev.fullName,
+      };
+      return filledData;
+    });
   };
 
   const handleInputChange = (e) => {
@@ -131,36 +152,6 @@ const OrderCheckout = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
-  };
-
-  const handleCardNumberChange = (e) => {
-    let value = e.target.value.replace(/\s+/g, '');
-    if (value.length > 16) value = value.slice(0, 16);
-    const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-    setFormData((prev) => ({
-      ...prev,
-      cardNumber: formatted,
-    }));
-  };
-
-  const handleExpiryChange = (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length >= 2) {
-      value = value.slice(0, 2) + '/' + value.slice(2, 4);
-    }
-    setFormData((prev) => ({
-      ...prev,
-      expiryDate: value,
-    }));
-  };
-
-  const handleCVVChange = (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 3) value = value.slice(0, 3);
-    setFormData((prev) => ({
-      ...prev,
-      cvv: value,
     }));
   };
 
@@ -183,17 +174,6 @@ const OrderCheckout = () => {
     if (!paymentMethod || paymentMethod.trim() === '') {
       setErrorMessage('Vui lòng chọn phương thức thanh toán');
       return false;
-    }
-    const { cardName, cardNumber, expiryDate, cvv } = formData;
-    if (paymentMethod === 'card') {
-      if (!cardName.trim() || !cardNumber.trim() || !expiryDate.trim() || !cvv.trim()) {
-        setErrorMessage('Vui lòng điền đầy đủ thông tin thẻ');
-        return false;
-      }
-      if (cardNumber.replace(/\s/g, '').length !== 16) {
-        setErrorMessage('Số thẻ phải có 16 chữ số');
-        return false;
-      }
     }
     setErrorMessage('');
     return true;
@@ -236,57 +216,20 @@ const OrderCheckout = () => {
         phoneNumber: formData.phone,
         note: formData.notes,
         items: cartItems.map(item => ({
-          productId: parseInt(item.id) || item.id, // Ensure it's Int
+          productId: parseInt(item.id) || item.id,
           quantity: parseInt(item.quantity) || 1,
         })),
       };
 
-      const response = await fetch(`${API_BASE_URL}/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
-          navigate('/login');
-          return;
-        }
-        throw new Error(result.message || 'Đặt hàng thất bại');
-      }
-
+      const result = await api.post('/orders', orderData);
       const orderId = result.data?.id;
 
-      // If payment method is wallet (VNPAY), create payment URL and redirect
-      if (paymentMethod === 'wallet' && orderId) {
-        const paymentResponse = await fetch(`${API_BASE_URL}/payments/vnpay/create-url`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            orderId: orderId,
-            locale: 'vn',
-          }),
+      // If payment method is VNPAY, create payment URL and redirect
+      if (paymentMethod === 'vnpay' && orderId) {
+        const paymentData = await api.post('/payments/vnpay/create-url', {
+          orderId: orderId,
+          locale: 'vn',
         });
-
-        const paymentData = await paymentResponse.json();
-
-        if (!paymentResponse.ok) {
-          if (paymentResponse.status === 401) {
-            message.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
-            navigate('/login');
-            return;
-          }
-          throw new Error(paymentData.message || 'Không thể tạo link thanh toán VNPAY');
-        }
 
         setSuccessMessage('Đơn hàng đã được tạo! Chuyển hướng đến VNPAY...');
         message.success('Vui lòng hoàn thành thanh toán');
@@ -299,27 +242,26 @@ const OrderCheckout = () => {
           window.location.href = paymentData.data?.paymentUrl;
         }, 1000);
       } else {
-        // For COD and other methods, just clear cart and go home
-        setSuccessMessage('Đơn hàng đã được đặt thành công!');
-        setErrorMessage('');
+        // COD or other methods - order created successfully, show success page
+        setSuccessMessage('Đơn hàng đã được tạo thành công!');
+        message.success('Đặt hàng thành công');
         clearCart();
-        
         setTimeout(() => {
-          message.success('Đơn hàng đã được tạo! Đường dẫn đến trang chủ...');
-          navigate('/');
-        }, 2000);
+          navigate(`/payment/success?orderId=${orderId}&paymentStatus=cod`);
+        }, 1500);
       }
     } catch (error) {
-      console.error('Lỗi đặt hàng:', error);
-      setErrorMessage(error.message || 'Không thể đặt hàng. Vui lòng thử lại.');
-      message.error(error.message || 'Không thể đặt hàng');
+      console.error('Error creating order:', error);
+      setErrorMessage(error.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
+      message.error(error.message || 'Đặt hàng thất bại');
     } finally {
       setLoading(false);
     }
   };
 
+  // Calculate subtotal and shipping for render
   const subtotal = getCartTotal();
-  const shipping = getShippingFee();
+  const shipping = 30000; // Assuming fixed shipping fee
   const discount = 0;
   const total = subtotal + shipping - discount;
 
@@ -389,8 +331,8 @@ const OrderCheckout = () => {
                             }}
                           />
                           <div className="address-info">
-                            <p className="recipient-name">{address.recipientName} ({address.phone})</p>
-                            <p className="address-text">{address.addressLine}, {address.ward}, {address.district}, {address.province}</p>
+                            <p className="recipient-name">{address.recipientName || user?.fullName} ({address.phone || address.phoneNumber || user?.phone})</p>
+                            <p className="address-text">{address.addressLine || address.street}, {address.ward}, {address.district}, {address.province || address.city}</p>
                             {address.isDefault && <span className="badge-default">Mặc định</span>}
                           </div>
                         </label>
@@ -553,122 +495,32 @@ const OrderCheckout = () => {
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="card"
-                      checked={paymentMethod === 'card'}
+                      value="cod"
+                      checked={paymentMethod === 'cod'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
-                    <span className="option-label"> Thẻ Tín Dụng / Ghi Nợ</span>
+                    <span className="option-label"> Thanh Toán Khi Nhận Hàng (COD)</span>
                   </label>
                   <label className="payment-method-option">
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="bank"
-                      checked={paymentMethod === 'bank'}
+                      value="vnpay"
+                      checked={paymentMethod === 'vnpay'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
-                    <span className="option-label"> Chuyển Khoản Ngân Hàng</span>
-                  </label>
-                  <label className="payment-method-option">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="wallet"
-                      checked={paymentMethod === 'wallet'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                    />
-                    <span className="option-label"> Ví Điện Tử</span>
+                    <span className="option-label"> Thanh Toán Qua VNPAY</span>
                   </label>
                 </div>
 
-                {paymentMethod === 'card' && (
-                  <div className="card-form">
-                    <div className="form-group">
-                      <label>Tên Chủ Thẻ</label>
-                      <input
-                        type="text"
-                        name="cardName"
-                        value={formData.cardName}
-                        onChange={handleInputChange}
-                        placeholder="Nhập tên trên thẻ"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Số Thẻ</label>
-                      <input
-                        type="text"
-                        name="cardNumber"
-                        value={formData.cardNumber}
-                        onChange={handleCardNumberChange}
-                        placeholder="1234 5678 9012 3456"
-                        maxLength="19"
-                      />
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Hạn Sử Dụng</label>
-                        <input
-                          type="text"
-                          name="expiryDate"
-                          value={formData.expiryDate}
-                          onChange={handleExpiryChange}
-                          placeholder="MM/YY"
-                          maxLength="5"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>CVV</label>
-                        <input
-                          type="text"
-                          name="cvv"
-                          value={formData.cvv}
-                          onChange={handleCVVChange}
-                          placeholder="123"
-                          maxLength="3"
-                        />
-                      </div>
-                    </div>
-                    <div className="security-info">
-                       Thông tin thẻ của bạn được mã hóa và bảo mật
-                    </div>
+                
+
+                {paymentMethod === 'vnpay' && (
+                  <div className="vnpay-info">
+                    <p>Thanh toán an toàn qua cổng VNPAY</p>
+                    <p>Hỗ trợ: Thẻ tín dụng, thẻ ghi nợ, ví điện tử</p>
                   </div>
                 )}
-
-                {paymentMethod === 'bank' && (
-                  <div className="bank-info">
-                    <p>Vui lòng chuyển khoản đến tài khoản dưới đây:</p>
-                    <div className="bank-details">
-                      <div><strong>Ngân hàng:</strong> ACB (Ngân hàng Á Châu)</div>
-                      <div><strong>Số tài khoản:</strong> 123456789</div>
-                      <div><strong>Tên chủ tài khoản:</strong> CÔNG TY CỔ PHẦN THƯƠNG MỤC</div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === 'wallet' && (
-                  <div className="wallet-info">
-                    <p>Chọn ví điện tử để thanh toán</p>
-                    <div className="wallet-options">
-                      <button 
-                        type="button" 
-                        className="wallet-btn vnpay-btn"
-                        title="Thanh toán qua cổng VNPAY an toàn"
-                      >
-                        <span className="vnpay-icon"></span>
-                        Thanh Toán VNPAY
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="form-section">
-                <h2>Xác Nhận</h2>
-
-                {errorMessage && <div className="error-message">{errorMessage}</div>}
-                {successMessage && <div className="success-message">{successMessage}</div>}
 
                 <div className="confirmation-section">
                   <div className="confirmation-block">
@@ -681,10 +533,88 @@ const OrderCheckout = () => {
                   <div className="confirmation-block">
                     <h3>Phương Thức Thanh Toán</h3>
                     <p>
-                      {paymentMethod === 'card' && ' Thẻ Tín Dụng / Ghi Nợ'}
-                      {paymentMethod === 'bank' && ' Chuyển Khoản Ngân Hàng'}
-                      {paymentMethod === 'wallet' && ' Ví Điện Tử'}
+                      {paymentMethod === 'cod' && 'Thanh Toán Khi Nhận Hàng (COD)'}
+                      {paymentMethod === 'vnpay' && 'Thanh Toán Qua VNPAY'}
                     </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="form-section">
+                <h2>Xác Nhận Đặt Hàng</h2>
+
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                {successMessage && <div className="success-message">{successMessage}</div>}
+
+                <div className="confirmation-section">
+                  <div className="confirmation-block">
+                    <h3>Địa Chỉ Giao Hàng</h3>
+                    <p><strong>{formData.recipientName}</strong></p>
+                    <p>{formData.address}, {formData.ward}, {formData.district}, {formData.city}</p>
+                    <p>ĐT: {formData.phone}</p>
+                    {formData.notes && <p><strong>Ghi chú:</strong> {formData.notes}</p>}
+                  </div>
+
+                  <div className="confirmation-block">
+                    <h3>Phương Thức Thanh Toán</h3>
+                    <div>
+                      {paymentMethod === 'cod' && (
+                        <>
+                          <strong>Thanh Toán Khi Nhận Hàng (COD)</strong>
+                          <div style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
+                            ✓ Thanh toán trực tiếp cho nhân viên giao hàng<br/>
+                            ✓ Không phí trả góp, không phí thanh toán<br/>
+                            ✓ Kiểm tra hàng trước khi thanh toán
+                          </div>
+                        </>
+                      )}
+                      {paymentMethod === 'vnpay' && (
+                        <>
+                          <strong>Thanh Toán Qua VNPAY</strong>
+                          <div style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
+                            Thanh toán an toàn qua cổng VNPAY<br/>
+                            Hỗ trợ: Thẻ tín dụng, thẻ ghi nợ, ví điện tử
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="confirmation-block">
+                    <h3>Sản Phẩm</h3>
+                    {cartItems.map((item) => (
+                      <div key={`${item.id}-${item.size}-${item.color}`} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #eee',
+                        marginBottom: '8px'
+                      }}>
+                        <span>
+                          <strong>{item.name}</strong> x{item.quantity}
+                          {item.size && <span> (Size: {item.size})</span>}
+                          {item.color && <span> (Màu: {item.color})</span>}
+                        </span>
+                        <span><strong>{formatCurrency(item.price * item.quantity)}</strong></span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="confirmation-block" style={{ backgroundColor: '#f0f8ff'}}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span>Tạm Tính:</span>
+                      <span>{formatCurrency(subtotal)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span>Phí Vận Chuyển:</span>
+                      <span>{shipping === 0 ? 'Miễn phí' : formatCurrency(shipping)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold', color: '#007bff' }}>
+                      <span>Tổng Cộng:</span>
+                      <span>{formatCurrency(total)}</span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -7,7 +7,27 @@ import ProductCard from '../../components/ui/ProductCard/ProductCard';
 import { formatCurrency } from '../../utils/format';
 import './ProductPage.css';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+  
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+  
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+  
+  const protocol = window.location.protocol;
+  
+  // Convert to api subdomain
+  if (hostname.startsWith('api.')) {
+    return `${protocol}//${hostname}/api`;
+  }
+  
+  return `${protocol}//api.${hostname}/api`;
+})();
 
 const categories = [
   { value: 'all', label: 'Tất cả sản phẩm' },
@@ -45,7 +65,7 @@ const ProductPage = () => {
         throw new Error('Failed to load products');
       }
       
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       setProducts(data.data || []);
     } catch (err) {
       console.error('Error loading products:', err);

@@ -14,6 +14,8 @@ import { checkModuleEnabled } from "./middlewares/module.middleware";
 import { createRateLimiter } from "./middlewares/rate-limit.middleware";
 import { assignRequestContext } from "./middlewares/request-context.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
+import { detailedRequestLogger } from "./middlewares/detailed-logger.middleware";
+import { debugRouter, captureRequestDebugInfo } from "./modules/debug/debug.router";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
 export const app = express();
@@ -37,10 +39,17 @@ app.use(cors({
       'http://localhost:3000',
       'http://127.0.0.1:5173',
       'http://127.0.0.1:3000',
-      env.frontendUrl,
-      // Cho phép requests từ các port khác của VS Code (vì người dùng có thể công khai bất kỳ port nào)
-      // Nếu muốn strict hơn, thay bằng danh sách cụ thể các IP/domain được phép
+      'http://localhost:8080',
+      'http://127.0.0.1:8080',
+      'https://hnamofficial.id.vn',  // Production frontend
+      'https://www.hnamofficial.id.vn',  // Production with www
+      'https://api.hnamofficial.id.vn',  // API can call itself if needed
     ];
+
+    // Add env.frontendUrl if explicitly set
+    if (env.frontendUrl && !allowedOrigins.includes(env.frontendUrl)) {
+      allowedOrigins.push(env.frontendUrl);
+    }
 
     // Cho phép requests không có origin header (mobile, curl, etc.)
     if (!origin) {
@@ -52,9 +61,11 @@ app.use(cors({
       callback(null, true);
     } else if (env.nodeEnv === 'development') {
       // Development mode: cho phép tất cả origins
+      console.warn(`[CORS] Allowing origin in development mode: ${origin}`);
       callback(null, true);
     } else {
       // Production mode: từ chối các origins không được phép
+      console.error(`[CORS] Rejected origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -63,6 +74,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
+app.use(detailedRequestLogger);
+app.use(captureRequestDebugInfo);
 app.use(assignRequestContext);
 app.use(requestLogger);
 
@@ -88,6 +101,11 @@ app.use("/api/payments", checkModuleEnabled("payment"), paymentRouter);
 app.use("/api/announcements", checkModuleEnabled("announcement"), announcementRouter);
 app.use("/api/admin/modules", adminModuleRouter);
 app.use("/api/admin", adminRouter);
+
+// Debug endpoints (development only)
+if (env.nodeEnv === 'development') {
+  app.use("/api", debugRouter);
+}
 
 // Bất kỳ route nào không match sẽ trả 404 để test dễ hơn.
 app.use(notFoundHandler);

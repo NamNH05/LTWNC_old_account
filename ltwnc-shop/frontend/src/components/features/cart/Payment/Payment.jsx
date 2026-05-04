@@ -60,7 +60,7 @@ const Payment = () => {
   const loadAddresses = async () => {
     try {
       setAddressesLoading(true);
-      const response = await fetch('http://localhost:8080/api/addresses', {
+      const response = await fetch(`${API_BASE_URL}/addresses`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -70,7 +70,7 @@ const Payment = () => {
         throw new Error('Failed to load addresses');
       }
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       const addresses = data.data || [];
       setUserAddresses(addresses);
 
@@ -203,7 +203,7 @@ const Payment = () => {
         throw new Error('Bạn cần đăng nhập để đặt hàng');
       }
 
-      const response = await fetch('http://localhost:8080/api/orders/checkout', {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -422,7 +422,7 @@ const Payment = () => {
                       checked={paymentMethod === 'card'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
-                    <span className="option-label">💳 Thẻ Tín Dụng / Ghi Nợ</span>
+                    <span className="option-label"> Thẻ Tín Dụng / Ghi Nợ</span>
                   </label>
                   <label className="payment-method-option">
                     <input
@@ -543,9 +543,9 @@ const Payment = () => {
                   <div className="confirmation-block">
                     <h3>Phương Thức Thanh Toán</h3>
                     <p>
-                      {paymentMethod === 'card' && '💳 Thẻ Tín Dụng / Ghi Nợ'}
-                      {paymentMethod === 'bank' && '🏦 Chuyển Khoản Ngân Hàng'}
-                      {paymentMethod === 'wallet' && '📱 Ví Điện Tử'}
+                      {paymentMethod === 'card' && ' Thẻ Tín Dụng / Ghi Nợ'}
+                      {paymentMethod === 'bank' && ' Chuyển Khoản Ngân Hàng'}
+                      {paymentMethod === 'wallet' && ' Ví Điện Tử'}
                     </p>
                   </div>
                 </div>

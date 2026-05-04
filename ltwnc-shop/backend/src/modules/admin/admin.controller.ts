@@ -186,60 +186,6 @@ export const adminController = {
     }
   },
 
-  // ========== REVENUE ==========
-  // Lấy thống kê doanh thu
-  async getRevenueStats(req: Request, res: Response, next: NextFunction) {
-    try {
-      // Tính từ đầu tháng
-      const now = new Date();
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-      const orders = await prisma.order.findMany({
-        where: {
-          deletedAt: null,
-          status: "DELIVERED",
-          createdAt: {
-            gte: firstDayOfMonth,
-          },
-        },
-        select: {
-          totalPrice: true,
-          createdAt: true,
-        },
-      });
-
-      const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
-      const totalOrders = orders.length;
-      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-      // Tính doanh thu theo ngày
-      const dailyRevenueMap: { [key: string]: number } = {};
-      orders.forEach((order) => {
-        const date = order.createdAt.toISOString().split("T")[0] as string;
-        dailyRevenueMap[date] = (dailyRevenueMap[date] || 0) + order.totalPrice;
-      });
-
-      const dailyRevenue = Object.entries(dailyRevenueMap).map(([date, revenue]) => ({
-        date,
-        revenue: Math.round(revenue * 100) / 100,
-      }));
-
-      res.json({
-        message: "Lấy thống kê doanh thu thành công",
-        data: {
-          summary: {
-            totalRevenue: Math.round(totalRevenue * 100) / 100,
-            totalOrders,
-            averageOrderValue: Math.round(averageOrderValue * 100) / 100,
-          },
-          dailyRevenue,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-
   // ========== USERS ==========
   // Lấy danh sách tất cả người dùng
   async getAllUsers(req: Request, res: Response, next: NextFunction) {

@@ -26,6 +26,30 @@ export const cartController = {
     }
   },
 
+  // Đồng bộ toàn bộ cart từ client (overwrite)
+  async syncCart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new HttpError(401, "Không thể xác định người dùng");
+      }
+
+      const items = Array.isArray(req.body.items) ? req.body.items : [];
+
+      // Normalize items to { productId, quantity }
+      const normalized = items.map((it: any) => ({
+        productId: parseInt(it.productId || it.productId || it.id, 10) || parseInt(it.id, 10),
+        quantity: parseInt(it.quantity, 10) || 1,
+      })).filter((it: any) => !!it.productId);
+
+      const cart = await cartService.replaceCart(userId, normalized);
+
+      res.json({ message: "Đồng bộ giỏ hàng thành công", data: cart });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // Thêm sản phẩm vào giỏ hàng
   async addToCart(req: Request, res: Response, next: NextFunction) {
     try {
@@ -131,9 +155,9 @@ export const cartController = {
 
       await cartService.clearCart(userId);
 
-      res.json({
-        message: "Xóa tất cả sản phẩm trong giỏ hàng thành công",
-      });
+      // res.json({
+      //   message: "Xóa tất cả sản phẩm trong giỏ hàng thành công",
+      // });
     } catch (error) {
       next(error);
     }

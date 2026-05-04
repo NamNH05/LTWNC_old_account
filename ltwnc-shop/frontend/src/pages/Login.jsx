@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { message } from "antd";
 import logger from "../utils/logger";
@@ -6,7 +6,27 @@ import { useAuth } from "../context/AuthContext";
 import { validateLoginForm } from "../utils/validation";
 import "./Login/login.css";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+
+  // Production: convert domain to api subdomain
+  const protocol = window.location.protocol;
+  return `${protocol}//api.${hostname}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const FACEBOOK_AUTH_URL = "https://www.facebook.com/v19.0/dialog/oauth";
 
@@ -19,6 +39,13 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const redirectUri = useMemo(() => `${window.location.origin}/auth/callback`, []);
+
+  // Log API URL for debugging
+  useEffect(() => {
+    console.log(`[Login] API Base URL: ${API_BASE_URL}`);
+    console.log(`[Login] Hostname: ${window.location.hostname}`);
+    console.log(`[Login] Protocol: ${window.location.protocol}`);
+  }, []);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
   const facebookClientId = import.meta.env.VITE_FACEBOOK_CLIENT_ID || "";
@@ -93,7 +120,18 @@ const Login = () => {
         }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      if (!text) {
+        throw new Error("Empty response from server");
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("Failed to parse login response:", text.substring(0, 200));
+        throw new Error("Invalid response format from server. Please check your connection and try again.");
+      }
 
       if (!response.ok) {
         setError(data.message || "Đăng nhập thất bại");

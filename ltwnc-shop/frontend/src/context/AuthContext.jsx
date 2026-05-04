@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import logger from "../utils/logger";
+import api from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -29,6 +30,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Notify listeners (CartContext) to persist/sync cart before clearing token
+    try {
+      window.dispatchEvent(new CustomEvent('app:logout'));
+    } catch (err) {
+      console.warn('Error dispatching logout event', err);
+    }
+
+    // Now clear auth data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);

@@ -1,14 +1,26 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import api from "../services/api";
+import { useAuth } from "./AuthContext";
 
 const ModuleContext = createContext(null);
 
 export function ModuleProvider({ children }) {
+  const { user } = useAuth();
   const [moduleStatuses, setModuleStatuses] = useState({});
   const [moduleCatalog, setModuleCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadModuleData = useCallback(async () => {
+    const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
+
+    if (!isAdmin) {
+      // Non-admin users cannot access admin module management endpoint.
+      setModuleStatuses({});
+      setModuleCatalog([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await api.get("/admin/modules");
@@ -20,7 +32,7 @@ export function ModuleProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.role]);
 
   useEffect(() => {
     loadModuleData();

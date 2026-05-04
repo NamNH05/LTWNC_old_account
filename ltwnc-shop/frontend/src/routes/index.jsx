@@ -10,13 +10,13 @@ import OrderManagement from "../pages/OrderManagement/OrderManagement";
 import ProfilePage from "../pages/Profile/Profile";
 import AdminProductsPage from "../pages/AdminDashboard/AdminProductsPage";
 import OrderManagementPage from "../pages/AdminDashboard/OrderManagementPage";
-import RevenueDashboardPage from "../pages/AdminDashboard/RevenueDashboardPage";
 import UserManagementPage from "../pages/AdminDashboard/UserManagementPage";
 import AuditLogsPage from "../pages/AdminDashboard/AuditLogsPage";
 import ModuleManagementPage from "../pages/AdminDashboard/ModuleManagementPage";
 import AddressPage from "../pages/Address/AddressPage";
 import PaymentPage from "../pages/Payment/PaymentPage";
 import PaymentCallback from "../pages/Payment/PaymentCallback";
+import PaymentSuccess from "../pages/Payment/PaymentSuccess";
 import AuthCallback from "../pages/AuthCallback";
 import ModuleGuard from "../components/common/ModuleGuard";
 
@@ -36,7 +36,6 @@ function AppRoutes() {
         <Route path="/checkout" element={<ModuleGuard moduleName="order"><OrderManagement /></ModuleGuard>} />
         <Route path="/admin/products" element={<AdminProductsPage />} />
         <Route path="/admin/orders" element={<OrderManagementPage />} />
-        <Route path="/admin/revenue" element={<RevenueDashboardPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
         <Route path="/admin/modules" element={<ModuleManagementPage />} />
@@ -44,6 +43,7 @@ function AppRoutes() {
         <Route path="/address" element={<ModuleGuard moduleName="address"><AddressPage /></ModuleGuard>} />
         <Route path="/payment" element={<ModuleGuard moduleName="payment"><PaymentPage /></ModuleGuard>} />
         <Route path="/payment/callback" element={<ModuleGuard moduleName="payment"><PaymentCallback /></ModuleGuard>} />
+        <Route path="/payment/success" element={<ModuleGuard moduleName="payment"><PaymentSuccess /></ModuleGuard>} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/register" element={<RegisterPage />} />

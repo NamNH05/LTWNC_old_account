@@ -4,9 +4,8 @@ import { message, Spin } from 'antd';
 import Header from '../../components/ui/Header/Header';
 import Footer from '../../components/ui/Footer/Footer';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 import './Profile.css';
-
-const API_BASE_URL = 'http://localhost:8080/api';
 
 const DEFAULT_FORM = {
   fullName: '',
@@ -93,19 +92,7 @@ const ProfilePage = () => {
   const loadOrders = async () => {
     try {
       setOrdersLoading(true);
-      const response = await fetch(`${API_BASE_URL}/orders/my`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || `HTTP ${response.status}`;
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
+      const data = await api.get('/orders/my');
       setOrders(data.data || []);
     } catch (error) {
       console.error('Error loading orders:', error);
@@ -119,19 +106,7 @@ const ProfilePage = () => {
   const loadAddresses = async () => {
     try {
       setAddressesLoading(true);
-      const response = await fetch(`${API_BASE_URL}/addresses`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        // If API doesn't exist yet, just set empty
-        setAddresses([]);
-        return;
-      }
-
-      const data = await response.json();
+      const data = await api.get('/addresses');
       setAddresses(data.data || []);
     } catch (error) {
       console.error('Error loading addresses:', error);
@@ -151,24 +126,13 @@ const ProfilePage = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          street: addressForm.street,
-          ward: addressForm.ward,
-          district: addressForm.district,
-          city: addressForm.city,
-          phoneNumber: addressForm.phoneNumber
-        })
+      await api.post('/addresses', {
+        street: addressForm.street,
+        ward: addressForm.ward,
+        district: addressForm.district,
+        city: addressForm.city,
+        phoneNumber: addressForm.phoneNumber
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to add address');
-      }
 
       message.success('Thêm địa chỉ thành công');
       setAddressForm({ street: '', ward: '', district: '', city: '', phoneNumber: '' });
@@ -183,16 +147,7 @@ const ProfilePage = () => {
   const handleDeleteAddress = async (addressId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
       try {
-        const response = await fetch(`${API_BASE_URL}/addresses/${addressId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to delete address');
-        }
+        await api.delete(`/addresses/${addressId}`);
 
         message.success('Xóa địa chỉ thành công');
         setAddresses(addresses.filter(addr => addr.id !== addressId));
@@ -224,24 +179,12 @@ const ProfilePage = () => {
 
   const saveProfileChanges = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone
-        })
+      const data = await api.put('/users/profile', {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-
-      const data = await response.json();
       setOriginalData(formData);
       setIsEditing(false);
       message.success('Thông tin tài khoản đã được lưu');
@@ -396,7 +339,7 @@ const ProfilePage = () => {
                         </strong>
                       </div>
                       <p className="order-address">
-                        📍 {order.shippingAddr}
+                        Địa chỉ: {order.shippingAddr}
                       </p>
                     </div>
                   </div>

@@ -56,11 +56,13 @@
 .main-image {
   width: 100%;
   height: auto;
-  max-height: 600px;
   border-radius: 8px;
   overflow: hidden;
   background-color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-image {
@@ -68,6 +70,7 @@
   height: auto;
   display: block;
   max-width: 100%;
+  object-fit: contain;
 }
 
 .thumbnail-gallery {
@@ -125,11 +128,6 @@
   color: #dc3545;
 }
 
-.old-price {
-  font-size: 18px;
-  color: #6c757d;
-  text-decoration: line-through;
-}
 
 .product-meta {
   display: flex;
@@ -359,7 +357,5 @@
     font-size: 20px;
   }
 
-  .old-price {
-    font-size: 16px;
-  }
+
 }

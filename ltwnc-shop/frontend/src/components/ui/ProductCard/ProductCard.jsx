@@ -72,7 +72,6 @@ const ProductCard = ({
           <span className="product-name">{name}</span>
           <div className="product-price">
             <span className="current-price">{currentPrice}</span>
-            {oldPrice && <span className="old-price">{oldPrice}</span>}
           </div>
         </div>
       </div>

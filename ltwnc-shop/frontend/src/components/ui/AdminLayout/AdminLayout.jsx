@@ -1,10 +1,8 @@
 ﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
-import { DashboardOutlined, ShoppingOutlined, UserOutlined, FileTextOutlined, BarChartOutlined, AuditOutlined, LogoutOutlined, HomeOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingOutlined, UserOutlined, FileTextOutlined, AuditOutlined, LogoutOutlined, EnvironmentOutlined, HomeOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../context/AuthContext';
-import Header from '../Header/Header';
-import Footer from '../Footer/Footer';
 import './AdminLayout.css';
 
 const { Sider, Content } = Layout;
@@ -20,9 +18,6 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
         break;
       case 'orders':
         navigate('/admin/orders');
-        break;
-      case 'revenue':
-        navigate('/admin/revenue');
         break;
       case 'users':
         navigate('/admin/users');
@@ -54,11 +49,6 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
       label: 'Quản lý đơn hàng',
     },
     {
-      key: 'revenue',
-      icon: <BarChartOutlined />,
-      label: 'Báo cáo doanh thu',
-    },
-    {
       key: 'users',
       icon: <UserOutlined />,
       label: 'Quản lý người dùng',
@@ -88,13 +78,18 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
 
   return (
     <div className="admin-page">
-      <Header />
-      <Layout style={{ minHeight: 'calc(100vh - 140px)' }}>
-        <Sider width={250} theme="dark" className="admin-sider">
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider width={250} theme="dark" className="admin-sider" collapsible>
           <div className="admin-logo">
-            <h2>
-              <DashboardOutlined /> Admin Panel
-            </h2>
+            <h2>Sixedi Admin</h2>
+            <button 
+              className="logo-home-btn" 
+              onClick={() => navigate('/')}
+              title="Về trang chủ"
+            >
+              <HomeOutlined />
+              <span className="btn-text">Trang chủ</span>
+            </button>
           </div>
           <Menu
             theme="dark"
@@ -108,7 +103,6 @@ const AdminLayout = ({ children, activePage = 'orders' }) => {
           <div className="admin-container">{children}</div>
         </Content>
       </Layout>
-      <Footer />
     </div>
   );
 };

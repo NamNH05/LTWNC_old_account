@@ -19,6 +19,7 @@ type RegisterInput = {
   email: string;
   password: string;
   fullName: string;
+  phone?: string;
 };
 
 type LoginInput = {
@@ -168,6 +169,7 @@ const loginWithOAuthProfile = async (provider: OAuthProvider, profile: OAuthProf
       id: user.id,
       email: user.email,
       fullName: user.fullName,
+      phone: user.phone,
       role: user.role,
     },
     ...tokens,
@@ -190,6 +192,7 @@ export const authService = {
       email,
       password,
       fullName: input.fullName.trim(),
+      phone: input.phone,
     });
 
     await auditRepository.create({
@@ -207,6 +210,7 @@ export const authService = {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        phone: user.phone,
         role: user.role,
       },
       ...tokens,
@@ -241,6 +245,7 @@ export const authService = {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        phone: user.phone,
         role: user.role,
       },
       ...tokens,

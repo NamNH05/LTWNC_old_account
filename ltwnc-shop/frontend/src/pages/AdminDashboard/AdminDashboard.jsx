@@ -1,9 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Space, Popconfirm } from 'antd';
 import AdminLayout from '../../components/ui/AdminLayout/AdminLayout';
+import { createApiFetch } from '../../services/api-helper';
 import './AdminDashboard.css';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+  
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+  
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+  
+  const protocol = window.location.protocol;
+  
+  // Convert to api subdomain
+  if (hostname.startsWith('api.')) {
+    return `${protocol}//${hostname}/api`;
+  }
+  
+  return `${protocol}//api.${hostname}/api`;
+})();
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
@@ -15,30 +36,13 @@ const AdminDashboard = () => {
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
-
     return {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   };
 
-  const fetchJson = async (url, options = {}) => {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...getAuthHeaders(),
-        ...(options.headers || {}),
-      },
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Không thể tải dữ liệu');
-    }
-
-    return data;
-  };
+  const fetchJson = createApiFetch(getAuthHeaders);
 
   useEffect(() => {
     loadProducts();
@@ -47,14 +51,17 @@ const AdminDashboard = () => {
   const loadProducts = async () => {
     setLoading(true);
     try {
+      console.log('[AdminDashboard] Loading products and categories...');
       const [productsResponse, categoriesResponse] = await Promise.all([
         fetchJson(`${API_BASE_URL}/products?limit=100`),
         fetchJson(`${API_BASE_URL}/products/categories`),
       ]);
 
-      setProducts(productsResponse.data || []);
-      setCategories(categoriesResponse.data || []);
+      setProducts(productsResponse?.data || []);
+      setCategories(categoriesResponse?.data || []);
+      console.log(`[AdminDashboard] Loaded ${productsResponse?.data?.length || 0} products`);
     } catch (error) {
+      console.error('[AdminDashboard] Error loading data:', error);
       message.error(error.message || 'Không thể tải dữ liệu sản phẩm');
       setProducts([]);
       setCategories([]);

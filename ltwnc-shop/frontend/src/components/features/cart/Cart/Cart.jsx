@@ -10,8 +10,7 @@ import './Cart.css';
 const Cart = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
-  const [loading, setLoading] = useState(false);
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, isLoading } = useCart();
 
   const getShippingFee = () => {
     const subtotal = getCartTotal();
@@ -75,7 +74,7 @@ const Cart = () => {
       <main className="cart-container">
         <h1 className="cart-title">Giỏ Hàng Của Bạn</h1>
 
-        <Spin spinning={loading} description="Đang xử lý đơn hàng...">
+        <Spin spinning={isLoading} description="Đang xử lý đơn hàng...">
           <div className="cart-content">
             {/* Cart Items */}
             <div className="cart-items">
@@ -95,11 +94,11 @@ const Cart = () => {
                     </div>
                     <div className="item-details">
                       <h3 className="item-name">{item.name}</h3>
-                      <p className="item-variant">Size: {item.size} | Màu: {item.color}</p>
                       <p className="item-price">{item.price.toLocaleString()} ₫</p>
                       <button
                         className="remove-btn"
-                        onClick={() => removeFromCart(item.id, item.size, item.color)}
+                        onClick={() => removeFromCart(item.id)}
+                        disabled={isLoading}
                       >
                         <span className="material-icons">delete</span>
                         Xóa
@@ -111,8 +110,8 @@ const Cart = () => {
                     <div className="quantity-controls">
                       <button
                         className="quantity-btn"
-                        onClick={() => updateQuantity(item.id, item.size, item.color, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1 || isLoading}
                       >
                         -
                       </button>
@@ -122,12 +121,12 @@ const Cart = () => {
                         onClick={() => {
                           const maxQuantity = item.availableQuantity || 999;
                           if (item.quantity < maxQuantity) {
-                            updateQuantity(item.id, item.size, item.color, item.quantity + 1);
+                            updateQuantity(item.id, item.quantity + 1);
                           } else {
                             message.warning(`Chỉ có ${maxQuantity} sản phẩm còn lại`);
                           }
                         }}
-                        disabled={item.availableQuantity !== undefined && item.quantity >= item.availableQuantity}
+                        disabled={(item.availableQuantity !== undefined && item.quantity >= item.availableQuantity) || isLoading}
                       >
                         +
                       </button>
@@ -176,9 +175,9 @@ const Cart = () => {
               <button 
                 className="checkout-btn" 
                 onClick={handleCheckout}
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? 'Đang xử lý...' : 'Tiến hành đặt hàng'}
+                {isLoading ? 'Đang xử lý...' : 'Tiến hành đặt hàng'}
               </button>
 
               <a href="/" className="continue-shopping-link">

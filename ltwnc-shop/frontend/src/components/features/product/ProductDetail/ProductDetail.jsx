@@ -100,13 +100,11 @@ const ProductDetail = () => {
 
     try {
       addToCart({
-        id: product.id,
+        productId: product.id,
         name: product.name,
         price: product.price,
         imageUrl: product.image,
         quantity: quantity,
-        size: 'M',
-        color: '#000',
       });
       message.success('Sản phẩm đã được thêm vào giỏ hàng');
     } catch (error) {
@@ -124,13 +122,11 @@ const ProductDetail = () => {
 
     try {
       addToCart({
-        id: product.id,
+        productId: product.id,
         name: product.name,
         price: product.price,
         imageUrl: product.image,
         quantity: quantity,
-        size: 'M',
-        color: '#000',
       });
       message.success('Sản phẩm đã được thêm vào giỏ. Đi tới thanh toán...');
       navigate('/cart');
@@ -186,9 +182,6 @@ const ProductDetail = () => {
 
               <div className="product-price">
                 <span className="current-price">{formatPrice(product.price)}</span>
-                {product.oldPrice && (
-                  <span className="old-price">{formatPrice(product.oldPrice)}</span>
-                )}
               </div>
 
               <div className="product-meta">

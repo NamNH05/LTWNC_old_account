@@ -4,8 +4,29 @@ import cluster from "node:cluster";
 import os from "node:os";
 
 const startServer = () => {
-  app.listen(env.port, () => {
-    console.log(`Backend is running on http://localhost:${env.port} (pid: ${process.pid})`);
+  const server = app.listen(env.port, () => {
+    console.log(`\n=== Backend Started ===`);
+    console.log(`URL: http://localhost:${env.port}`);
+    console.log(`PID: ${process.pid}`);
+    console.log(`ENV: ${env.nodeEnv}`);
+    console.log(`Frontend URL: ${env.frontendUrl || 'Not set'}`);
+    console.log(`========================\n`);
+  });
+
+  // Graceful error handling
+  server.on('error', (error: any) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`\n❌ ERROR: Port ${env.port} is already in use!`);
+      console.error(`Kill the process: netstat -ano | findstr :${env.port}`);
+    } else {
+      console.error(`Server error:`, error);
+    }
+    process.exit(1);
+  });
+
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   });
 };
 

@@ -1,10 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { message } from "antd";
 import { useAuth } from "../context/AuthContext";
 import logger from "../utils/logger";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+
+  // Production: convert domain to api subdomain
+  const protocol = window.location.protocol;
+  return `${protocol}//api.${hostname}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 const handledOAuthCodes = new Set();
 
 const resolveProvider = (state) => {
@@ -20,7 +40,6 @@ const AuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
-  const [status, setStatus] = useState("Đang xử lý đăng nhập...");
 
   const redirectUri = useMemo(() => `${window.location.origin}/auth/callback`, []);
 
@@ -32,14 +51,18 @@ const AuthCallback = () => {
       const savedState = sessionStorage.getItem("oauth_state") || "";
 
       if (oauthError) {
-        message.error("Bạn đã hủy hoặc OAuth bị lỗi.");
-        navigate("/login", { replace: true });
+        message.error("Bạn đã hủy hoặc OAuth bị lỗi. Vui lòng thử lại.");
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1500);
         return;
       }
 
       if (!code) {
-        message.error("Không nhận được authorization code.");
-        navigate("/login", { replace: true });
+        message.error("Không nhận được authorization code. Vui lòng thử lại.");
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1500);
         return;
       }
 
@@ -49,15 +72,19 @@ const AuthCallback = () => {
       }
 
       if (!state || !savedState || state !== savedState) {
-        message.error("Trạng thái OAuth không hợp lệ.");
-        navigate("/login", { replace: true });
+        message.error("Trạng thái OAuth không hợp lệ. Vui lòng thử lại.");
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1500);
         return;
       }
 
       const provider = resolveProvider(state);
       if (provider !== "google" && provider !== "facebook") {
-        message.error("Không xác định được nhà cung cấp OAuth.");
-        navigate("/login", { replace: true });
+        message.error("Không xác định được nhà cung cấp OAuth. Vui lòng thử lại.");
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1500);
         return;
       }
 
@@ -75,37 +102,44 @@ const AuthCallback = () => {
           }),
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        if (!text) {
+          throw new Error("Empty response from server");
+        }
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error("Failed to parse OAuth response:", text.substring(0, 200));
+          throw new Error("Invalid response format from server. Please try logging in again.");
+        }
+
         if (!response.ok) {
           throw new Error(data.message || "Đăng nhập OAuth thất bại");
         }
 
         login(data);
         sessionStorage.removeItem("oauth_state");
-        setStatus("Đăng nhập thành công. Đang chuyển hướng...");
-        message.success("Đăng nhập thành công!");
-        navigate("/", { replace: true });
+        message.success("Đăng nhập thành công! Đang chuyển hướng...");
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 800);
       } catch (error) {
         handledOAuthCodes.delete(code);
         logger.error("OAuth callback error:", error);
-        message.error(error.message || "Có lỗi khi xử lý OAuth");
-        navigate("/login", { replace: true });
+        message.error(error.message || "Có lỗi khi xử lý OAuth. Vui lòng thử lại.");
+        setTimeout(() => {
+          navigate("/login", { replace: true });
+        }, 1500);
       }
     };
 
     executeOAuthLogin();
   }, [login, navigate, redirectUri, searchParams]);
 
-  return (
-    <div className="login-page">
-      <div className="login-card" style={{ padding: "32px" }}>
-        <div className="login-header" style={{ padding: 0 }}>
-          <h2 style={{ margin: 0, color: "#1f2937" }}>OAuth Callback</h2>
-          <p style={{ marginTop: "10px" }}>{status}</p>
-        </div>
-      </div>
-    </div>
-  );
+  // Return empty fragment - only show notifications
+  return null;
 };
 
 export default AuthCallback;

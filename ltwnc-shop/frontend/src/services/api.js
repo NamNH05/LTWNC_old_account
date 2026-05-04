@@ -1,4 +1,32 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (() => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080/api';
+  }
+
+  const hostname = window.location.hostname;
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+
+  if (isLocalhost) {
+    // Local development
+    return 'http://localhost:8080/api';
+  }
+
+  // Production - convert domain to api subdomain
+  // hnamofficial.id.vn → https://api.hnamofficial.id.vn/api
+  // api.hnamofficial.id.vn → https://api.hnamofficial.id.vn/api (already api subdomain)
+  const protocol = window.location.protocol;
+  
+  // Check if hostname already starts with 'api.'
+  if (hostname.startsWith('api.')) {
+    return `${protocol}//${hostname}/api`;
+  }
+  
+  // Convert main domain to api subdomain
+  return `${protocol}//api.${hostname}/api`;
+})();
+
+console.log(`[API Service] Base URL: ${API_BASE_URL}`);
+console.log(`[API Service] Environment: ${import.meta.env.MODE}`);
 
 class ApiService {
   constructor() {
@@ -24,13 +52,34 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData = {};
+        if (isJson) {
+          try {
+            errorData = await response.json();
+          } catch (e) {
+            errorData = { message: 'Failed to parse error response' };
+          }
+        }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      // Check if response has content
+      const text = await response.text();
+      if (!text) {
+        throw new Error('Empty response from server');
+      }
+
+      // Parse JSON safely
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', text.substring(0, 200));
+        throw new Error('Invalid JSON response from server');
+      }
     } catch (error) {
       console.error('API request failed:', error);
       throw error;

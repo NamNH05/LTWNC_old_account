@@ -148,7 +148,7 @@ export const paymentController = {
 
       const result = await paymentService.handleVnpayCallback(params);
 
-      // Build redirect URL with payment result
+      // Redirect to callback page for all payments (success & failure)
       const callbackParams = new URLSearchParams({
         success: result.success.toString(),
         orderId: result.orderId?.toString() ?? "",
@@ -158,7 +158,32 @@ export const paymentController = {
         paymentStatus: result.paymentStatus ?? "",
       });
 
-      const redirectUrl = `${env.frontendUrl}/payment/callback?${callbackParams.toString()}`;
+      const redirectPath = `/payment/callback?${callbackParams.toString()}`;
+
+      // Priority order:
+      // 1. If FRONTEND_URL is explicitly configured (development with separate ports)
+      // 2. Extract domain from request (production or custom domain)
+      // 3. Fallback to relative path (same domain)
+      let redirectUrl: string;
+      
+      if (env.frontendUrl && env.frontendUrl !== '') {
+        // Development: use configured FRONTEND_URL
+        redirectUrl = `${env.frontendUrl}${redirectPath}`;
+      } else {
+        // Production: get domain from request
+        // req.get('x-forwarded-host') for proxies, req.get('host') for direct
+        const host = req.get('x-forwarded-host') || req.get('host') || 'localhost';
+        const protocol = req.get('x-forwarded-proto') || req.protocol || 'http';
+        
+        // If domain is localhost with different port, use relative path
+        // Otherwise construct full URL with request domain
+        if (host.includes('localhost')) {
+          redirectUrl = redirectPath;
+        } else {
+          redirectUrl = `${protocol}://${host}${redirectPath}`;
+        }
+      }
+      
       return res.redirect(redirectUrl);
     } catch (error) {
       next(error);

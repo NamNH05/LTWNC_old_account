@@ -45,6 +45,81 @@ export const cartService = {
     };
   },
 
+  // Thay thế toàn bộ giỏ hàng của user bằng danh sách items (overwrite)
+  async replaceCart(userId: number, items: Array<{ productId: number; quantity: number }>) {
+    const normalizedItems = (items || [])
+      .map((item) => ({
+        productId: Math.floor(Number(item.productId)),
+        quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+      }))
+      .filter((item) => Number.isInteger(item.productId) && item.productId > 0);
+
+    const uniqueProductIds = [...new Set(normalizedItems.map((item) => item.productId))];
+
+    if (uniqueProductIds.length > 0) {
+      const products = await prisma.product.findMany({
+        where: { id: { in: uniqueProductIds } },
+        select: { id: true },
+      });
+
+      if (products.length !== uniqueProductIds.length) {
+        const existingIds = new Set(products.map((product) => product.id));
+        const missingIds = uniqueProductIds.filter((id) => !existingIds.has(id));
+        throw new HttpError(
+          400,
+          `Sản phẩm không tồn tại: ${missingIds.join(", ")}`,
+          "VALIDATION_ERROR",
+          { missingProductIds: missingIds }
+        );
+      }
+    }
+
+    const cart = await prisma.$transaction(async (tx) => {
+      const currentCart = await tx.cart.upsert({
+        where: { userId },
+        create: { userId },
+        update: {},
+      });
+
+      await tx.cartItem.deleteMany({ where: { cartId: currentCart.id } });
+
+      if (normalizedItems.length > 0) {
+        await tx.cartItem.createMany({
+          data: normalizedItems.map((item) => ({
+            cartId: currentCart.id,
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        });
+      }
+
+      return currentCart;
+    });
+
+    const freshCart = await prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (!freshCart) {
+      throw new HttpError(500, "Không thể tải lại giỏ hàng sau khi đồng bộ");
+    }
+
+    const totalPrice = freshCart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+    return {
+      ...freshCart,
+      totalPrice,
+      itemCount: freshCart.items.length,
+    };
+  },
+
   // Thêm sản phẩm vào giỏ hàng (hoặc tăng số lượng nếu đã có)
   async addToCart(userId: number, productId: number, quantity: number) {
     // Kiểm tra sản phẩm có tồn tại không

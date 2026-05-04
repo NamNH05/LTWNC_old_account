@@ -46,5 +46,9 @@ export const env = {
   facebookClientId: process.env.FACEBOOK_CLIENT_ID ?? "",
   facebookClientSecret: process.env.FACEBOOK_CLIENT_SECRET ?? "",
   oauthRedirectUri: process.env.OAUTH_REDIRECT_URI ?? "",
-  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
+  // FRONTEND_URL for payment redirects:
+  // - Leave empty in production to use request domain (safe for any domain)
+  // - Set to frontend port in development (localhost:5173) if needed
+  // - Can be overridden with FRONTEND_URL env var
+  frontendUrl: process.env.FRONTEND_URL ?? "",
 };

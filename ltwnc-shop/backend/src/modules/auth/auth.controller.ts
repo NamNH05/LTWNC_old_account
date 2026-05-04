@@ -6,13 +6,13 @@ import { HttpError } from "../../utils/http-error";
 export const authController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password, fullName } = req.body;
+      const { email, password, fullName, phone } = req.body;
 
       if (!email || !password || !fullName) {
         throw new HttpError(400, "email, password and fullName are required", "VALIDATION_ERROR");
       }
 
-      const result = await authService.register({ email, password, fullName });
+      const result = await authService.register({ email, password, fullName, phone });
       return res.status(201).json(result);
     } catch (error) {
       return next(error);
@@ -22,14 +22,18 @@ export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password } = req.body;
+      console.log(`[AUTH] Login attempt: ${email}`);
 
       if (!email || !password) {
+        console.warn(`[AUTH] Missing credentials from ${req.ip}`);
         throw new HttpError(400, "email and password are required", "VALIDATION_ERROR");
       }
 
       const result = await authService.login({ email, password });
+      console.log(`[AUTH] Login success for: ${email}`);
       return res.status(200).json(result);
     } catch (error) {
+      console.error(`[AUTH] Login error:`, error instanceof Error ? error.message : error);
       return next(error);
     }
   },
