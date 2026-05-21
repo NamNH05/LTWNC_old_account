@@ -1,8 +1,8 @@
-# 🧪 Testing Guidelines & Tasks
+# [✓] Testing Guidelines & Tasks
 
 ## Quy định Test Chung
 
-### 📋 Nguyên tắc Testing
+### Nguyên tắc Testing
 
 1. **Test Coverage**: Mục tiêu tối thiểu 70% code coverage
 2. **Test Types**: Unit tests, Integration tests, E2E tests
@@ -13,7 +13,7 @@
 
 ---
 
-## 🔷 Backend Testing
+## Backend Testing
 
 ### Unit Tests
 - [ ] Test tất cả service functions
@@ -89,7 +89,7 @@ npm test -- users.test.ts
 
 ---
 
-## 🎨 Frontend Testing
+## Frontend Testing
 
 ### Unit Tests
 - [ ] Test components rendering
@@ -163,7 +163,7 @@ npm test -- --coverage
 
 ---
 
-## 🗄️ Database & Seed Testing
+## Database & Seed Testing
 
 ### Migration Tests
 - [ ] Test migration up/down
@@ -227,7 +227,7 @@ npm run db:benchmark
 
 ---
 
-## ✅ Testing Checklist
+## [✓] Testing Checklist
 
 ### Before Each Commit
 - [ ] All unit tests pass
@@ -252,7 +252,7 @@ npm run db:benchmark
 
 ---
 
-## 🔧 Test Setup & Configuration
+## Test Setup & Configuration
 
 ### Backend Setup
 ```javascript
@@ -291,7 +291,7 @@ export default defineConfig({
 
 ---
 
-## 📊 Testing Metrics
+## Testing Metrics
 
 ### Coverage Goals
 - Backend: 80%+ (Unit + Integration)
@@ -305,7 +305,7 @@ export default defineConfig({
 - Database seed: < 10s
 
 ### Quality Gates
-- ✅ Tests must pass before merge
-- ✅ Coverage must meet threshold
-- ✅ No console errors in tests
-- ✅ All critical tests required
+- [✓] Tests must pass before merge
+- [✓] Coverage must meet threshold
+- [✓] No console errors in tests
+- [✓] All critical tests required
