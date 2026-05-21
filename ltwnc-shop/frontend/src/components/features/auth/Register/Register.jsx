@@ -220,7 +220,7 @@ const Register = () => {
               </div>
 
               <button type="submit" className="register-btn" disabled={loading}>
-                {loading ? 'Đang đăng ký...' : '✓ Tạo Tài Khoản'}
+                {loading ? 'Đang đăng ký...' : 'Tạo Tài Khoản'}
               </button>
             </form>
 
@@ -236,19 +236,19 @@ const Register = () => {
             <h3>Tại sao nên tham gia Sixedi?</h3>
             
             <div className="benefit-item">
-              <div className="benefit-icon">🎁</div>
+              <div className="benefit-icon"></div>
               <h4>Ưu Đãi Độc Quyền</h4>
               <p>Nhận chiết khấu đặc biệt, mã khuyến mãi và các ưu đãi riêng dành cho thành viên</p>
             </div>
 
             <div className="benefit-item">
-              <div className="benefit-icon">📦</div>
+              <div className="benefit-icon"></div>
               <h4>Giao Hàng Nhanh</h4>
               <p>Vận chuyển miễn phí đơn hàng từ 500k, giao hàng toàn quốc trong 2-3 ngày</p>
             </div>
 
             <div className="benefit-item">
-              <div className="benefit-icon">↩️</div>
+              <div className="benefit-icon"></div>
               <h4>Đổi Trả Dễ Dàng</h4>
               <p>30 ngày đổi trả miễn phí nếu không ưng ý, không cần hỏi lý do</p>
             </div>
@@ -260,13 +260,13 @@ const Register = () => {
             </div>
 
             <div className="benefit-item">
-              <div className="benefit-icon">🛡️</div>
+              <div className="benefit-icon"></div>
               <h4>Bảo Vệ Người Mua</h4>
               <p>Chương trình bảo vệ mua hàng 100%, nếu có vấn đề, chúng tôi sẽ hoàn tiền</p>
             </div>
 
             <div className="benefit-item">
-              <div className="benefit-icon">👥</div>
+              <div className="benefit-icon"></div>
               <h4>Cộng Đồng Sixedi</h4>
               <p>Kết nối với hàng nghìn khách hàng, chia sẻ kinh nghiệm mua sắm thời trang</p>
             </div>

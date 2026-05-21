@@ -2,10 +2,10 @@ version: "3.9"
 services:
   postgres:
     image: postgres:16
-    container_name: ltnwc_postgres
+    container_name: ltwnc
     restart: unless-stopped
     environment:
-      POSTGRES_DB: shopdb
+      POSTGRES_DB: ltwnc
       POSTGRES_USER: shopuser
       POSTGRES_PASSWORD: shoppass
     ports:
@@ -13,7 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shopuser -d shopdb"]
+      test: ["CMD-SHELL", "pg_isready -U shopuser -d ltwnc"]
       interval: 10s
       timeout: 5s
       retries: 5

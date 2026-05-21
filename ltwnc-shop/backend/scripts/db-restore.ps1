@@ -1,8 +1,8 @@
 param(
   [Parameter(Mandatory = $true)]
   [string]$BackupFile,
-  [string]$ContainerName = "ltnwc_postgres",
-  [string]$DbName = "shopdb",
+  [string]$ContainerName = "ltwnc",
+  [string]$DbName = "ltwnc",
   [string]$DbUser = "shopuser"
 )
 

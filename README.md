@@ -1,127 +1,325 @@
-# LTWNC Shop
+| Vai trò | Họ và tên | Lớp | Mã sinh viên |
+| --- | --- | --- | --- |
+| Nhóm trưởng | Nguyễn Hoài Nam | D18CNPM2 | 23810310082 |
+| Thành viên | Nguyễn Huy Cường | D18CNPM2 | 23810310084 |
+| Thành viên | Phạm Tiến Vinh | D18CNPM2 | 23810310085 |
 
-Nền tảng thương mại điện tử toàn diện với quản lý sản phẩm, thanh toán VNPAY, và hệ thống module linh hoạt.
+---
 
-## Tính năng chính
+## Mục lục
 
-- Quản lý sản phẩm và danh mục
-- Hệ thống đặt hàng và thanh toán VNPAY
-- Quản lý người dùng và quyền hạn (RBAC)
-- Hệ thống module có thể bật/tắt
-- OAuth2 (Google, Facebook)
-- Hệ thống địa chỉ giao hàng
-- Quản lý kho hàng
-- Báo cáo và thống kê
+1. [Dự án](#-dự-án)
+2. [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
+3. [Nội dung chính](#-nội-dung-chính)
+4. [Cấu trúc dự án](#-cấu-trúc-dự-án)
+5. [Cấu trúc Database](#-cấu-trúc-database)
+6. [Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
+7. [Tài khoản Test](#-tài-khoản-test-sẵn-sàng-sau-seed)
+8. [Kiểm tra setup thành công](#-kiểm-tra-setup-thành-công)
+9. [Các lệnh hữu ích](#-các-lệnh-hữu-ích)
+10. [Hướng dẫn chạy trên máy dev mới](ltwnc-shop/DEV_SETUP.md)
+
+---
+
+## Dự án
+
+**Website e-commerce cho hàng thời trang**
+
+---
 
 ## Công nghệ sử dụng
 
-**Backend:**
-- Node.js / Express.js
-- TypeScript
-- Prisma ORM
-- PostgreSQL
+| Thành phần | Công nghệ | Lý do lựa chọn |
+| :--- | :--- | :--- |
+| **Ngôn ngữ Backend** | Node.js + TypeScript | Hiệu suất cao, hệ thống kiểu giúp detect lỗi sớm, phổ biến trong thực tập |
+| **Framework Backend** | Express 5.x | Nhẹ, linh hoạt, dễ mở rộng, phù hợp cho team học tập |
+| **Database** | PostgreSQL 16 | CSDL quan hệ mạnh mẽ, mã nguồn mở, truy vấn SQL chuẩn, tải tốt |
+| **ORM** | Prisma 4.x | Quản lý schema dễ dàng, migrations tự động, type-safe queries |
+| **Authentication** | JWT + Bcrypt | Bảo mật chuẩn, không lưu session server, dễ scale horizontal |
+| **Frontend** | React 19 + Vite | Framework hiện đại, hot reload nhanh, build optimization |
+| **HTTP Client** | Axios | Interceptor mạnh mẽ, xử lý request/response tập trung |
+| **UI Framework** | React Router + Ant Design | Navigation linh hoạt, components đầy đủ, thiết kế chuyên nghiệp |
+| **Container** | Docker + docker-compose | Môi trường phát triển nhất quán, sẵn sàng production |
+| **Version Control** | Git | Quản lý code, commit convention rõ ràng cho team |
 
-**Frontend:**
-- React 19
-- Vite
-- Ant Design
-- React Router
+---
 
-**Infrastructure:**
-- Docker & Docker Compose
-- PostgreSQL
+## Nội dung chính
 
-## Cài đặt nhanh
+### Công việc đã hoàn thành
 
-### Yêu cầu
+- [Nguyễn Hoài Nam - Tiến độ Backend](docs/Nguyễn%20Hoài%20Nam/Tien_Do_Backend.md)
+- [Nguyễn Huy Cường - Tiến độ Frontend](docs/Nguyễn%20Huy%20Cường/Tien_Do_Frontend_MVC.md)
+- [Phạm Tiến Vinh - Tiến độ Migration/Seed/Test](docs/Phạm%20Tiến%20Vinh/Tien_Do_Migration-seed-test.md)
 
-- Node.js >= 18
-- PostgreSQL >= 14
-- Docker & Docker Compose (tùy chọn)
+### Quy tắc chung
 
-### Bước 1: Clone repository
+- [Công nghệ sử dụng](docs/Quy_Tac_Chung/CONG_NGHE.md)
+- [Quy ước đặt tên](docs/Quy_Tac_Chung/QUY_UOC_DAT_TEN.md)
+- [Quy tắc xử lý lỗi](docs/Quy_Tac_Chung/QUY_TAC_LOI.md)
+- [Lưu ý khi làm việc](docs/Quy_Tac_Chung/LUU_Y.md)
 
-```bash
-git clone https://github.com/your-username/ltwnc-shop.git
-cd ltwnc-shop
-```
+### Báo cáo tiến độ
 
-### Bước 2: Cài đặt Backend
+- [Report 03/04/2026](docs/reports/REPORT_20260403.md)
+- [Report 08/04/2026](docs/reports/REPORT_20260408.md)
+- [Report 09/04/2026](docs/reports/REPORT_20260409.md)
+- [Report 10/04/2026](docs/reports/REPORT_20260410.md)
+- [Report 12/04/2026](docs/reports/REPORT_20260412.md)
 
-```bash
-cd backend
-cp .env.example .env
-npm install
-```
-
-Cập nhật `.env` với thông tin PostgreSQL của bạn.
-
-### Bước 3: Cài đặt Database
-
-```bash
-npx prisma migrate dev
-npx prisma db seed
-```
-
-### Bước 4: Cài đặt Frontend
-
-```bash
-cd ../frontend
-cp .env.example .env
-npm install
-```
-
-### Bước 5: Chạy ứng dụng
-
-Từ thư mục root:
-
-```bash
-./start-dev.bat  # Windows
-# hoặc
-bash start-dev.bat  # Linux/Mac
-```
-
-Backend chạy tại: http://localhost:3000
-Frontend chạy tại: http://localhost:5173
-
-## Dùng Docker
-
-```bash
-docker-compose up -d
-```
+---
 
 ## Cấu trúc dự án
 
 ```
-ltwnc-shop/
-├── backend/          # API Server (Express.js)
-├── frontend/         # Web Application (React)
-├── infra/            # Docker configuration
-├── docs/             # Documentation
-└── scripts/          # Utility scripts
+LTWNC/
+├── ltwnc-shop/          # Dự án chính
+│   ├── backend/         # Node.js + Express + TypeScript + Prisma
+│   ├── frontend/        # React + Vite
+│   └── infra/           # Docker & services
+├── docs/                # Tài liệu dự án
+│   ├── Quy_Tac_Chung/   # Quy tắc & hướng dẫn chung
+│   ├── Nguyễn Hoài Nam/ # Tiến độ backend
+│   ├── Nguyễn Huy Cường/ # Tiến độ frontend
+│   ├── Nhiem_vu_tung_phan/ # Nhiệm vụ từng phần
+│   ├── Phạm Tiến Vinh/   # Tiến độ migration/seed/test
+│   └── reports/         # Báo cáo hàng ngày
+└── README.md            # File này
 ```
 
-Xem [INSTALLATION.md](./docs/INSTALLATION.md) để biết chi tiết cài đặt.
+---
 
-Xem [ARCHITECTURE.md](./docs/ARCHITECTURE.md) để hiểu cấu trúc dự án.
+## Cấu trúc Database
 
-## Đóng góp
+### Entity Relationship Diagram (ERD)
 
-Chúng tôi chào đón mọi đóng góp! Vui lòng đọc [CONTRIBUTING.md](./CONTRIBUTING.md) để biết quy trình.
+```
+┌─────────────────────┐         ┌─────────────────────┐
+│     USERS       ├───┼─────────┤    ADDRESSES     │
+├─────────────────────┤         ├─────────────────────┤
+│ id (PK)         │         │ id (PK)          │
+│ email (UNIQUE)  │         │ user_id (FK)     │
+│ password        │         │ street           │
+│ full_name       │         │ ward             │
+│ phone           │         │ district         │
+│ role            │         │ city             │
+│ is_active       │         │ zip_code         │
+│ created_at      │         │ is_default       │
+│ updated_at      │         │ created_at       │
+└─────────────────────┘         │ updated_at       │
+        │                   └─────────────────────┘
+        │
+        └──────┬──────────────┬──────────────┬──────────┐
+               │              │              │          │
+               ▼              ▼              ▼          ▼
+┌─────────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   CARTS      │ │    ORDERS    │ │ AUDIT_LOGS   │ │ (placeholder) │
+├─────────────────┤ ├──────────────┤ ├──────────────┤ └──────────────┘
+│ id (PK)      │ │ id (PK)      │ │ id (PK)      │
+│ user_id (FK) │ │ user_id (FK) │ │ user_id (FK) │
+│ product_id(FK)│ │ total_amount │ │ action       │
+│ quantity     │ │ status       │ │ table_name   │
+│ created_at   │ │ shipping_... │ │ record_id    │
+│ updated_at   │ │ created_at   │ │ changes      │
+└─────────────────┘ │ updated_at   │ │ created_at   │
+        │         └──────────────┘ └──────────────┘
+        │                 │
+        │                 └──────┬────────────┬────────────┐
+        │                        │            │            │
+        │                        ▼            ▼            ▼
+        │          ┌──────────────────┐ ┌──────────────┐ ┌──────────────┐
+        │          │  ORDER_ITEMS      │ │  PAYMENTS    │ │  PRODUCTS    │
+        │          ├──────────────────┤ ├──────────────┤ ├──────────────┤
+        └──────────┤ id (PK)          │ │ id (PK)      │ │ id (PK)      │
+                   │ order_id (FK)    │ │ order_id(FK) │ │ name         │
+                   │ product_id (FK)  │ │ amount       │ │ description  │
+                   │ quantity         │ │ status       │ │ price        │
+                   │ price            │ │ method       │ │ stock        │
+                   │ created_at       │ │ created_at   │ │ category_..  │
+                   └──────────────────┘ │ updated_at   │ │ image_url    │
+                                        └──────────────┘ │ created_at   │
+                                                        │ updated_at   │
+                                                        └──────────────┘
+                                                                ▲
+                                                                │
+┌──────────────────────┐
+│  CATEGORIES          │
+├──────────────────────┤
+│ id (PK)              │
+│ name                 │
+│ description          │
+│ created_at           │
+│ updated_at           │
+└──────────────────────┘
+        ▲
+        │
+(products.category_id FK)
+```
 
-## License
+### Thông tin chi tiết các bảng
 
-MIT License - xem [LICENSE](./LICENSE) để biết chi tiết.
+| Bảng | Mô tả | Trường chính |
+| :--- | :--- | :--- |
+| **users** | Quản lý người dùng | id, email, password, role |
+| **addresses** | Địa chỉ giao hàng | id, user_id, street, city |
+| **categories** | Danh mục sản phẩm | id, name, description |
+| **products** | Sản phẩm | id, name, price, stock, category_id |
+| **carts** | Giỏ hàng | id, user_id, product_id, quantity |
+| **orders** | Đơn hàng | id, user_id, total_amount, status |
+| **order_items** | Chi tiết đơn hàng | id, order_id, product_id, quantity, price |
+| **payments** | Thanh toán | id, order_id, amount, status, method |
+| **audit_logs** | Nhật ký hoạt động | id, user_id, action, changes |
 
-## Liên hệ
+---
 
-- Tác giả: Nam Nguyễn
-- Email: contact@ltwnc.com
-- Issues: GitHub Issues
+## Hướng dẫn cài đặt
 
-## Tài liệu
+### Yêu cầu hệ thống
 
-- [Hướng dẫn cài đặt](./docs/INSTALLATION.md)
-- [Kiến trúc hệ thống](./docs/ARCHITECTURE.md)
-- [API Documentation](./docs/API.md)
-- [Hướng dẫn đóng góp](./CONTRIBUTING.md)
+- **Node.js** 18+ ([Download](https://nodejs.org/))
+- **Docker** & **Docker Compose** ([Download](https://www.docker.com/products/docker-desktop))
+- **Git** ([Download](https://git-scm.com/))
+
+### Tài khoản Test (sẵn sàng sau seed)
+
+Sau khi chạy seed data, có thể dùng các tài khoản này để test nhanh:
+
+| Vai trò | Email | Mật khẩu | Mức đặc quyền |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@ltwnc.tech` | `Admin@123` | Quản lý hệ thống, sản phẩm, đơn hàng |
+| **User** | `user@ltwnc.tech` | `User@123` | Mua sắm, kiểm tra luồng checkout |
+
+**Lưu ý:** Chỉ dùng cho development/testing. Không dùng cho production!
+
+### 1. Clone repository
+
+```bash
+git clone <repository-url>
+cd LTWNC/ltwnc-shop
+```
+
+### 2. Cấu hình Database (PostgreSQL)
+
+```bash
+# Vào thư mục infra
+cd infra
+
+# Khởi động PostgreSQL container
+docker-compose up -d
+
+# Kiểm tra container đang chạy
+docker ps
+```
+
+**Kết nối:** `postgresql://shopuser:shoppass@localhost:5432/shopdb`
+
+### 3. Setup Backend
+
+```bash
+# Vào thư mục backend
+cd ../backend
+
+# Cài đặt dependencies
+npm install
+
+# Chạy migrations
+npx prisma migrate deploy
+
+# Seed dữ liệu test (admin, user, categories, products)
+npm run seed
+
+# Khởi động server (dev mode)
+npm run dev
+```
+
+**Backend chạy tại:** `http://localhost:8080`
+
+### 4. Setup Frontend
+
+```bash
+# Vào thư mục frontend (terminal mới)
+cd ../frontend
+
+# Cài đặt dependencies
+npm install
+
+# Khởi động dev server
+npm run dev
+```
+
+**Frontend chạy tại:** `http://localhost:5173`
+
+### Kiểm tra setup thành công
+
+- [ ] PostgreSQL container đang chạy: `docker ps`
+- [ ] Backend API response: `curl http://localhost:8080`
+- [ ] Frontend load trang chủ: `http://localhost:5173`
+
+---
+
+## Các lệnh hữu ích
+
+### Backend
+
+```bash
+# Dev mode
+npm run dev
+
+# Build production
+npm run build
+
+# Chạy Prisma Studio (GUI quản lý DB)
+npx prisma studio
+
+# Tạo migration
+npx prisma migrate dev --name <migration-name>
+```
+
+### API Gateway (Backend)
+
+```bash
+# Health của API Gateway
+curl http://localhost:8080/api/gateway/health
+
+# Metrics runtime của API Gateway
+curl http://localhost:8080/api/gateway/metrics
+```
+
+Biến môi trường hữu ích:
+
+- `RATE_LIMIT_WINDOW_MS` (mặc định: `60000`)
+- `RATE_LIMIT_MAX` (mặc định: `120`)
+- `TRUST_PROXY` (mặc định: `0`)
+- `ENABLE_CLUSTER_MODE` (`true` để bật)
+- `CLUSTER_WORKERS` (số worker khi bật cluster mode)
+
+### Frontend
+
+```bash
+# Dev mode
+npm run dev
+
+# Build production
+npm run build
+
+# Preview build
+npm run preview
+
+# ESLint check
+npm run lint
+```
+
+### Database
+
+```bash
+# Connect PostgreSQL container
+docker exec -it ltnwc_postgres psql -U shopuser -d shopdb
+
+# Stop all containers
+docker-compose down
+
+# Reset database (delete volume)
+docker-compose down -v
+```
+
+---

@@ -110,7 +110,7 @@ async function main() {
   const userPassword = await bcrypt.hash('User@123', 10);
 
   // 1. Create Users
-  console.log('👤 Tạo tài khoản người dùng...');
+  console.log(' Tạo tài khoản người dùng...');
 
   const admin = await prisma.user.create({
     data: {

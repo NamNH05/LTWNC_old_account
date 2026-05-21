@@ -1,6 +1,6 @@
 param(
-  [string]$ContainerName = "ltnwc_postgres",
-  [string]$DbName = "shopdb",
+  [string]$ContainerName = "ltwnc",
+  [string]$DbName = "ltwnc",
   [string]$DbUser = "shopuser",
   [string]$OutputDir = "./backups",
   [ValidateRange(3, 7)]

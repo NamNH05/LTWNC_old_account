@@ -1,8 +1,8 @@
 param(
   [string]$TaskName = "LTWNC-Postgres-Backup-Daily",
   [string]$Time = "01:00",
-  [string]$ContainerName = "ltnwc_postgres",
-  [string]$DbName = "shopdb",
+  [string]$ContainerName = "ltwnc",
+  [string]$DbName = "ltwnc",
   [string]$DbUser = "shopuser",
   [string]$OutputDir = "c:\\Users\\PC\\Documents\\GitHub\\LTWNC\\ltwnc-shop\\backend\\backups",
   [ValidateRange(3, 7)]
