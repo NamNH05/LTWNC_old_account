@@ -1,4 +1,4 @@
-# 🗄️ Nhiệm vụ Database và Migration
+# [✓] Nhiệm vụ Database và Migration
 
 ## Danh sách công việc cần hoàn tất cho Database và Seed
 
