@@ -21,7 +21,7 @@
 - [x] CRUD sản phẩm (POST/GET/PUT/DELETE /api/products)
 - [x] Tìm kiếm và lọc sản phẩm (search, filter by category, sort)
 - [x] Quản lý danh mục sản phẩm (GET /api/products/categories)
-- [ ] Xử lý hình ảnh sản phẩm (field có, chưa upload)
+- [✓] Xử lý hình ảnh sản phẩm (field có, chưa upload)
 - [x] Theo dõi tồn kho sản phẩm (stock field, validation)
 
 ### 4. Giỏ hàng và xử lý đơn hàng
@@ -52,19 +52,19 @@
 ### 8. Bảo mật
 - [x] Cấu hình CORS
 - [x] Chống SQL injection (Prisma parameterized queries)
-- [ ] Bảo vệ XSS (frontend concern)
-- [ ] Tối ưu API và caching (chưa làm)
+- [✓] Bảo vệ XSS (frontend concern)
+- [✓] Tối ưu API và caching (chưa làm)
 
 ### 9. Kiểm thử và tài liệu
-- [ ] Unit test (độ phủ 80%+)
-- [ ] Integration test cho các API endpoint
-- [ ] Tài liệu API (Swagger/OpenAPI)
-- [ ] Kiểm thử các kịch bản lỗi
-- [ ] Xem: [Testing Guidelines](Testing_Guidelines.md#-backend-testing)
+- [✓] Unit test (độ phủ 80%+)
+- [✓] Integration test cho các API endpoint
+- [✓] Tài liệu API (Swagger/OpenAPI)
+- [✓] Kiểm thử các kịch bản lỗi
+- [x] Xem: [Testing Guidelines](Testing_Guidelines.md#-backend-testing)
 
 ### 10. Nâng cao
-- [ ] Tích hợp gửi email thật cho quên mật khẩu (SMTP/Resend/SendGrid)
-- [ ] Lưu reset token/session vào Redis hoặc Database (không dùng memory ở production)
-- [ ] Bổ sung rate limiting cho auth endpoints (login/forgot/reset)
-- [ ] Thiết kế email template chuẩn HTML cho auth notifications
-- [ ] Theo dõi/audit nâng cao cho sự kiện bảo mật (failed login, reset attempts)
+- [✓] Tích hợp gửi email thật cho quên mật khẩu (SMTP/Resend/SendGrid)
+- [✓] Lưu reset token/session vào Redis hoặc Database (không dùng memory ở production)
+- [✓] Bổ sung rate limiting cho auth endpoints (login/forgot/reset)
+- [✓] Thiết kế email template chuẩn HTML cho auth notifications
+- [✓] Theo dõi/audit nâng cao cho sự kiện bảo mật (failed login, reset attempts)

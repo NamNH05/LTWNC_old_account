@@ -7,7 +7,7 @@
 - [x] Thiết lập ràng buộc và kiểm tra dữ liệu phù hợp
 - [x] Thêm trường tính toán (nếu cần)
 - [x] Tối ưu quan hệ giữa các bảng
-- [ ] Thêm database trigger (nếu cần)
+- [✓] Thêm database trigger (nếu cần)
 
 ### 2. Quản lý migration
 - [x] Review và test toàn bộ migration
