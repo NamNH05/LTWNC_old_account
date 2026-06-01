@@ -4,13 +4,25 @@
 | Thành viên | Nguyễn Huy Cường | D18CNPM2 | 23810310084 |
 | Thành viên | Phạm Tiến Vinh | D18CNPM2 | 23810310085 |
 
+## Website E-commerce cho hãng thời trang
+
+Website thương mại điện tử phục vụ mua sắm thời trang, cho phép người dùng xem sản phẩm, tìm kiếm, quản lý giỏ hàng, thanh toán và theo dõi đơn hàng. Hệ thống cũng có khu vực quản trị để quản lý sản phẩm, đơn hàng, người dùng, báo cáo và nhật ký hoạt động.
+
+## Link video demo
+
+- [Video demo](https://drive.google.com/file/d/1QOyp8c0W6qShW3wUtlp_sL_cQ0EAyAJZ/view)
+
+## Link online đã deploy
+
+- [hnamofficial.id.vn](https://hnamofficial.id.vn)
+
 ---
 
 ## Mục lục
 
 1. [Dự án](#-dự-án)
 2. [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-3. [Nội dung chính](#-nội-dung-chính)
+3. [Phân công nhiệm vụ cụ thể và quy tắc làm đề tài](#-nội-dung-chính)
 4. [Cấu trúc dự án](#-cấu-trúc-dự-án)
 5. [Cấu trúc Database](#-cấu-trúc-database)
 6. [Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
@@ -323,3 +335,51 @@ docker-compose down -v
 ```
 
 ---
+
+## Hình ảnh minh họa hệ thống
+
+### Trang chủ và danh mục
+
+![Trang chủ](Ảnh%20giao%20diện/Trang%20chủ.png)
+![Trang chủ 1](Ảnh%20giao%20diện/Trang%20chủ%201.png)
+![Trang chủ 2](Ảnh%20giao%20diện/Trang%20chủ%202.png)
+![Trang sản phẩm](Ảnh%20giao%20diện/Trang%20sản%20phẩm.png)
+![Trang tổng hợp sản phẩm](Ảnh%20giao%20diện/Trang%20tổng%20hợp%20sản%20phẩm.png)
+![Trang chia theo chủ đề sản phẩm](Ảnh%20giao%20diện/Trang%20chia%20theo%20chủ%20đề%20sản%20phẩm.png)
+![Trang tìm kiếm](Ảnh%20giao%20diện/Trang%20tìm%20kiếm.png)
+
+### Tài khoản và hồ sơ
+
+![Đăng nhập](Ảnh%20giao%20diện/Đăng%20nhập.png)
+![Đăng ký](Ảnh%20giao%20diện/Đăng%20ký.png)
+![Trang profile 1](Ảnh%20giao%20diện/Trang%20profile%201.png)
+![Trang profile 2](Ảnh%20giao%20diện/Trang%20profile%202.png)
+![Trang profile 3](Ảnh%20giao%20diện/Trang%20profile%203.png)
+![User 1](Ảnh%20giao%20diện/User%201.png)
+![User 2](Ảnh%20giao%20diện/User%202.png)
+![User 3](Ảnh%20giao%20diện/User%203.png)
+
+### Giỏ hàng và thanh toán
+
+![Giỏ hàng](Ảnh%20giao%20diện/Giỏ%20hàng.png)
+![Checkout thanh toán 1](Ảnh%20giao%20diện/Checkout%20thanh%20toán%201.png)
+![Checkout thanh toán 2](Ảnh%20giao%20diện/Checkout%20thanh%20toán%202.png)
+![Checkout thanh toán 3](Ảnh%20giao%20diện/Checkout%20thanh%20toán%203.png)
+![Thanh toán 1](Ảnh%20giao%20diện/Thanh%20toán%201.png)
+![Thanh toán 2](Ảnh%20giao%20diện/Thanh%20toán%202.png)
+![Thanh toán 3](Ảnh%20giao%20diện/Thanh%20toán%203.png)
+![Thanh toán thành công](Ảnh%20giao%20diện/Thanh%20toán%20thành%20công.png)
+![Giao diện thanh toán VNpay](Ảnh%20giao%20diện/Giao%20diện%20thanh%20toán%20VNpay.png)
+
+### Trang quản trị
+
+![Admin 1](Ảnh%20giao%20diện/Admin%201.png)
+![Admin 2](Ảnh%20giao%20diện/Admin%202.png)
+![Admin 3](Ảnh%20giao%20diện/Admin%203.png)
+![Admin 4](Ảnh%20giao%20diện/Admin%204.png)
+![Admin 5](Ảnh%20giao%20diện/Admin%205.png)
+![Admin dashboard 1](Ảnh%20giao%20diện/Admin%20dashboard%201.png)
+![Admin dashboard 2](Ảnh%20giao%20diện/Admin%20dashboard%202.png)
+![Admin dashboard 3](Ảnh%20giao%20diện/Admin%20dashboard%203.png)
+![Admin dashboard 4](Ảnh%20giao%20diện/Admin%20dashboard%204.png)
+![Admin dashboard 5](Ảnh%20giao%20diện/Admin%20dashboard%205.png)
